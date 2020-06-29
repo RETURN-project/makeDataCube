@@ -25,7 +25,7 @@ dllDEM <- function(ext, dl_dir= Sys.getenv("HOME")){
   cmb <- expand.grid(lats,lons)
   cmb <- paste0(cmb[,1],cmb[,2])
 
-  urls <- paste0('http://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11/',cmb,'.SRTMGL1.hgt.zip.xml')
+  urls <- paste0('http://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11/',cmb,'.SRTMGL1.hgt.zip')
   dllLPDAAC(dl_dir, urls)
 
 }
