@@ -24,10 +24,15 @@ dllDEM <- function(ext, dl_dir= Sys.getenv("HOME")){
   lats <- paste0(sapply(lat, function(x){switch(1+(sign(x)<0),'N','S')}), sprintf('%02i',abs(lat)))
   cmb <- expand.grid(lats,lons)
   cmb <- paste0(cmb[,1],cmb[,2])
-
-  urls <- paste0('http://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11/',cmb,'.SRTMGL1.hgt.zip')
+  todll <- paste0(cmb,'.SRTMGL1.hgt')#files that meet the criteria
+  # check if the files are not present in the target dir
+  fls <- list.files(path = dl_dir, pattern ='*.SRTMGL1.hgt')# all files that are already downloaded
+  todll <- setdiff(todll, fls)# files that meet criteria annd are not downloaded yet
+  urls <- paste0('http://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11/',todll,'.zip')#urls that meet  the criteria
+  # download
   dllLPDAAC(dl_dir, urls)
-
+  # return a list of downloaded files
+  todll
 }
 
 #' Download data from LP DAAC DATa Pool
