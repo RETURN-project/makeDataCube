@@ -213,10 +213,12 @@ dllFire <- function(ofolder){
   failed <- c()
   if (length(miss)>0){
     for(i in 1:length(miss)) {
+
       skip_to_next <- FALSE
 
       tryCatch(
         { download.file(fireurl[miss[i]], file.path(ofolder, firetar[miss[i]]))
+
           untar(file.path(ofolder, firetar[miss[i]]),files=fireclfiles[miss[i]], exdir = ofolder)
           untar(file.path(ofolder, firetar[miss[i]]),files=firejdfiles[miss[i]], exdir = ofolder)
           unlink(file.path(ofolder, firetar[miss[i]]))
