@@ -16,7 +16,7 @@
 #'
 dllLandcover <- function(ofolder){
   lcfiles <- c('COLECAO_4_1_CONSOLIDACAO_amazonia.tif', 'COLECAO_4_1_CONSOLIDACAO_caatinga.tif', 'COLECAO_4_1_CONSOLIDACAO_cerrado.tif', 'COLECAO_4_1_CONSOLIDACAO_mataatlantica.tif', 'COLECAO_4_1_CONSOLIDACAO_pampa.tif', 'COLECAO_4_1_CONSOLIDACAO_pantanal.tif')
-  lcurl <- c('https://storage.cloud.google.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/amazonia.tif?authuser=1&organizationId=482907382829', 'https://storage.cloud.google.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/caatinga.tif?authuser=1&organizationId=482907382829', 'https://storage.cloud.google.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/cerrado.tif?authuser=1&organizationId=482907382829', 'https://storage.cloud.google.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/mataatlantica.tif?authuser=1&organizationId=482907382829', 'https://storage.cloud.google.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/pampa.tif?authuser=1&organizationId=482907382829', 'https://storage.cloud.google.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/pantanal.tif?authuser=1&organizationId=482907382829')
+  lcurl <- c('https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/amazonia.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/caatinga.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/cerrado.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/mataatlantica.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/pampa.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/pantanal.tif')
 
   # download missing land cover files
   miss <- which(! lcfiles %in% list.files(ofolder))# files that are not available
