@@ -13,7 +13,8 @@ RoxygenNote: 7.1.0
 Imports: raster,
          sys,
          getPass,
-         httr
+         httr,
+         RCurl
 Suggests: testthat,
           knitr,
           rmarkdown,
