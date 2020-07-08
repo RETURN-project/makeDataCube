@@ -12,6 +12,7 @@
 #'
 #' @return stores file to disk
 #' @export
+#' @import RCurl
 #'
 dllLandcover <- function(ofolder){
   lcfiles <- c('COLECAO_4_1_CONSOLIDACAO_amazonia.tif', 'COLECAO_4_1_CONSOLIDACAO_caatinga.tif', 'COLECAO_4_1_CONSOLIDACAO_cerrado.tif', 'COLECAO_4_1_CONSOLIDACAO_mataatlantica.tif', 'COLECAO_4_1_CONSOLIDACAO_pampa.tif', 'COLECAO_4_1_CONSOLIDACAO_pantanal.tif')
@@ -20,7 +21,7 @@ dllLandcover <- function(ofolder){
   # download missing land cover files
   miss <- which(! lcfiles %in% list.files(ofolder))# files that are not available
   if (length(miss)>0){
-    sapply(1:length(miss), function(i) download.file(lcurl[miss[i]], file.path(ofolder, lcfiles[miss[i]])))
+    sapply(1:length(miss), function(i) download.file(lcurl[miss[i]], file.path(ofolder, lcfiles[miss[i]]),method="curl"))
   }}
 
 #' Prepare the MapBiomas land cover data:
