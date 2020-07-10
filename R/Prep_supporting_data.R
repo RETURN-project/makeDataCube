@@ -34,7 +34,7 @@ dllLandcover <- function(ofolder){
 #' @param startyr start date of study period
 #' @param endyr end date of study period
 #'
-#' @return
+#' @return saves land cover raster
 #' @export
 #' @import raster
 #'
@@ -53,9 +53,9 @@ prepLandcover <- function(ifolder, datafolder, ext, fname = 'landcover.tif', sta
 
   dtslc <- as.Date(paste0(1985:2018, '-01-01'), format = '%Y-%m-%d')# dates of each layer
   names(lc) <- dtslc
-  save(dtslc, file = file.path(datafolder,'lcDates'))
   lc <- lc[[which((dtslc >= startyr) & (dtslc <= endyr))]]# remove observations outside the predefined observation period
-
+  dtslc <- dtslc[which((dtslc >= startyr) & (dtslc <= endyr))]
+  save(dtslc, file = file.path(datafolder,'lcDates'))
   writeRaster(lc, file.path(datafolder, fname), format="GTiff", overwrite=TRUE)# save the raster as geoTIFF file
 }
 
@@ -83,7 +83,6 @@ prepLandcover <- function(ifolder, datafolder, ext, fname = 'landcover.tif', sta
 #' @return stores file to disk
 #' @export
 #'
-#' @examples
 dllTreecover <- function(ofolder, ext){
   hanext <- c(floor(min(ext[1:2])/10)*10, ceiling(min(ext[1:2])/10)*10, floor(min(ext[3:4])/10)*10, ceiling(min(ext[3:4])/10)*10)# total extent of the area of the hansen tiles of interest, each tile has an extent of 10 x 10 degrees
   hanfiles <- c()
@@ -190,7 +189,6 @@ prepTreecover <- function(ifolder, datafolder, ext, fname = 'treecover.tif', han
 #' @import RCurl
 #' @import tidyverse
 #'
-#' @examples
 dllFire <- function(ofolder){
   # for which years is fire data available?
   yrs <- getURL('ftp://anon-ftp.ceda.ac.uk/neodc/esacci/fire/data/burned_area/MODIS/pixel/v5.1/compressed/',  dirlistonly = TRUE)
@@ -229,12 +227,6 @@ dllFire <- function(ofolder){
       if(skip_to_next) {
         failed <- c(failed, miss[i])
         next
-        # fireclfiles <- fireclfiles[-miss[i]]
-        # firejdfiles <- firejdfiles[-miss[i]]
-        # fireurl <- fireurl[-miss[i]]
-        # firetar <- firetar[-miss[i]]
-        # miss <- miss[-i]
-        # i <- i-1
         }
     }
   }
@@ -271,6 +263,7 @@ prepFire <- function(ifolder, datafolder, ext, fjdname = 'fireJD.tif', fclname =
   fdts<- as.Date(fireclfiles, format = "%Y%m%d-ESACCI-L3S_FIRE-BA-MODIS-AREA_2-fv5.1-CL.tif") # dates associated with the fire data stack
   names(st) <- fdts
   fcl <- st[[which((fdts >= startyr) & (fdts <= endyr))]]# remove observations outside the predefined observation period
+  fdts <- fdts[which((fdts >= startyr) & (fdts <= endyr))]
   writeRaster(fcl, file.path(datafolder, fclname), format="GTiff", overwrite=TRUE)# save the raster as geoTIFF file
   rm(st)
 
@@ -279,6 +272,7 @@ prepFire <- function(ifolder, datafolder, ext, fjdname = 'fireJD.tif', fclname =
   fdts<- as.Date(firejdfiles, format = "%Y%m%d-ESACCI-L3S_FIRE-BA-MODIS-AREA_2-fv5.1-JD.tif") # dates associated with the fire data stack
   names(st) <- fdts
   fjd <- st[[which((fdts >= startyr) & (fdts <= endyr))]]# remove observations outside the predefined observation period
+  fdts <- fdts[which((fdts >= startyr) & (fdts <= endyr))]
   writeRaster(fjd, file.path(datafolder, fjdname), format="GTiff", overwrite=TRUE)# save the raster as geoTIFF file
   save(fdts, file = file.path(datafolder,'fireDates'))
   rm(st)

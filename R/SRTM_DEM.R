@@ -8,7 +8,6 @@
 #' @return stores files to disk
 #' @export
 #'
-#' @examples
 dllDEM <- function(ext, dl_dir= Sys.getenv("HOME")){
   # web_page <- readLines("https://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11/SRTMGL1_page_4.html")
   # sam <- web_page[startsWith(web_page,"   <td><a href=\"http://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11/")]
@@ -46,7 +45,6 @@ dllDEM <- function(ext, dl_dir= Sys.getenv("HOME")){
 #' @import getPass
 #' @import httr
 #'
-#' @examples
 dllLPDAAC<- function(dl_dir = Sys.getenv("HOME"), files){
   # ------------------------------------------------------------------------------------------------ #
   # How to Access the LP DAAC Data Pool with R
