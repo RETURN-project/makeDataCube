@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, eval = F)
+knitr::opts_chunk$set(echo = TRUE, eval = T)
 library(reticulate)
 library(makeDataCube)
 
@@ -24,7 +24,7 @@ This document generates a data cube of level-2 Landsat data over a user-defined 
 
 # Inputs
 ```{r}
-forcefolder <- Sys.getenv("HOME")#''/home/wanda/Documents/data/force'#Sys.getenv("HOME")#'/home/wanda/Documents/data/force'
+forcefolder <- '/home/wanda/Documents/data/force'#Sys.getenv("HOME")#'Sys.getenv("HOME")#'/home/wanda/Documents/data/force'
 ext <- c(-43.38238361637443,-43.27938679020256,-4.555765244985907,-4.451717415449725)#extent, vector with xmin, xmax, ymin, ymax in degrees
 cld <- 50 # maximum cloud cover
 starttime <- c(2000,11,01)#start date: year, month, day
@@ -59,6 +59,62 @@ if(!dir.exists(paramfolder)){dir.create(paramfolder)}
 
 # Generate a parameter file
 ```{python}
+os.system("force-parameter " + r.paramfolder + " LEVEL2 0")
+os.system("mv " + os.path.join(r.paramfolder,'LEVEL2-skeleton.prm')+" "+filename)
+with fileinput.FileInput(filename, inplace=True, backup='.bak') as file:
+            for line in file:
+                print(line.replace('FILE_QUEUE = NULL', 'FILE_QUEUE = ' + FILE_QUEUE)
+                .replace('DIR_LEVEL2 = NULL', 'DIR_LEVEL2 = ' + DIR_LEVEL2)
+                .replace('DIR_LOG = NULL', 'DIR_LOG = ' + DIR_LOG)
+                .replace('DIR_TEMP = NULL', 'DIR_TEMP = ' + DIR_TEMP)
+                .replace('FILE_DEM = NULL', 'FILE_DEM = ' + FILE_DEM)
+                .replace('DEM_NODATA = -32767', 'DEM_NODATA = ' + DEM_NODATA)
+                .replace('DO_REPROJ = TRUE', 'DO_REPROJ = ' + DO_REPROJ)
+                .replace('DO_TILE = TRUE', 'DO_TILE = ' + DO_TILE)
+                .replace('FILE_TILE = NULL', 'FILE_TILE = ' + FILE_TILE)
+                .replace('TILE_SIZE = 30000', 'TILE_SIZE = ' + TILE_SIZE)
+                .replace('BLOCK_SIZE = 3000', 'BLOCK_SIZE = ' + BLOCK_SIZE)
+                .replace('RESOLUTION_LANDSAT = 30', 'RESOLUTION_LANDSAT = ' + RESOLUTION_LANDSAT)
+                .replace('RESOLUTION_SENTINEL2 = 10', 'RESOLUTION_SENTINEL2 = ' + RESOLUTION_SENTINEL2)
+                .replace('ORIGIN_LON = -25', 'ORIGIN_LON = ' + ORIGIN_LON)
+                .replace('ORIGIN_LAT = 60', 'ORIGIN_LAT = ' + ORIGIN_LAT)
+                .replace('PROJECTION = GLANCE7', 'PROJECTION = ' + PROJECTION)
+                .replace('RESAMPLING = CC', 'RESAMPLING = ' + RESAMPLING)
+                .replace('DO_ATMO = TRUE', 'DO_ATMO = ' + DO_ATMO)
+                .replace('DO_TOPO = TRUE', 'DO_TOPO = ' + DO_TOPO)
+                .replace('DO_BRDF = TRUE', 'DO_BRDF = ' + DO_BRDF)
+                .replace('ADJACENCY_EFFECT = TRUE', 'ADJACENCY_EFFECT = ' + ADJACENCY_EFFECT)
+                .replace('MULTI_SCATTERING = TRUE', 'MULTI_SCATTERING = ' + MULTI_SCATTERING)
+                .replace('DIR_WVPLUT = NULL', 'DIR_WVPLUT = ' + DIR_WVPLUT)
+                .replace('WATER_VAPOR = NULL', 'WATER_VAPOR = ' + WATER_VAPOR)
+                .replace('DO_AOD = TRUE', 'DO_AOD = ' + DO_AOD)
+                .replace('DIR_AOD = NULL', 'DIR_AOD = ' + DIR_AOD)
+                .replace('MAX_CLOUD_COVER_FRAME = 75', 'MAX_CLOUD_COVER_FRAME = ' + MAX_CLOUD_COVER_FRAME)
+                .replace('MAX_CLOUD_COVER_TILE = 75', 'MAX_CLOUD_COVER_TILE = ' + MAX_CLOUD_COVER_TILE)
+                .replace('CLOUD_THRESHOLD = 0.225', 'CLOUD_THRESHOLD = ' + CLOUD_THRESHOLD)
+                .replace('SHADOW_THRESHOLD = 0.02', 'SHADOW_THRESHOLD = ' + SHADOW_THRESHOLD)
+                .replace('RES_MERGE = IMPROPHE', 'RES_MERGE = ' + RES_MERGE)
+                .replace('DIR_MASTER = NULL', 'DIR_MASTER = ' + DIR_MASTER)
+                .replace('MASTER_NODATA = -32767', 'MASTER_NODATA = ' + MASTER_NODATA)
+                .replace('IMPULSE_NOISE = TRUE', 'IMPULSE_NOISE = ' + IMPULSE_NOISE)
+                .replace('BUFFER_NODATA = FALSE', 'BUFFER_NODATA = ' + BUFFER_NODATA)
+                .replace('TIER = 1', 'TIER = ' + TIER)
+                .replace('NPROC = 32', 'NPROC = ' + NPROC)
+                .replace('NTHREAD = 2', 'NTHREAD = ' + NTHREAD)
+                .replace('PARALLEL_READS = FALSE', 'PARALLEL_READS = ' + PARALLEL_READS)
+                .replace('DELAY = 3', 'DELAY = ' + DELAY)
+                .replace('TIMEOUT_ZIP = 30', 'TIMEOUT_ZIP = ' + TIMEOUT_ZIP)
+                .replace('OUTPUT_FORMAT = GTiff', 'OUTPUT_FORMAT = ' + OUTPUT_FORMAT)
+                .replace('OUTPUT_DST = FALSE', 'OUTPUT_DST = ' + OUTPUT_DST)
+                .replace('OUTPUT_AOD = FALSE', 'OUTPUT_AOD = ' + OUTPUT_AOD)
+                .replace('OUTPUT_WVP = FALSE', 'OUTPUT_WVP = ' + OUTPUT_WVP)
+                .replace('OUTPUT_VZN = FALSE', 'OUTPUT_VZN = ' + OUTPUT_VZN)
+                .replace('OUTPUT_HOT = FALSE', 'OUTPUT_HOT = ' + OUTPUT_HOT)
+                .replace('OUTPUT_OVV = FALSE', 'OUTPUT_OVV = ' + OUTPUT_OVV), end='')
+        # # return;
+```
+
+```{python}
 import fileinput
 import os.path
 import os
@@ -70,7 +126,7 @@ DIR_LOG = r.logfolder
 DIR_TEMP = r.tmpfolder
 FILE_DEM = os.path.join(r.demfolder,'srtm.vrt')
 DIR_WVPLUT = r.wvpfolder
-
+# print("force-parameter " + r.paramfolder + " LEVEL2 0")
 def makeParFile(paramfolder, filename, FILE_QUEUE = 'NULL', DIR_LEVEL2 = 'NULL', DIR_LOG = 'NULL', DIR_TEMP = 'NULL', FILE_DEM = 'NULL',
 DEM_NODATA= '-32767', DO_REPROJ = 'TRUE', DO_TILE = 'TRUE',FILE_TILE = 'NULL',TILE_SIZE = '30000',BLOCK_SIZE = '3000', RESOLUTION_LANDSAT = '30', RESOLUTION_SENTINEL2 = '10', ORIGIN_LON = '-25', ORIGIN_LAT = '60', PROJECTION = 'GLANCE7', RESAMPLING = 'CC', DO_ATMO = 'TRUE', DO_TOPO = 'TRUE', DO_BRDF = 'TRUE', ADJACENCY_EFFECT = 'TRUE', MULTI_SCATTERING = 'TRUE', DIR_WVPLUT = 'NULL', WATER_VAPOR = 'NULL', DO_AOD = 'TRUE', DIR_AOD = 'NULL', MAX_CLOUD_COVER_FRAME = '75', MAX_CLOUD_COVER_TILE = '75', CLOUD_THRESHOLD = '0.225', SHADOW_THRESHOLD = '0.02', RES_MERGE = 'IMPROPHE', DIR_MASTER = 'NULL', MASTER_NODATA = '-32767', IMPULSE_NOISE = 'TRUE', BUFFER_NODATA = 'FALSE', TIER = '1', NPROC = '32', NTHREAD = '2', PARALLEL_READS = 'FALSE', DELAY = '3', TIMEOUT_ZIP = '30', OUTPUT_FORMAT = 'GTiff', OUTPUT_DST = 'FALSE', OUTPUT_AOD = 'FALSE', OUTPUT_WVP = 'FALSE', OUTPUT_VZN = 'FALSE', OUTPUT_HOT = 'FALSE', OUTPUT_OVV = 'FALSE'):
     # check if the parameter file exists
@@ -82,56 +138,57 @@ DEM_NODATA= '-32767', DO_REPROJ = 'TRUE', DO_TILE = 'TRUE',FILE_TILE = 'NULL',TI
         # modify the file
         with fileinput.FileInput(filename, inplace=True, backup='.bak') as file:
             for line in file:
-                print(line.replace('FILE_QUEUE = NULL', 'FILE_QUEUE = ' + FILE_QUEUE), end='')
-                print(line.replace('DIR_LEVEL2 = NULL', 'DIR_LEVEL2 = ' + DIR_LEVEL2), end='')
-                print(line.replace('DIR_LOG = NULL', 'DIR_LOG = ' + DIR_LOG), end='')
-                print(line.replace('DIR_TEMP = NULL', 'DIR_TEMP = ' + DIR_TEMP), end='')
-                print(line.replace('FILE_DEM = NULL', 'FILE_DEM = ' + FILE_DEM), end='')
-                print(line.replace('DEM_NODATA = -32767', 'DEM_NODATA = ' + DEM_NODATA), end='')
-                print(line.replace('DO_REPROJ = TRUE', 'DO_REPROJ = ' + DO_REPROJ), end='')
-                print(line.replace('DO_TILE = TRUE', 'DO_TILE = ' + DO_TILE), end='')
-                print(line.replace('FILE_TILE = NULL', 'FILE_TILE = ' + FILE_TILE), end='')
-                print(line.replace('TILE_SIZE = 30000', 'TILE_SIZE = ' + TILE_SIZE), end='')
-                print(line.replace('BLOCK_SIZE = 3000', 'BLOCK_SIZE = ' + BLOCK_SIZE), end='')
-                print(line.replace('RESOLUTION_LANDSAT = 30', 'RESOLUTION_LANDSAT = ' + RESOLUTION_LANDSAT), end='')
-                print(line.replace('RESOLUTION_SENTINEL2 = 10', 'RESOLUTION_SENTINEL2 = ' + RESOLUTION_SENTINEL2), end='')
-                print(line.replace('ORIGIN_LON = -25', 'ORIGIN_LON = ' + ORIGIN_LON), end='')
-                print(line.replace('ORIGIN_LAT = 60', 'ORIGIN_LAT = ' + ORIGIN_LAT), end='')
-                print(line.replace('PROJECTION = GLANCE7', 'PROJECTION = ' + PROJECTION), end='')
-                print(line.replace('RESAMPLING = CC', 'RESAMPLING = ' + RESAMPLING), end='')
-                print(line.replace('DO_ATMO = TRUE', 'DO_ATMO = ' + DO_ATMO), end='')
-                print(line.replace('DO_TOPO = TRUE', 'DO_TOPO = ' + DO_TOPO), end='')
-                print(line.replace('DO_BRDF = TRUE', 'DO_BRDF = ' + DO_BRDF), end='')
-                print(line.replace('ADJACENCY_EFFECT = TRUE', 'ADJACENCY_EFFECT = ' + ADJACENCY_EFFECT), end='')
-                print(line.replace('MULTI_SCATTERING = TRUE', 'MULTI_SCATTERING = ' + MULTI_SCATTERING), end='')
-                print(line.replace('DIR_WVPLUT = NULL', 'DIR_WVPLUT = ' + DIR_WVPLUT), end='')
-                print(line.replace('WATER_VAPOR = NULL', 'WATER_VAPOR = ' + WATER_VAPOR), end='')
-                print(line.replace('DO_AOD = TRUE', 'DO_AOD = ' + DO_AOD), end='')
-                print(line.replace('DIR_AOD = NULL', 'DIR_AOD = ' + DIR_AOD), end='')
-                print(line.replace('MAX_CLOUD_COVER_FRAME = 75', 'MAX_CLOUD_COVER_FRAME = ' + MAX_CLOUD_COVER_FRAME), end='')
-                print(line.replace('MAX_CLOUD_COVER_TILE = 75', 'MAX_CLOUD_COVER_TILE = ' + MAX_CLOUD_COVER_TILE), end='')
-                print(line.replace('CLOUD_THRESHOLD = 0.225', 'CLOUD_THRESHOLD = ' + CLOUD_THRESHOLD), end='')
-                print(line.replace('SHADOW_THRESHOLD = 0.02', 'SHADOW_THRESHOLD = ' + SHADOW_THRESHOLD), end='')
-                print(line.replace('RES_MERGE = IMPROPHE', 'RES_MERGE = ' + RES_MERGE), end='')
-                print(line.replace('DIR_MASTER = NULL', 'DIR_MASTER = ' + DIR_MASTER), end='')
-                print(line.replace('MASTER_NODATA = -32767', 'MASTER_NODATA = ' + MASTER_NODATA), end='')
-                print(line.replace('IMPULSE_NOISE = TRUE', 'IMPULSE_NOISE = ' + IMPULSE_NOISE), end='')
-                print(line.replace('BUFFER_NODATA = FALSE', 'BUFFER_NODATA = ' + BUFFER_NODATA), end='')
-                print(line.replace('TIER = 1', 'TIER = ' + TIER), end='')
-                print(line.replace('NPROC = 32', 'NPROC = ' + NPROC), end='')
-                print(line.replace('NTHREAD = 2', 'NTHREAD = ' + NTHREAD), end='')
-                print(line.replace('PARALLEL_READS = FALSE', 'PARALLEL_READS = ' + PARALLEL_READS), end='')
-                print(line.replace('DELAY = 3', 'DELAY = ' + DELAY), end='')
-                print(line.replace('TIMEOUT_ZIP = 30', 'TIMEOUT_ZIP = ' + TIMEOUT_ZIP), end='')
-                print(line.replace('OUTPUT_FORMAT = GTiff', 'OUTPUT_FORMAT = ' + OUTPUT_FORMAT), end='')
-                print(line.replace('OUTPUT_DST = FALSE', 'OUTPUT_DST = ' + OUTPUT_DST), end='')
-                print(line.replace('OUTPUT_AOD = FALSE', 'OUTPUT_AOD = ' + OUTPUT_AOD), end='')
-                print(line.replace('OUTPUT_WVP = FALSE', 'OUTPUT_WVP = ' + OUTPUT_WVP), end='')
-                print(line.replace('OUTPUT_VZN = FALSE', 'OUTPUT_VZN = ' + OUTPUT_VZN), end='')
-                print(line.replace('OUTPUT_HOT = FALSE', 'OUTPUT_HOT = ' + OUTPUT_HOT), end='')
-                print(line.replace('OUTPUT_OVV = FALSE', 'OUTPUT_OVV = ' + OUTPUT_OVV), end='')
+                print(line.replace('FILE_QUEUE = NULL', 'FILE_QUEUE = ' + FILE_QUEUE)
+                .replace('DIR_LEVEL2 = NULL', 'DIR_LEVEL2 = ' + DIR_LEVEL2)
+                .replace('DIR_LOG = NULL', 'DIR_LOG = ' + DIR_LOG)
+                .replace('DIR_TEMP = NULL', 'DIR_TEMP = ' + DIR_TEMP)
+                .replace('FILE_DEM = NULL', 'FILE_DEM = ' + FILE_DEM)
+                .replace('DEM_NODATA = -32767', 'DEM_NODATA = ' + DEM_NODATA)
+                .replace('DO_REPROJ = TRUE', 'DO_REPROJ = ' + DO_REPROJ)
+                .replace('DO_TILE = TRUE', 'DO_TILE = ' + DO_TILE)
+                .replace('FILE_TILE = NULL', 'FILE_TILE = ' + FILE_TILE)
+                .replace('TILE_SIZE = 30000', 'TILE_SIZE = ' + TILE_SIZE)
+                .replace('BLOCK_SIZE = 3000', 'BLOCK_SIZE = ' + BLOCK_SIZE)
+                .replace('RESOLUTION_LANDSAT = 30', 'RESOLUTION_LANDSAT = ' + RESOLUTION_LANDSAT)
+                .replace('RESOLUTION_SENTINEL2 = 10', 'RESOLUTION_SENTINEL2 = ' + RESOLUTION_SENTINEL2)
+                .replace('ORIGIN_LON = -25', 'ORIGIN_LON = ' + ORIGIN_LON)
+                .replace('ORIGIN_LAT = 60', 'ORIGIN_LAT = ' + ORIGIN_LAT)
+                .replace('PROJECTION = GLANCE7', 'PROJECTION = ' + PROJECTION)
+                .replace('RESAMPLING = CC', 'RESAMPLING = ' + RESAMPLING)
+                .replace('DO_ATMO = TRUE', 'DO_ATMO = ' + DO_ATMO)
+                .replace('DO_TOPO = TRUE', 'DO_TOPO = ' + DO_TOPO)
+                .replace('DO_BRDF = TRUE', 'DO_BRDF = ' + DO_BRDF)
+                .replace('ADJACENCY_EFFECT = TRUE', 'ADJACENCY_EFFECT = ' + ADJACENCY_EFFECT)
+                .replace('MULTI_SCATTERING = TRUE', 'MULTI_SCATTERING = ' + MULTI_SCATTERING)
+                .replace('DIR_WVPLUT = NULL', 'DIR_WVPLUT = ' + DIR_WVPLUT)
+                .replace('WATER_VAPOR = NULL', 'WATER_VAPOR = ' + WATER_VAPOR)
+                .replace('DO_AOD = TRUE', 'DO_AOD = ' + DO_AOD)
+                .replace('DIR_AOD = NULL', 'DIR_AOD = ' + DIR_AOD)
+                .replace('MAX_CLOUD_COVER_FRAME = 75', 'MAX_CLOUD_COVER_FRAME = ' + MAX_CLOUD_COVER_FRAME)
+                .replace('MAX_CLOUD_COVER_TILE = 75', 'MAX_CLOUD_COVER_TILE = ' + MAX_CLOUD_COVER_TILE)
+                .replace('CLOUD_THRESHOLD = 0.225', 'CLOUD_THRESHOLD = ' + CLOUD_THRESHOLD)
+                .replace('SHADOW_THRESHOLD = 0.02', 'SHADOW_THRESHOLD = ' + SHADOW_THRESHOLD)
+                .replace('RES_MERGE = IMPROPHE', 'RES_MERGE = ' + RES_MERGE)
+                .replace('DIR_MASTER = NULL', 'DIR_MASTER = ' + DIR_MASTER)
+                .replace('MASTER_NODATA = -32767', 'MASTER_NODATA = ' + MASTER_NODATA)
+                .replace('IMPULSE_NOISE = TRUE', 'IMPULSE_NOISE = ' + IMPULSE_NOISE)
+                .replace('BUFFER_NODATA = FALSE', 'BUFFER_NODATA = ' + BUFFER_NODATA)
+                .replace('TIER = 1', 'TIER = ' + TIER)
+                .replace('NPROC = 32', 'NPROC = ' + NPROC)
+                .replace('NTHREAD = 2', 'NTHREAD = ' + NTHREAD)
+                .replace('PARALLEL_READS = FALSE', 'PARALLEL_READS = ' + PARALLEL_READS)
+                .replace('DELAY = 3', 'DELAY = ' + DELAY)
+                .replace('TIMEOUT_ZIP = 30', 'TIMEOUT_ZIP = ' + TIMEOUT_ZIP)
+                .replace('OUTPUT_FORMAT = GTiff', 'OUTPUT_FORMAT = ' + OUTPUT_FORMAT)
+                .replace('OUTPUT_DST = FALSE', 'OUTPUT_DST = ' + OUTPUT_DST)
+                .replace('OUTPUT_AOD = FALSE', 'OUTPUT_AOD = ' + OUTPUT_AOD)
+                .replace('OUTPUT_WVP = FALSE', 'OUTPUT_WVP = ' + OUTPUT_WVP)
+                .replace('OUTPUT_VZN = FALSE', 'OUTPUT_VZN = ' + OUTPUT_VZN)
+                .replace('OUTPUT_HOT = FALSE', 'OUTPUT_HOT = ' + OUTPUT_HOT)
+                .replace('OUTPUT_OVV = FALSE', 'OUTPUT_OVV = ' + OUTPUT_OVV), end='')
         return;
-makeParFile(r.paramfolder, filename, FILE_QUEUE = FILE_QUEUE, DIR_LEVEL2 = DIR_LEVEL2, DIR_LOG = DIR_LOG, DIR_TEMP = DIR_TEMP, FILE_DEM = FILE_DEM, ORIGIN_LON = '-90', ORIGIN_LAT = '60', RESAMPLING = 'NN', DIR_WVPLUT = DIR_WVPLUT, RES_MERGE = 'REGRESSION',  NPROC = '1', NTHREAD = '1', DELAY = '10', OUTPUT_DST = 'TRUE',  OUTPUT_VZN = 'TRUE', OUTPUT_HOT = 'TRUE', OUTPUT_OVV = 'TRUE')
+
+makeParFile(r.paramfolder, filename, FILE_QUEUE = FILE_QUEUE, DIR_LEVEL2 = DIR_LEVEL2, DIR_LOG = DIR_LOG, DIR_TEMP = DIR_TEMP, FILE_DEM = FILE_DEM, ORIGIN_LON = '-90', ORIGIN_LAT = '60', RESAMPLING = 'NN', DIR_WVPLUT = DIR_WVPLUT, RES_MERGE = 'REGRESSION',  NPROC = '1', NTHREAD = '1', DELAY = '10', OUTPUT_DST = 'TRUE',  OUTPUT_VZN = 'TRUE', OUTPUT_HOT = 'TRUE', OUTPUT_OVV = 'TRUE', DEM_NODATA= '-32768')
 ```
         
 # Search Landsat scenes and download
@@ -149,14 +206,16 @@ import re
 import os
 
 # Search scenes of interest over the study area
+# define area of interest
 xmin = r.ext[0]
 xmax = r.ext[1]
 ymin = r.ext[2]
 ymax = r.ext[3]
 pol = Polygon([[xmin,ymin],[xmax,ymin],[xmax,ymax],[xmin,ymax],[xmin,ymin]])
+# define time period of interest
 begin = datetime(int(r.starttime[0]), int(r.starttime[1]), int(r.starttime[2])) 
 end = datetime(int(r.endtime[0]), int(r.endtime[1]), int(r.endtime[2]))
-
+# search scenes in catalog that fulfill requirements
 catalog = Catalog()
 scenes = catalog.search(
     begin=begin,
