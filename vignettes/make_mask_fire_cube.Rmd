@@ -10,6 +10,8 @@ knitr::opts_chunk$set(echo = TRUE, eval =F)
 library(makeDataCube)
 library(zoo)
 library(lubridate)
+library(raster)
+library(tidyverse)
 ```
 
 # General 
@@ -32,11 +34,13 @@ starttime <- c(1998,01,01)#start date: year, month, day
 endtime <- c(2018,12,31)#end date: year, month, day
 
 # settings for the mask
-Ttree <- 60# threshold for the tree cover percentage
+Ttree <- 60# threshold for the tree cover percentage (in year 2000)
 Tconf <- 95 # threshold on confidence level to detect a fire
 Tyr <- 2000 # year for which land cover should be forested; typically beginning of disturbance monitoring period
 tempRes <- 'monthly'# desired temporal resolution of the fire data
-
+resMask <- 30 # desired resolution of the raster in the cube (nearest neighbor resampling)
+resFire <- 30 # desired resolution of the raster in the cube (nearest neighbor resampling)
+cubefolder <- 's-america'# folder where data cube is stored
 ```
 
 ## Generate the directory structure
@@ -44,6 +48,7 @@ A standard structure of the data folders is assumed.
 
 ```{r}
 tmpfolder <- file.path(forcefolder, 'temp') # temporary files
+l2folder <- file.path(forcefolder, 'level2')# level 2 data
 queuefolder <- file.path(forcefolder, 'level1')# queue file
 queuefile <- 'queue.txt'# name queue file
 lcfolder <- file.path(forcefolder, 'misc','lc')# raw land cover data
@@ -166,10 +171,21 @@ plot(msk)
 # Export the mask layer tot the temporary folder
 writeRaster(msk, file.path(extfolder, 'mask.tif'), format="GTiff", overwrite=TRUE)
 # Export the fire data to the temporary folder
-writeRaster(tsFire2, file.path(extfolder, 'fire.tif'), format="GTiff", overwrite=TRUE)
-save(dtstot, file = file.path(extfolder,'fireDatesCube'))
+nms <-str_replace_all(names(tsFire2),'\\.','_')
+writeRaster(tsFire2, file.path(extfolder, paste0('fire_',nms,'.tif')), bylayer=TRUE, format="GTiff", overwrite=TRUE)
 
-# 
+# writeRaster(tsFire2, file.path(extfolder, 'fire.tif'), format="GTiff", overwrite=TRUE)
+# save(dtstot, file = file.path(extfolder,'fireDatesCube'))
+
+# Add the mask and fire data to the cube
+system(paste0("force-cube ",file.path(extfolder, 'mask.tif')," ", file.path(l2folder, cubefolder)," near ", resMask), intern = TRUE, ignore.stderr = TRUE)
+
+for(i in 1:dim(tsFire2)[3]){
+  system(paste0("force-cube ",file.path(extfolder,  paste0('fire_',nms[i],'.tif'))," ", file.path(l2folder, cubefolder)," near ", resFire), intern = TRUE, ignore.stderr = TRUE)
+}
+
+# remove temporary folder and its contents
+unlink(extfolder, recursive=TRUE)
 ```
 
 
