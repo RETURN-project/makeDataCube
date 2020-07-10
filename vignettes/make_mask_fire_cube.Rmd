@@ -14,7 +14,7 @@ library(raster)
 library(tidyverse)
 ```
 
-# General 
+## General 
 The goal of this vignette is to generate a mask file and add it to an existing data cube with optical data. This cube should be generated with the FORCE software and follow the folder structure as defined in make_Landsat_cube.Rmd. If no data cube is available, please generate one first. 
 
 The mask equals 1 for pixels that meet the following requirements:
@@ -117,7 +117,7 @@ msk <- ((msklc == 1) & (mskfor == 1) & (mskcov == 1))*1
 rm(mskcov, mskfor, msklc)
 ```
 
-# Prepare and add fire data to the mask
+## Prepare and add fire data to the mask
 ```{r}
 # resample fire data to same grid
 fcl <- stack(file.path(extfolder,'fireCL.tif'))
@@ -159,7 +159,7 @@ msk <- (sum(tsFire2, na.rm=T) > 0) # areas that have experienced a fire get the 
 
 ```
 
-# Plot mask
+## Plot mask
 ```{r}
 # plot the mask
 plot(msk)
