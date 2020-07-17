@@ -70,7 +70,7 @@ First MapBiomas land cover data are downloaded if they are not available yet. Th
 ```{r}
 # Download MapBiomas land cover data
 dllLandcover(lcfolder)
-# Crop the land cover data to exent and time period of interest 
+# Crop the land cover data to extent and time period of interest 
 prepLandcover(lcfolder, extfolder, ext, fname = 'landcover.tif', as.Date(paste0(starttime[1],'-',starttime[2],'-',starttime[3])), as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3])))
 
 ```

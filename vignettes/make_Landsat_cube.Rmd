@@ -70,7 +70,8 @@ DIR_LOG = r.logfolder
 DIR_TEMP = r.tmpfolder
 FILE_DEM = os.path.join(r.demfolder,'srtm.vrt')
 DIR_WVPLUT = r.wvpfolder
-# print("force-parameter " + r.paramfolder + " LEVEL2 0")
+# more information about the parameter settings can be found in https://davidfrantz.github.io/tutorials/force-ard/l2-ard/
+# or https://force-eo.readthedocs.io/en/latest/components/lower-level/level2/param.html
 def makeParFile(paramfolder, filename, FILE_QUEUE = 'NULL', DIR_LEVEL2 = 'NULL', DIR_LOG = 'NULL', DIR_TEMP = 'NULL', FILE_DEM = 'NULL',
 DEM_NODATA= '-32767', DO_REPROJ = 'TRUE', DO_TILE = 'TRUE',FILE_TILE = 'NULL',TILE_SIZE = '30000',BLOCK_SIZE = '3000', RESOLUTION_LANDSAT = '30', RESOLUTION_SENTINEL2 = '10', ORIGIN_LON = '-25', ORIGIN_LAT = '60', PROJECTION = 'GLANCE7', RESAMPLING = 'CC', DO_ATMO = 'TRUE', DO_TOPO = 'TRUE', DO_BRDF = 'TRUE', ADJACENCY_EFFECT = 'TRUE', MULTI_SCATTERING = 'TRUE', DIR_WVPLUT = 'NULL', WATER_VAPOR = 'NULL', DO_AOD = 'TRUE', DIR_AOD = 'NULL', MAX_CLOUD_COVER_FRAME = '75', MAX_CLOUD_COVER_TILE = '75', CLOUD_THRESHOLD = '0.225', SHADOW_THRESHOLD = '0.02', RES_MERGE = 'IMPROPHE', DIR_MASTER = 'NULL', MASTER_NODATA = '-32767', IMPULSE_NOISE = 'TRUE', BUFFER_NODATA = 'FALSE', TIER = '1', NPROC = '32', NTHREAD = '2', PARALLEL_READS = 'FALSE', DELAY = '3', TIMEOUT_ZIP = '30', OUTPUT_FORMAT = 'GTiff', OUTPUT_DST = 'FALSE', OUTPUT_AOD = 'FALSE', OUTPUT_WVP = 'FALSE', OUTPUT_VZN = 'FALSE', OUTPUT_HOT = 'FALSE', OUTPUT_OVV = 'FALSE'):
     # check if the parameter file exists
@@ -132,7 +133,7 @@ DEM_NODATA= '-32767', DO_REPROJ = 'TRUE', DO_TILE = 'TRUE',FILE_TILE = 'NULL',TI
                 .replace('OUTPUT_OVV = FALSE', 'OUTPUT_OVV = ' + OUTPUT_OVV), end='')
         return;
 
-makeParFile(r.paramfolder, filename, FILE_QUEUE = FILE_QUEUE, DIR_LEVEL2 = DIR_LEVEL2, DIR_LOG = DIR_LOG, DIR_TEMP = DIR_TEMP, FILE_DEM = FILE_DEM, ORIGIN_LON = '-90', ORIGIN_LAT = '60', RESAMPLING = 'NN', DIR_WVPLUT = DIR_WVPLUT, RES_MERGE = 'REGRESSION',  NPROC = '1', NTHREAD = '1', DELAY = '10', OUTPUT_DST = 'TRUE',  OUTPUT_VZN = 'TRUE', OUTPUT_HOT = 'TRUE', OUTPUT_OVV = 'TRUE', DEM_NODATA= '-32768')
+makeParFile(r.paramfolder, filename, FILE_QUEUE = FILE_QUEUE, DIR_LEVEL2 = DIR_LEVEL2, DIR_LOG = DIR_LOG, DIR_TEMP = DIR_TEMP, FILE_DEM = FILE_DEM, ORIGIN_LON = '-90', ORIGIN_LAT = '60', RESAMPLING = 'NN', DIR_WVPLUT = DIR_WVPLUT, RES_MERGE = 'REGRESSION',  NPROC = '1', NTHREAD = '1', DELAY = '10', OUTPUT_DST = 'TRUE',  OUTPUT_VZN = 'TRUE', OUTPUT_HOT = 'TRUE', OUTPUT_OVV = 'TRUE', DEM_NODATA= '-32768',TILE_SIZE = '3000',BLOCK_SIZE = '300')
 ```
         
 # Search Landsat scenes and download
