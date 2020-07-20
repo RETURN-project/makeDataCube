@@ -24,7 +24,8 @@ This document generates a data cube of level-2 Landsat data over a user-defined 
 
 # Inputs
 ```{r}
-forcefolder <- '/home/wanda/Documents/data/force'#Sys.getenv("HOME")#'Sys.getenv("HOME")#'/home/wanda/Documents/data/force'
+forcefolder <- file.path('..', 'data')
+#Sys.getenv("HOME")#'Sys.getenv("HOME")#'/home/wanda/Documents/data/force'
 ext <- c(-43.38238361637443,-43.27938679020256,-4.555765244985907,-4.451717415449725)#extent, vector with xmin, xmax, ymin, ymax in degrees
 cld <- 50 # maximum cloud cover
 starttime <- c(2000,11,01)#start date: year, month, day
