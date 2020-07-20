@@ -10,7 +10,10 @@ knitr::opts_chunk$set(echo = TRUE, eval = T)
 library(reticulate)
 library(makeDataCube)
 
-use_python("/home/wanda/anaconda3/bin/python", required = TRUE)
+# Find Python in this machine
+## Default installation folder for Python with Anaconda, including the user name
+py_location <- file.path("/home", Sys.getenv("USER"), "anaconda3/bin/python")
+use_python(py_location, required = TRUE)
 py_config()
 ```
 # General
