@@ -51,8 +51,8 @@ if(!dir.exists(tmpfolder)){dir.create(tmpfolder)}
 if(!dir.exists(l1folder)){dir.create(l1folder)}
 if(!dir.exists(l2folder)){dir.create(l2folder)}
 if(!dir.exists(queuefolder)){dir.create(queuefolder)}
-if(!dir.exists(demfolder)){dir.create(demfolder)}
-if(!dir.exists(wvpfolder)){dir.create(wvpfolder)}
+if(!dir.exists(demfolder)){dir.create(demfolder, recursive = TRUE)}
+if(!dir.exists(wvpfolder)){dir.create(wvpfolder, recursive = TRUE)}
 if(!dir.exists(logfolder)){dir.create(logfolder)}
 if(!dir.exists(paramfolder)){dir.create(paramfolder)}
 ```
