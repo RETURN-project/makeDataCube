@@ -142,6 +142,8 @@ makeParFile(r.paramfolder, filename, FILE_QUEUE = FILE_QUEUE, DIR_LEVEL2 = DIR_L
         
 # Search Landsat scenes and download
 ```{r}
+# generate a queue file 
+system(paste0("touch ", file.path(queuefolder,queuefile)), intern = TRUE, ignore.stderr = TRUE)
 # Sync the catalog
 system("pylandsat sync-database", intern = TRUE, ignore.stderr = TRUE)
 ```
