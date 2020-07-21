@@ -12,10 +12,11 @@
 #'
 #' @return stores file to disk
 #' @export
+#' @import RCurl
 #'
 dllLandcover <- function(ofolder){
   lcfiles <- c('COLECAO_4_1_CONSOLIDACAO_amazonia.tif', 'COLECAO_4_1_CONSOLIDACAO_caatinga.tif', 'COLECAO_4_1_CONSOLIDACAO_cerrado.tif', 'COLECAO_4_1_CONSOLIDACAO_mataatlantica.tif', 'COLECAO_4_1_CONSOLIDACAO_pampa.tif', 'COLECAO_4_1_CONSOLIDACAO_pantanal.tif')
-  lcurl <- c('https://storage.cloud.google.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/amazonia.tif?authuser=1&organizationId=482907382829', 'https://storage.cloud.google.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/caatinga.tif?authuser=1&organizationId=482907382829', 'https://storage.cloud.google.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/cerrado.tif?authuser=1&organizationId=482907382829', 'https://storage.cloud.google.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/mataatlantica.tif?authuser=1&organizationId=482907382829', 'https://storage.cloud.google.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/pampa.tif?authuser=1&organizationId=482907382829', 'https://storage.cloud.google.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/pantanal.tif?authuser=1&organizationId=482907382829')
+  lcurl <- c('https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/amazonia.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/caatinga.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/cerrado.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/mataatlantica.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/pampa.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/pantanal.tif')
 
   # download missing land cover files
   miss <- which(! lcfiles %in% list.files(ofolder))# files that are not available
@@ -26,20 +27,19 @@ dllLandcover <- function(ofolder){
 #' Prepare the MapBiomas land cover data:
 #' Crop the land cover data to the desired extent and extract the study period of interest
 #'
-#' @param ifolder Directory of the Mapbiomas files
+#' @param ifolder Directory of the MapBiomas files
 #' @param datafolder Directory where the processed land cover data will be stored
 #' @param ext Geographic extent that should be processed
 #' @param fname Output file name
 #' @param startyr start date of study period
 #' @param endyr end date of study period
 #'
-#' @return
+#' @return saves land cover raster
 #' @export
 #' @import raster
 #'
 prepLandcover <- function(ifolder, datafolder, ext, fname = 'landcover.tif', startyr, endyr){
   lcfiles <- c('COLECAO_4_1_CONSOLIDACAO_amazonia.tif', 'COLECAO_4_1_CONSOLIDACAO_caatinga.tif', 'COLECAO_4_1_CONSOLIDACAO_cerrado.tif', 'COLECAO_4_1_CONSOLIDACAO_mataatlantica.tif', 'COLECAO_4_1_CONSOLIDACAO_pampa.tif', 'COLECAO_4_1_CONSOLIDACAO_pantanal.tif')
-
   # Generate land cover file for the study area
   rst <- stack(file.path(ifolder, lcfiles[1])) # open land cover data file
   lc <- crop(rst, ext)# cut the image to the extent of interest
@@ -53,9 +53,9 @@ prepLandcover <- function(ifolder, datafolder, ext, fname = 'landcover.tif', sta
 
   dtslc <- as.Date(paste0(1985:2018, '-01-01'), format = '%Y-%m-%d')# dates of each layer
   names(lc) <- dtslc
-  save(dtslc, file = file.path(datafolder,'lcDates'))
   lc <- lc[[which((dtslc >= startyr) & (dtslc <= endyr))]]# remove observations outside the predefined observation period
-
+  dtslc <- dtslc[which((dtslc >= startyr) & (dtslc <= endyr))]
+  save(dtslc, file = file.path(datafolder,'lcDates'))
   writeRaster(lc, file.path(datafolder, fname), format="GTiff", overwrite=TRUE)# save the raster as geoTIFF file
 }
 
@@ -83,7 +83,6 @@ prepLandcover <- function(ifolder, datafolder, ext, fname = 'landcover.tif', sta
 #' @return stores file to disk
 #' @export
 #'
-#' @examples
 dllTreecover <- function(ofolder, ext){
   hanext <- c(floor(min(ext[1:2])/10)*10, ceiling(min(ext[1:2])/10)*10, floor(min(ext[3:4])/10)*10, ceiling(min(ext[3:4])/10)*10)# total extent of the area of the hansen tiles of interest, each tile has an extent of 10 x 10 degrees
   hanfiles <- c()
@@ -100,12 +99,12 @@ dllTreecover <- function(ofolder, ext){
       hanmaskfiles <- c(hanmaskfiles,  paste0('Hansen_GFC-2018-v1.6_datamask_',ULlat, '_',ULlon, '.tif'))
 
       # download treecover file if it is not available
-      if(! file.exists(file.path(ofolder, 'Hansen', paste0('Hansen_GFC-2018-v1.6_treecover2000_',ULlat, '_',ULlon, '.tif')))){
-        download.file(paste0('https://storage.googleapis.com/earthenginepartners-hansen/GFC-2018-v1.6/Hansen_GFC-2018-v1.6_treecover2000_',ULlat, '_',ULlon, '.tif'), file.path(ifolder, 'Hansen', paste0('Hansen_GFC-2018-v1.6_treecover2000_',ULlat, '_',ULlon, '.tif')))
+      if(! file.exists(file.path(ofolder, paste0('Hansen_GFC-2018-v1.6_treecover2000_',ULlat, '_',ULlon, '.tif')))){
+        download.file(paste0('https://storage.googleapis.com/earthenginepartners-hansen/GFC-2018-v1.6/Hansen_GFC-2018-v1.6_treecover2000_',ULlat, '_',ULlon, '.tif'), file.path(ofolder, paste0('Hansen_GFC-2018-v1.6_treecover2000_',ULlat, '_',ULlon, '.tif')))
       }
       # download mask file if it is not available
-      if(! file.exists(file.path(ofolder, 'Hansen', paste0('Hansen_GFC-2018-v1.6_datamask_',ULlat, '_',ULlon, '.tif')))){
-        download.file(paste0('https://storage.googleapis.com/earthenginepartners-hansen/GFC-2018-v1.6/Hansen_GFC-2018-v1.6_datamask_',ULlat, '_',ULlon, '.tif'), file.path(ifolder, 'Hansen', paste0('Hansen_GFC-2018-v1.6_treecover2000_',ULlat, '_',ULlon, '.tif')))
+      if(! file.exists(file.path(ofolder, paste0('Hansen_GFC-2018-v1.6_datamask_',ULlat, '_',ULlon, '.tif')))){
+        download.file(paste0('https://storage.googleapis.com/earthenginepartners-hansen/GFC-2018-v1.6/Hansen_GFC-2018-v1.6_datamask_',ULlat, '_',ULlon, '.tif'), file.path(ofolder, paste0('Hansen_GFC-2018-v1.6_datamask_',ULlat, '_',ULlon, '.tif')))
       }
 
     }
@@ -133,8 +132,8 @@ prepTreecover <- function(ifolder, datafolder, ext, fname = 'treecover.tif', han
   # iterate over the tree cover tiles
   for (i in 1:length(hanfiles)){
     #load data
-    han <- raster(file.path(ifolder, 'Hansen', hanfiles[i]))
-    hanmsk <- raster(file.path(ifolder, 'Hansen', hanmaskfiles[i]))
+    han <- raster(file.path(ifolder, hanfiles[i]))
+    hanmsk <- raster(file.path(ifolder, hanmaskfiles[i]))
     # crop the extent of the rasters to the extent of interest
     han <- crop(han, ext)
     hanmsk <- crop(hanmsk,ext)
@@ -187,8 +186,9 @@ prepTreecover <- function(ifolder, datafolder, ext, fname = 'treecover.tif', han
 #'
 #' @return stores file to disk
 #' @export
+#' @import RCurl
+#' @import tidyverse
 #'
-#' @examples
 dllFire <- function(ofolder){
   # for which years is fire data available?
   yrs <- getURL('ftp://anon-ftp.ceda.ac.uk/neodc/esacci/fire/data/burned_area/MODIS/pixel/v5.1/compressed/',  dirlistonly = TRUE)
@@ -198,21 +198,41 @@ dllFire <- function(ofolder){
   # list all fire files, and their url
   fireclfiles <- paste0(rep(min(yrs):max(yrs), each = 12),sprintf('%02d',rep(1:12,length(yrs))),'01-ESACCI-L3S_FIRE-BA-MODIS-AREA_2-fv5.1-CL.tif')
   firejdfiles <- paste0(rep(min(yrs):max(yrs), each = 12),sprintf('%02d',rep(1:12,length(yrs))),'01-ESACCI-L3S_FIRE-BA-MODIS-AREA_2-fv5.1-JD.tif')
-  fireurl <- paste0('ftp://anon-ftp.ceda.ac.uk/neodc/esacci/fire/data/burned_area/MODIS/pixel/v5.1/compressed/',rep(min(yrs):max(yrs), each =12),'/',rep(min(yrs):max(yrs), each = 12),sprintf('%02d',rep(1:12,length(yrs))),'01-ESACCI-L3S_FIRE-BA-MODIS-AREA_2-fv5.1.tar.gz')
+  fireurl <- paste0('ftp://anon-ftp.ceda.ac.uk/neodc/esacci/fire/data/burned_area/MODIS/pixel/v5.1/compressed/',
+                    rep(min(yrs):max(yrs), each =12),'/',rep(min(yrs):max(yrs), each = 12),
+                    sprintf('%02d',rep(1:12,length(yrs))),'01-ESACCI-L3S_FIRE-BA-MODIS-AREA_2-fv5.1.tar.gz')
+  fireurl <- str_replace(fireurl, "/2007/", "/2007/new-corrected/")# files of year 2007 were corrected
   firetar <- paste0(rep(min(yrs):max(yrs), each = 12),sprintf('%02d',rep(1:12,length(yrs))),'01-ESACCI-L3S_FIRE-BA-MODIS-AREA_2-fv5.1.tar.gz')
 
   # which files are not downloaded yet?
   miss <- which(! fireclfiles %in% list.files(ofolder))# files that are not available
 
   # download and untar the missing fire data
+  failed <- c()
   if (length(miss)>0){
-    sapply(1:length(miss), function(i) {
-      download.file(fireurl[miss[i]], file.path(ofolder, firetar[miss[i]]))
-      untar(file.path(ofolder, firetar[miss[i]]),files=fireclfiles[miss[i]], exdir = ofolder)
-      untar(file.path(ofolder, firetar[miss[i]]),files=firejdfiles[miss[i]], exdir = ofolder)
-      unlink(file.path(ofolder, firetar[miss[i]]))
+    for(i in 1:length(miss)) {
+
+      skip_to_next <- FALSE
+
+      tryCatch(
+        { download.file(fireurl[miss[i]], file.path(ofolder, firetar[miss[i]]))
+
+          untar(file.path(ofolder, firetar[miss[i]]),files=fireclfiles[miss[i]], exdir = ofolder)
+          untar(file.path(ofolder, firetar[miss[i]]),files=firejdfiles[miss[i]], exdir = ofolder)
+          unlink(file.path(ofolder, firetar[miss[i]]))
+          },
+        error = function(e){
+          skip_to_next <<- TRUE
+        })
+      if(skip_to_next) {
+        failed <- c(failed, miss[i])
+        next
+        }
     }
-    )
+  }
+  if (length(failed>1)){
+    fireclfiles <- fireclfiles[-failed]
+    firejdfiles <- firejdfiles[-failed]
   }
   out <- list(fireclfiles, firejdfiles)
   names(out) <- c('fireclfiles', 'firejdfiles')
@@ -243,6 +263,7 @@ prepFire <- function(ifolder, datafolder, ext, fjdname = 'fireJD.tif', fclname =
   fdts<- as.Date(fireclfiles, format = "%Y%m%d-ESACCI-L3S_FIRE-BA-MODIS-AREA_2-fv5.1-CL.tif") # dates associated with the fire data stack
   names(st) <- fdts
   fcl <- st[[which((fdts >= startyr) & (fdts <= endyr))]]# remove observations outside the predefined observation period
+  fdts <- fdts[which((fdts >= startyr) & (fdts <= endyr))]
   writeRaster(fcl, file.path(datafolder, fclname), format="GTiff", overwrite=TRUE)# save the raster as geoTIFF file
   rm(st)
 
@@ -251,6 +272,7 @@ prepFire <- function(ifolder, datafolder, ext, fjdname = 'fireJD.tif', fclname =
   fdts<- as.Date(firejdfiles, format = "%Y%m%d-ESACCI-L3S_FIRE-BA-MODIS-AREA_2-fv5.1-JD.tif") # dates associated with the fire data stack
   names(st) <- fdts
   fjd <- st[[which((fdts >= startyr) & (fdts <= endyr))]]# remove observations outside the predefined observation period
+  fdts <- fdts[which((fdts >= startyr) & (fdts <= endyr))]
   writeRaster(fjd, file.path(datafolder, fjdname), format="GTiff", overwrite=TRUE)# save the raster as geoTIFF file
   save(fdts, file = file.path(datafolder,'fireDates'))
   rm(st)

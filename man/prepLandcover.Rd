@@ -15,7 +15,7 @@ prepLandcover(
 )
 }
 \arguments{
-\item{ifolder}{Directory of the Mapbiomas files}
+\item{ifolder}{Directory of the MapBiomas files}
 
 \item{datafolder}{Directory where the processed land cover data will be stored}
 
@@ -28,7 +28,7 @@ prepLandcover(
 \item{endyr}{end date of study period}
 }
 \value{
-
+saves land cover raster
 }
 \description{
 Prepare the MapBiomas land cover data:

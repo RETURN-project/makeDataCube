@@ -1,0 +1,207 @@
+---
+title: "Generate a mask file and add it to the data cube"
+author: "Wanda De Keersmaecker"
+date: "7/7/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval =F)
+library(makeDataCube)
+library(zoo)
+library(lubridate)
+library(raster)
+library(tidyverse)
+```
+
+## General 
+The goal of this vignette is to generate a mask file and add it to an existing data cube with optical data. This cube should be generated with the FORCE software and follow the folder structure as defined in make_Landsat_cube.Rmd. If no data cube is available, please generate one first. 
+
+The mask equals 1 for pixels that meet the following requirements:
+
+- Have a tree cover percentage higher than Ttree in the year 2000
+- Being burned with a confidence level higher than Tconf
+- Have not been classified as a non-natural land cover type over the study period
+- Are classified as forest in the user-defined year Tyr
+
+Other pixels are set to 0.
+
+## Inputs
+```{r}
+forcefolder <- '/home/wanda/Documents/data/force'#Sys.getenv("HOME")#'/home/wanda/Documents/data/force'
+ext <- c(-43.38238361637443,-43.27938679020256,-4.555765244985907,-4.451717415449725)#extent, vector with xmin, xmax, ymin, ymax in degrees
+starttime <- c(1998,01,01)#start date: year, month, day
+endtime <- c(2018,12,31)#end date: year, month, day
+
+# settings for the mask
+Ttree <- 60# threshold for the tree cover percentage (in year 2000)
+Tconf <- 95 # threshold on confidence level to detect a fire
+Tyr <- 2000 # year for which land cover should be forested; typically beginning of disturbance monitoring period
+tempRes <- 'monthly'# desired temporal resolution of the fire data
+resMask <- 30 # desired resolution of the raster in the cube (nearest neighbor resampling)
+resFire <- 30 # desired resolution of the raster in the cube (nearest neighbor resampling)
+cubefolder <- 's-america'# folder where data cube is stored
+```
+
+## Generate the directory structure
+A standard structure of the data folders is assumed. 
+
+```{r}
+tmpfolder <- file.path(forcefolder, 'temp') # temporary files
+l2folder <- file.path(forcefolder, 'level2')# level 2 data
+queuefolder <- file.path(forcefolder, 'level1')# queue file
+queuefile <- 'queue.txt'# name queue file
+lcfolder <- file.path(forcefolder, 'misc','lc')# raw land cover data
+tcfolder <- file.path(forcefolder, 'misc','tc')# raw tree cover data
+firefolder <- file.path(forcefolder, 'misc','fire')# raw fire data
+paramfolder <- file.path(forcefolder, 'param') # parameter file
+paramfile <- 'l2param.prm'# name parameter file
+extfolder <- file.path(forcefolder, 'temp', paste0('Area', ext[1],'_', ext[2],'_', ext[3],'_', ext[4]))# folder with temporary data for the study area of interest
+
+if(!dir.exists(lcfolder)){dir.create(lcfolder)}
+if(!dir.exists(tcfolder)){dir.create(tcfolder)}
+if(!dir.exists(firefolder)){dir.create(firefolder)}
+if(!dir.exists(extfolder)){dir.create(extfolder)}
+```
+
+## Prepare land cover data
+First MapBiomas land cover data are downloaded if they are not available yet. Then the land cover data are cropped to the extent of the study area, and the study period of interest. Currently, MapBiomas data are only available for the years 1985 - 2018.
+
+```{r}
+# Download MapBiomas land cover data
+dllLandcover(lcfolder)
+# Crop the land cover data to extent and time period of interest 
+prepLandcover(lcfolder, extfolder, ext, fname = 'landcover.tif', as.Date(paste0(starttime[1],'-',starttime[2],'-',starttime[3])), as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3])))
+
+```
+
+## Prepare tree cover data
+```{r}
+# Download tree cover data
+tcfls <- dllTreecover(tcfolder, ext)
+# Crop the tree cover data to exent of interest and mask nodata values
+prepTreecover(tcfolder, extfolder, ext, fname = 'treecover.tif', tcfls$hanfiles, tcfls$hanmaskfiles)
+```
+
+## Prepare fire data
+```{r}
+# Download fire data
+firefls <- dllFire(firefolder)
+# Crop the fire data to exent and time period of interest 
+prepFire(firefolder, extfolder, ext, fjdname = 'fireJD.tif', fclname = 'fireCL.tif', as.Date(paste0(starttime[1],'-',starttime[2],'-',starttime[3])), as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3])), firefls$fireclfiles, firefls$firejdfiles)
+```
+
+## Generate mask without fire information
+```{r}
+library(raster)
+# resample and project all rasters to the same grid
+han <- stack(file.path(extfolder,'treecover.tif'))
+
+lc <- stack(file.path(extfolder,'landcover.tif'))
+lc30 <- resample(lc, han, method ='ngb')
+names(lc30) <- as.Date(loadRData(file.path(extfolder,'lcDates')))
+
+rm(fcl, lc, fjd)
+# select areas that consist of only natural land cover types
+msklc <- lc30
+msklc <- ((msklc == 9) | ((msklc >= 14) & (msklc <= 22)) | (msklc >= 24))
+msklc <- sum(msklc)
+msklc <- (msklc == 0)
+
+# select areas that were forested in a user-defined year
+mskfor <- (lc30[[paste0('X',Tyr,'.01.01')]] <6)
+# select areas with tree cover percentage larger than user-defined threshold in 2000
+mskcov <- (han > Ttree)
+# mask without fire information
+msk <- ((msklc == 1) & (mskfor == 1) & (mskcov == 1))*1
+rm(mskcov, mskfor, msklc)
+```
+
+## Prepare and add fire data to the mask
+```{r}
+# resample fire data to same grid
+fcl <- stack(file.path(extfolder,'fireCL.tif'))
+fcl30 <- resample(fcl, han, method ='ngb')
+fdts <- as.Date(loadRData(file.path(extfolder,'fireDates')))
+names(fcl30) <- fdts
+
+fjd <- stack(file.path(extfolder,'fireJD.tif'))
+fjd30  <- resample(fjd, han, method ='ngb')
+names(fjd30) <- fdts
+
+# generate an image stack containing regular fire time series at the predefined temporal resolution with value 1 if a fire occured and 0 if no fire occured
+tsFire <- calc(stack(msk,fcl30, fjd30), function(x){createFireStack(x, dts = fdts, resol = tempRes, thres = Tconf)})
+rm(fcl30, fjd30)
+
+# Get associated dates
+dtsfr <- as.Date(toRegularTS(fdts, fdts, fun='max', resol = tempRes))
+if(tempRes == 'monthly'){
+  dtsfr <- rollback(dtsfr, roll_to_first = TRUE, preserve_hms = TRUE)
+}
+names(tsFire) <- dtsfr
+
+# extend the fire data time span to the study period
+rstNA <- han
+rstNA[] <- NA
+startyr <- as.Date(paste0(starttime[1],'-',starttime[2],'-',starttime[3])) 
+endyr <- as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3]))
+dtstot <- as.Date(toRegularTS(c(startyr, dtsfr, endyr), c(startyr, dtsfr, endyr), fun='max', resol = tempRes))
+
+tsFire2 <- tsFire
+npre <- sum(dtstot<min(dtsfr))
+npost <- sum(dtstot>max(dtsfr))
+if(npre>0){for(i in 1:npre){tsFire2 <- addLayer(rstNA, tsFire2)}}
+if(npost>0){for(i in 1:npost){tsFire2 <- addLayer(tsFire2,rstNA)}}
+names(tsFire2) <- dtstot
+
+# # update mask with locations that experienced fire
+msk <- (sum(tsFire2, na.rm=T) > 0) # areas that have experienced a fire get the value 1, other areas the value 0
+
+```
+
+## Plot mask
+```{r}
+# plot the mask
+plot(msk)
+
+```
+
+## Add mask and fire data to data cube
+```{r}
+# Export the mask layer tot the temporary folder
+writeRaster(msk, file.path(extfolder, 'mask.tif'), format="GTiff", overwrite=TRUE)
+# Export the fire data to the temporary folder
+nms <-str_replace_all(names(tsFire2),'\\.','_')
+writeRaster(tsFire2, file.path(extfolder, paste0('fire_',nms,'.tif')), bylayer=TRUE, format="GTiff", overwrite=TRUE)
+
+# writeRaster(tsFire2, file.path(extfolder, 'fire.tif'), format="GTiff", overwrite=TRUE)
+# save(dtstot, file = file.path(extfolder,'fireDatesCube'))
+
+# Add the mask and fire data to the cube
+system(paste0("force-cube ",file.path(extfolder, 'mask.tif')," ", file.path(l2folder, cubefolder)," near ", resMask), intern = TRUE, ignore.stderr = TRUE)
+
+for(i in 1:dim(tsFire2)[3]){
+  system(paste0("force-cube ",file.path(extfolder,  paste0('fire_',nms[i],'.tif'))," ", file.path(l2folder, cubefolder)," near ", resFire), intern = TRUE, ignore.stderr = TRUE)
+}
+
+# remove temporary folder and its contents
+unlink(extfolder, recursive=TRUE)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
