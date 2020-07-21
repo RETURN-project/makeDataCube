@@ -10,7 +10,10 @@ knitr::opts_chunk$set(echo = TRUE, eval = T)
 library(reticulate)
 library(makeDataCube)
 
-use_python("/home/wanda/anaconda3/bin/python", required = TRUE)
+# Find Python in this machine
+## Default installation folder for Python with Anaconda, including the user name
+py_location <- file.path("/home", Sys.getenv("USER"), "anaconda3/bin/python")
+use_python(py_location, required = TRUE)
 py_config()
 ```
 # General
@@ -24,7 +27,8 @@ This document generates a data cube of level-2 Landsat data over a user-defined 
 
 # Inputs
 ```{r}
-forcefolder <- '/home/wanda/Documents/data/force'#Sys.getenv("HOME")#'Sys.getenv("HOME")#'/home/wanda/Documents/data/force'
+forcefolder <- file.path('..', 'data')
+#Sys.getenv("HOME")#'Sys.getenv("HOME")#'/home/wanda/Documents/data/force'
 ext <- c(-43.38238361637443,-43.27938679020256,-4.555765244985907,-4.451717415449725)#extent, vector with xmin, xmax, ymin, ymax in degrees
 cld <- 50 # maximum cloud cover
 starttime <- c(2000,11,01)#start date: year, month, day
@@ -138,6 +142,8 @@ makeParFile(r.paramfolder, filename, FILE_QUEUE = FILE_QUEUE, DIR_LEVEL2 = DIR_L
         
 # Search Landsat scenes and download
 ```{r}
+# generate a queue file 
+system(paste0("touch ", file.path(queuefolder,queuefile)), intern = TRUE, ignore.stderr = TRUE)
 # Sync the catalog
 system("pylandsat sync-database", intern = TRUE, ignore.stderr = TRUE)
 ```
@@ -173,8 +179,7 @@ scenes = catalog.search(
 
 # check which scenes are not downloaded yet
 scenesid = [item['product_id'] for item in scenes]# product id of scenes that match the query
-
-queue_file = open("/home/wanda/Documents/data/force/level1/queue.txt", "r")
+queue_file = open(os.path.join(r.queuefolder, r.queuefile), "r")
 lines = re.findall(r'(\/.*?\.[\w:]+)', queue_file.read())
 queue = [os.path.splitext(os.path.basename(x))[0] for x in lines]# list of scenes that are already in the queue
 
