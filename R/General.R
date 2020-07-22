@@ -10,7 +10,49 @@ loadRData <- function(fileName){
   get(ls()[ls() != "fileName"])
 }
 
+#' Set and generate folder structure to store data for the FORCE processing workflow
+#'
+#' @param forcefolder the main folder where all data needs to be stored (full path)
+#'
+#' @return generates a folder structure
+#' @export
+#'
+#' @examples
+setFolders <- function(forcefolder){
+  if (!dir.exists(forcefolder)){
+    stop('directory does not exist')
+  }
+  tmpfolder <- file.path(forcefolder, 'temp')
+  l1folder <- file.path(forcefolder, 'level1')
+  l2folder <- file.path(forcefolder, 'level2')
+  queuefolder <- file.path(forcefolder, 'level1')
+  queuefile <- 'queue.txt'
+  demfolder <- file.path(forcefolder, 'misc','dem')
+  wvpfolder <- file.path(forcefolder, 'misc','wvp')
+  logfolder <- file.path(forcefolder, 'log')
+  paramfolder <- file.path(forcefolder, 'param')
+  paramfile <- 'l2param.prm'
+  lcfolder <- file.path(forcefolder, 'misc','lc')# raw land cover data
+  tcfolder <- file.path(forcefolder, 'misc','tc')# raw tree cover data
+  firefolder <- file.path(forcefolder, 'misc','fire')# raw fire data
 
+  if(!dir.exists(forcefolder)){dir.create(forcefolder)}
+  if(!dir.exists(tmpfolder)){dir.create(tmpfolder)}
+  if(!dir.exists(l1folder)){dir.create(l1folder)}
+  if(!dir.exists(l2folder)){dir.create(l2folder)}
+  if(!dir.exists(queuefolder)){dir.create(queuefolder)}
+  if(!dir.exists(demfolder)){dir.create(demfolder, recursive = TRUE)}
+  if(!dir.exists(wvpfolder)){dir.create(wvpfolder, recursive = TRUE)}
+  if(!dir.exists(logfolder)){dir.create(logfolder)}
+  if(!file.exists(file.path(logfolder,'DEM.txt'))){file.create(file.path(logfolder,'DEM.txt'))}# logfile for DEM
+  if(!file.exists(file.path(logfolder,'WVP.txt'))){file.create(file.path(logfolder,'WVP.txt'))}# logfile for WVP
+  if(!file.exists(file.path(logfolder,'Landsat.txt'))){file.create(file.path(logfolder,'Landsat.txt'))}# logfile for DEM
+  if(!file.exists(file.path(queuefolder,queuefile))){file.create(file.path(queuefolder,queuefile))}# generate a queue file
+  if(!dir.exists(paramfolder)){dir.create(paramfolder)}
+  if(!dir.exists(lcfolder)){dir.create(lcfolder)}
+  if(!dir.exists(tcfolder)){dir.create(tcfolder)}
+  if(!dir.exists(firefolder)){dir.create(firefolder)}
+}
 
 #' Convert CCI fire stack to a stack with a predefined temporal resolution and containing the value 0 when no fire is present and 1 if a fire is present
 #'
