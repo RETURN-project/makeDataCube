@@ -5,12 +5,14 @@
 \title{Download SRTM DEM at 1 arcsecond
 https://lpdaac.usgs.gov/products/srtmgl1v003/}
 \usage{
-dllDEM(ext, dl_dir = Sys.getenv("HOME"))
+dllDEM(ext, dl_dir = Sys.getenv("HOME"), logfile)
 }
 \arguments{
 \item{ext}{vector with xmin, xmax, ymin, ymax in degrees}
 
 \item{dl_dir}{where do you want to store the data?}
+
+\item{logfile}{logfile}
 }
 \value{
 stores files to disk

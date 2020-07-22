@@ -6,10 +6,12 @@
 GeoTIFF files that contain spatio-temporal information on burned areas. Per month, two layers are provided indicating the date of detection and the confidence level of the pixel detected as burned
 The date of detection layer corresponds to the day in which the fire was first detected, also commonly called Julian Day. The date of the burned pixel may not be coincident with the actual burning date, but most probably taken from one to several days afterwards, depending on image availability and cloud coverage. For areas with low cloud coverage, the detected date of burn should be very close to the actual date of burn, while for areas with high cloud coverage the date may be from several days or even weeks after the fire is over.}
 \usage{
-dllFire(ofolder)
+dllFire(ofolder, logfile)
 }
 \arguments{
 \item{ofolder}{Full path to store the dataset}
+
+\item{logfile}{logfile}
 }
 \value{
 stores file to disk

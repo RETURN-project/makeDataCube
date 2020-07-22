@@ -27,8 +27,7 @@ This document generates a data cube of level-2 Landsat data over a user-defined 
 
 # Inputs
 ```{r}
-forcefolder <- file.path('..', 'data')
-#Sys.getenv("HOME")#'Sys.getenv("HOME")#'/home/wanda/Documents/data/force'
+forcefolder <- file.path('..', 'data')#'forcefolder <- /home/wanda/Documents/data/force'
 ext <- c(-43.38238361637443,-43.27938679020256,-4.555765244985907,-4.451717415449725)#extent, vector with xmin, xmax, ymin, ymax in degrees
 cld <- 50 # maximum cloud cover
 starttime <- c(2000,11,01)#start date: year, month, day
@@ -39,26 +38,19 @@ sensors <- c('LC08', 'LE07', 'LT05', 'LT04')#sensors, 'LM05', 'LM04'
 
 # Generate the directory structure
 ```{r}
-tmpfolder <- file.path(forcefolder, 'temp')
-l1folder <- file.path(forcefolder, 'level1')
-l2folder <- file.path(forcefolder, 'level2')
-queuefolder <- file.path(forcefolder, 'level1')
-queuefile <- 'queue.txt'
-demfolder <- file.path(forcefolder, 'misc','dem')
-wvpfolder <- file.path(forcefolder, 'misc','wvp')
-logfolder <- file.path(forcefolder, 'log')
-paramfolder <- file.path(forcefolder, 'param') 
+# generate folder structure
+fldrs <- setFolders(forcefolder)
+tmpfolder <- fldrs['tmpfolder']
+l1folder <- fldrs['l1folder']
+l2folder <- fldrs['l2folder']
+queuefolder <- fldrs['queuefolder']
+queuefile <- fldrs['queuefile']
+demfolder <- fldrs['demfolder']
+wvpfolder <- fldrs['wvpfolder']
+logfolder <- fldrs['logfolder']
+paramfolder <- fldrs['paramfolder']
 paramfile <- 'l2param.prm'
-
-if(!dir.exists(forcefolder)){dir.create(forcefolder)}
-if(!dir.exists(tmpfolder)){dir.create(tmpfolder)}
-if(!dir.exists(l1folder)){dir.create(l1folder)}
-if(!dir.exists(l2folder)){dir.create(l2folder)}
-if(!dir.exists(queuefolder)){dir.create(queuefolder)}
-if(!dir.exists(demfolder)){dir.create(demfolder, recursive = TRUE)}
-if(!dir.exists(wvpfolder)){dir.create(wvpfolder, recursive = TRUE)}
-if(!dir.exists(logfolder)){dir.create(logfolder)}
-if(!dir.exists(paramfolder)){dir.create(paramfolder)}
+demlogfile <- fldrs['demlogfile']
 ```
 
 # Generate a parameter file
@@ -142,8 +134,6 @@ makeParFile(r.paramfolder, filename, FILE_QUEUE = FILE_QUEUE, DIR_LEVEL2 = DIR_L
         
 # Search Landsat scenes and download
 ```{r}
-# generate a queue file 
-system(paste0("touch ", file.path(queuefolder,queuefile)), intern = TRUE, ignore.stderr = TRUE)
 # Sync the catalog
 system("pylandsat sync-database", intern = TRUE, ignore.stderr = TRUE)
 ```
@@ -213,7 +203,7 @@ system(paste0("rm -rd ",file.path(tmpfolder,"L*")), intern = TRUE, ignore.stderr
 # Download the DEM and generate a VRT
 ```{r}
 # download DEM over study area
-flsDEM <- dllDEM(ext, dl_dir= demfolder)
+flsDEM <- dllDEM(ext, dl_dir= demfolder, logfile = demlogfile)
 
 # unzip the downloaded files and remove them
 system(paste0("unzip '",file.path(demfolder,"*.zip'"), " -d ", demfolder), intern = TRUE, ignore.stderr = TRUE)

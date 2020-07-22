@@ -4,11 +4,12 @@
 #'
 #' @param ext vector with xmin, xmax, ymin, ymax in degrees
 #' @param dl_dir where do you want to store the data?
+#' @param logfile logfile
 #'
 #' @return stores files to disk
 #' @export
 #'
-dllDEM <- function(ext, dl_dir= Sys.getenv("HOME")){
+dllDEM <- function(ext, dl_dir= Sys.getenv("HOME"), logfile){
   # web_page <- readLines("https://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11/SRTMGL1_page_4.html")
   # sam <- web_page[startsWith(web_page,"   <td><a href=\"http://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11/")]
   # sam <- sam[endsWith(sam, '.hgt.zip.xml</a> </td>')]
@@ -29,7 +30,7 @@ dllDEM <- function(ext, dl_dir= Sys.getenv("HOME")){
   todll <- setdiff(todll, fls)# files that meet criteria annd are not downloaded yet
   urls <- paste0('http://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11/',todll,'.zip')#urls that meet  the criteria
   # download
-  dllLPDAAC(dl_dir, urls)
+  dllLPDAAC(dl_dir, urls, logfile)
   # return a list of downloaded files
   todll
 }
@@ -38,6 +39,7 @@ dllDEM <- function(ext, dl_dir= Sys.getenv("HOME")){
 #'
 #' @param dl_dir where do you want to store the data?
 #' @param files url of the files to download. This should either be (i) a single url, (ii) a list of urls, or (iii) the full path the a text file that contains the urls of interest
+#' @param logfile logfile
 #'
 #' @return Downloads data from LP DAAC Data Pool
 #' @export
@@ -45,7 +47,7 @@ dllDEM <- function(ext, dl_dir= Sys.getenv("HOME")){
 #' @import getPass
 #' @import httr
 #'
-dllLPDAAC<- function(dl_dir = Sys.getenv("HOME"), files){
+dllLPDAAC<- function(dl_dir = Sys.getenv("HOME"), files, logfile){
   # ------------------------------------------------------------------------------------------------ #
   # How to Access the LP DAAC Data Pool with R
   # The following function configures a connection to download data from an
@@ -72,6 +74,8 @@ dllLPDAAC<- function(dl_dir = Sys.getenv("HOME"), files){
       print(sprintf("%s downloaded at %s", filename, dl_dir))
     } else {
       print(sprintf("%s not downloaded. Verify that the url is valid and your username and password are correct in %s", filename, netrc))
+      line <- sprintf("%s not downloaded at %s", filename, dl_dir)
+      write(line,file=logfile,append=TRUE)
     }
   }
 

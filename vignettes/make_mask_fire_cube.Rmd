@@ -28,7 +28,7 @@ Other pixels are set to 0.
 
 ## Inputs
 ```{r}
-forcefolder <- '/home/wanda/Documents/data/force'#Sys.getenv("HOME")#'/home/wanda/Documents/data/force'
+forcefolder <- file.path('..', 'data')#forcefolder <- '/home/wanda/Documents/data/force'
 ext <- c(-43.38238361637443,-43.27938679020256,-4.555765244985907,-4.451717415449725)#extent, vector with xmin, xmax, ymin, ymax in degrees
 starttime <- c(1998,01,01)#start date: year, month, day
 endtime <- c(2018,12,31)#end date: year, month, day
@@ -47,20 +47,21 @@ cubefolder <- 's-america'# folder where data cube is stored
 A standard structure of the data folders is assumed. 
 
 ```{r}
-tmpfolder <- file.path(forcefolder, 'temp') # temporary files
-l2folder <- file.path(forcefolder, 'level2')# level 2 data
-queuefolder <- file.path(forcefolder, 'level1')# queue file
-queuefile <- 'queue.txt'# name queue file
-lcfolder <- file.path(forcefolder, 'misc','lc')# raw land cover data
-tcfolder <- file.path(forcefolder, 'misc','tc')# raw tree cover data
-firefolder <- file.path(forcefolder, 'misc','fire')# raw fire data
-paramfolder <- file.path(forcefolder, 'param') # parameter file
-paramfile <- 'l2param.prm'# name parameter file
+# generate folder structure
+fldrs <- setFolders(forcefolder)
+tmpfolder <- fldrs['tmpfolder']  # temporary files
+l2folder <- fldrs['l2folder']# level 2 data
+queuefolder <- fldrs['queuefolder']# queue file
+queuefile <- fldrs['queuefile']# name queue file
+lcfolder <- fldrs['lcfolder']# raw land cover data
+lclogfile <- fldrs['lclogfile']# land cover log file
+tcfolder <- fldrs['tcfolder']# raw tree cover data
+tclogfile <- fldrs['tclogfile']
+firefolder <- fldrs['firefolder']# raw fire data
+firelogfile <- fldrs['firelogfile']
+paramfolder <- fldrs['paramfolder'] # parameter file
+paramfile <- fldrs['paramfile']# name parameter file
 extfolder <- file.path(forcefolder, 'temp', paste0('Area', ext[1],'_', ext[2],'_', ext[3],'_', ext[4]))# folder with temporary data for the study area of interest
-
-if(!dir.exists(lcfolder)){dir.create(lcfolder)}
-if(!dir.exists(tcfolder)){dir.create(tcfolder)}
-if(!dir.exists(firefolder)){dir.create(firefolder)}
 if(!dir.exists(extfolder)){dir.create(extfolder)}
 ```
 
@@ -69,7 +70,7 @@ First MapBiomas land cover data are downloaded if they are not available yet. Th
 
 ```{r}
 # Download MapBiomas land cover data
-dllLandcover(lcfolder)
+dllLandcover(lcfolder, lclogfile)
 # Crop the land cover data to extent and time period of interest 
 prepLandcover(lcfolder, extfolder, ext, fname = 'landcover.tif', as.Date(paste0(starttime[1],'-',starttime[2],'-',starttime[3])), as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3])))
 
@@ -78,7 +79,7 @@ prepLandcover(lcfolder, extfolder, ext, fname = 'landcover.tif', as.Date(paste0(
 ## Prepare tree cover data
 ```{r}
 # Download tree cover data
-tcfls <- dllTreecover(tcfolder, ext)
+tcfls <- dllTreecover(tcfolder, ext, tclogfile)
 # Crop the tree cover data to exent of interest and mask nodata values
 prepTreecover(tcfolder, extfolder, ext, fname = 'treecover.tif', tcfls$hanfiles, tcfls$hanmaskfiles)
 ```
@@ -86,7 +87,7 @@ prepTreecover(tcfolder, extfolder, ext, fname = 'treecover.tif', tcfls$hanfiles,
 ## Prepare fire data
 ```{r}
 # Download fire data
-firefls <- dllFire(firefolder)
+firefls <- dllFire(firefolder, firelogfile)
 # Crop the fire data to exent and time period of interest 
 prepFire(firefolder, extfolder, ext, fjdname = 'fireJD.tif', fclname = 'fireCL.tif', as.Date(paste0(starttime[1],'-',starttime[2],'-',starttime[3])), as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3])), firefls$fireclfiles, firefls$firejdfiles)
 ```

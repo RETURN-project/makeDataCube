@@ -9,12 +9,14 @@ Additionally a data mask (datamask) layer is provided. This layer contains three
 Hansen_GFC-2018-v1.6_datamask_crop.tif: data mask
 Hansen_GFC-2018-v1.6_treecover2000_crop.tif: tree cover layer for the year 2000}
 \usage{
-dllTreecover(ofolder, ext)
+dllTreecover(ofolder, ext, logfile)
 }
 \arguments{
 \item{ofolder}{Full path to store the dataset}
 
 \item{ext}{Geographic extent that should be processed}
+
+\item{logfile}{logfile}
 }
 \value{
 stores file to disk

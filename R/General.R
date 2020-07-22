@@ -35,6 +35,12 @@ setFolders <- function(forcefolder){
   lcfolder <- file.path(forcefolder, 'misc','lc')# raw land cover data
   tcfolder <- file.path(forcefolder, 'misc','tc')# raw tree cover data
   firefolder <- file.path(forcefolder, 'misc','fire')# raw fire data
+  demlogfile <- file.path(logfolder,'DEM.txt')
+  wvplogfile <- file.path(logfolder,'WVP.txt')
+  landsatlogfile <- file.path(logfolder, 'Landsat.txt')
+  lclogfile <- file.path(logfolder, 'LC.txt')
+  firelogfile <- file.path(logfolder,'fire.txt')
+  tclogfile <- file.path(logfolder, 'tc.txt')
 
   if(!dir.exists(forcefolder)){dir.create(forcefolder)}
   if(!dir.exists(tmpfolder)){dir.create(tmpfolder)}
@@ -44,14 +50,24 @@ setFolders <- function(forcefolder){
   if(!dir.exists(demfolder)){dir.create(demfolder, recursive = TRUE)}
   if(!dir.exists(wvpfolder)){dir.create(wvpfolder, recursive = TRUE)}
   if(!dir.exists(logfolder)){dir.create(logfolder)}
-  if(!file.exists(file.path(logfolder,'DEM.txt'))){file.create(file.path(logfolder,'DEM.txt'))}# logfile for DEM
-  if(!file.exists(file.path(logfolder,'WVP.txt'))){file.create(file.path(logfolder,'WVP.txt'))}# logfile for WVP
-  if(!file.exists(file.path(logfolder,'Landsat.txt'))){file.create(file.path(logfolder,'Landsat.txt'))}# logfile for DEM
+  if(!file.exists(demlogfile)){file.create(demlogfile)}# logfile for DEM
+  if(!file.exists(wvplogfile)){file.create(wvplogfile)}# logfile for WVP
+  if(!file.exists(landsatlogfile)){file.create(landsatlogfile)}# logfile for DEM
+  if(!file.exists(lclogfile)){file.create(lclogfile)}# logfile for DEM
+  if(!file.exists(firelogfile)){file.create(firelogfile)}# logfile for DEM
+  if(!file.exists(tclogfile)){file.create(tclogfile)}# logfile for DEM
   if(!file.exists(file.path(queuefolder,queuefile))){file.create(file.path(queuefolder,queuefile))}# generate a queue file
   if(!dir.exists(paramfolder)){dir.create(paramfolder)}
   if(!dir.exists(lcfolder)){dir.create(lcfolder)}
   if(!dir.exists(tcfolder)){dir.create(tcfolder)}
   if(!dir.exists(firefolder)){dir.create(firefolder)}
+
+  out <- c(tmpfolder, l1folder, l2folder, queuefolder, queuefile, demfolder, wvpfolder, logfolder, paramfolder, paramfile,
+         lcfolder, tcfolder, firefolder, demlogfile, wvplogfile, landsatlogfile, lclogfile, firelogfile, tclogfile)
+  names(out) <- c('tmpfolder', 'l1folder', 'l2folder', 'queuefolder', 'queuefile', 'demfolder', 'wvpfolder', 'logfolder', 'paramfolder', 'paramfile',
+                  'lcfolder', 'tcfolder', 'firefolder', 'demlogfile', 'wvplogfile', 'landsatlogfile', 'lclogfile', 'firelogfile', 'tclogfile')
+  return(out)
+
 }
 
 #' Convert CCI fire stack to a stack with a predefined temporal resolution and containing the value 0 when no fire is present and 1 if a fire is present
