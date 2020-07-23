@@ -65,6 +65,11 @@ extfolder <- file.path(forcefolder, 'temp', paste0('Area', ext[1],'_', ext[2],'_
 if(!dir.exists(extfolder)){dir.create(extfolder)}
 ```
 
+```{r}
+# generate a shapefile of the grid
+# force-tabulate-grid datacube bottom top left right shp
+```
+
 ## Prepare land cover data
 First MapBiomas land cover data are downloaded if they are not available yet. Then the land cover data are cropped to the extent of the study area, and the study period of interest. Currently, MapBiomas data are only available for the years 1985 - 2018.
 

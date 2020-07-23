@@ -45,6 +45,5 @@ def checkdll(x, out_dir, logfile):
     try:
         Product(x).download(out_dir= out_dir)
     except IOError:
-        print('cannot download ', x)
         with open(logfile, 'a') as file:
             file.write('cannot download '+ x + ' to ' + out_dir)

@@ -38,4 +38,13 @@ dllLS <- function(l1folder, queuefolder, queuefile, tmpfolder, ext, starttime, e
   # remove temporary files and folders
   system(paste0("rm ",file.path(tmpfolder,"*.tar.gz")), intern = TRUE, ignore.stderr = TRUE)
   system(paste0("rm -rd ",file.path(tmpfolder,"L*")), intern = TRUE, ignore.stderr = TRUE)
+  return(scenes)
+}
+
+checkLSlog <- function(LSscenes, logfolder){
+  LSscenes <- paste0(LSscenes, '.tar.gz.log')
+  for (i in 1: LSscenes){
+
+  }
+
 }
