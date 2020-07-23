@@ -1,4 +1,4 @@
-def dllLandsat(queuefolder, queuefile, tmpfolder, ext, starttime, endtime, sensors, tiers, cld):
+def dllLandsat(queuefolder, queuefile, tmpfolder, logfile, ext, starttime, endtime, sensors, tiers, cld):
     from pylandsat import Catalog, Product
     from datetime import datetime
     from shapely.geometry import Point
@@ -36,5 +36,15 @@ def dllLandsat(queuefolder, queuefile, tmpfolder, ext, starttime, endtime, senso
     dllList = [s for s in scenesid if all(xs not in s for xs in queue)] # items that match the query but are not in     queue
     
     # Download scenes
-    dllFiles = [Product(x).download(out_dir= tmpfolder) for x in dllList]#Downloaded files
+    # dllFiles = [Product(x).download(out_dir= tmpfolder) for x in dllList]#Downloaded files
+    dllFiles = [checkdll(x, out_dir= tmpfolder, logfile) for x in dllList]#Downloaded files
     return dllList
+
+def checkdll(x, out_dir, logfile):
+    from pylandsat import Product
+    try:
+        Product(x).download(out_dir= out_dir)
+    except IOError:
+        print('cannot download ', x)
+        with open(logfile, 'a') as file:
+            file.write('cannot download '+ x + ' to ' + out_dir)

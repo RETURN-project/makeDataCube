@@ -65,7 +65,7 @@ makeParFile(paramfolder, file.path(paramfolder, paramfile), FILE_QUEUE = file.pa
  
 # Search Landsat scenes and download
 ```{r}
-dllLS(l1folder, queuefolder, queuefile, tmpfolder, ext, starttime, endtime, sensors, tiers, cld)
+dllLS(l1folder, queuefolder, queuefile, tmpfolder, landsatlogfile, ext, starttime, endtime, sensors, tiers, cld)
 ```
 # Download the DEM and generate a VRT
 ```{r}
@@ -88,11 +88,10 @@ dllWVP(wvpfolder, logfile = wvplogfile)
 system(paste0("force-level2 ", file.path(paramfolder,paramfile)), intern = TRUE, ignore.stderr = TRUE)
 # generate vrt
 system(paste0("force-mosaic ",l2folder), intern = TRUE, ignore.stderr = TRUE)
-# generate an overview of the grid
-
+# generate a shapefile of the grid
+# force-tabulate-grid datacube bottom top left right format
 # summarize log files of all scenes
 ```
-
 
 # Plot
 ```{r}
