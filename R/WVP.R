@@ -14,7 +14,7 @@ dllWVP <- function(wvpfolder, logfile){
     tryCatch(
       {download.file('http://hs.pangaea.de/sat/MODIS/Frantz-Stellmes_2018/wvp-global.tar.gz', file.path(wvpfolder, 'wvp-global.tar.gz'))},
       error=function(cond) {
-        line <- sprintf("%s not downloaded at %s", 'wvp-global.tar.gz', wvpfolder)
+        line <- sprintf("%s not downloaded at %s", 'wvp-global.tar.gz\n', wvpfolder)
         write(line,file=logfile,append=TRUE)
         message(line)
       })
@@ -43,7 +43,7 @@ dllWVP <- function(wvpfolder, logfile){
     tryCatch(
       {system(paste0("force-lut-modis ",file.path(wvpfolder, 'wrs-2-land.coo')," ",wvpfolder," ",file.path(wvpfolder,'geo')," ",file.path(wvpfolder,'hdf')," ",format(max(wvpdts),"%Y")," ",format(max(wvpdts),"%m")," ",format(max(wvpdts),"%d")," ",format(endDate,"%Y")," ",format(endDate,"%m")," ",format(endDate,"%d")))},
       error=function(cond) {
-        line <- sprintf("%s not downloaded at %s", paste0("force-lut-modis ",file.path(wvpfolder, 'wrs-2-land.coo')," ",wvpfolder," ",file.path(wvpfolder,'geo')," ",file.path(wvpfolder,'hdf')," ",format(max(wvpdts),"%Y")," ",format(max(wvpdts),"%m")," ",format(max(wvpdts),"%d")," ",format(endDate,"%Y")," ",format(endDate,"%m")," ",format(endDate,"%d")), wvpfolder)
+        line <- sprintf("%s not downloaded at %s \n", paste0("force-lut-modis ",file.path(wvpfolder, 'wrs-2-land.coo')," ",wvpfolder," ",file.path(wvpfolder,'geo')," ",file.path(wvpfolder,'hdf')," ",format(max(wvpdts),"%Y")," ",format(max(wvpdts),"%m")," ",format(max(wvpdts),"%d")," ",format(endDate,"%Y")," ",format(endDate,"%m")," ",format(endDate,"%d")), wvpfolder)
         write(line,file=logfile,append=TRUE)
         message(line)
       })

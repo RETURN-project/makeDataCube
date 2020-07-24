@@ -28,7 +28,7 @@ dllLandcover <- function(ofolder, logfile){
         tryCatch(
           {download.file(lcurl[miss[i]], file.path(ofolder, lcfiles[miss[i]]))},
           error=function(cond) {
-            line <- sprintf("%s not downloaded at %s", lcfiles[miss[i]], ofolder)
+            line <- sprintf("%s not downloaded at %s \n", lcfiles[miss[i]], ofolder)
             write(line,file=logfile,append=TRUE)
             message(line)
           })
@@ -115,7 +115,7 @@ dllTreecover <- function(ofolder, ext, logfile){
       if(! file.exists(file.path(ofolder, paste0('Hansen_GFC-2018-v1.6_treecover2000_',ULlat, '_',ULlon, '.tif')))){
         tryCatch({download.file(paste0('https://storage.googleapis.com/earthenginepartners-hansen/GFC-2018-v1.6/Hansen_GFC-2018-v1.6_treecover2000_',ULlat, '_',ULlon, '.tif'), file.path(ofolder, paste0('Hansen_GFC-2018-v1.6_treecover2000_',ULlat, '_',ULlon, '.tif')))},
           error=function(cond) {
-            line <- sprintf("%s not downloaded at %s", paste0('Hansen_GFC-2018-v1.6_treecover2000_',ULlat, '_',ULlon, '.tif'), ofolder)
+            line <- sprintf("%s not downloaded at %s \n", paste0('Hansen_GFC-2018-v1.6_treecover2000_',ULlat, '_',ULlon, '.tif'), ofolder)
             write(line,file=logfile,append=TRUE)
             message(line)
           })
@@ -124,7 +124,7 @@ dllTreecover <- function(ofolder, ext, logfile){
       if(! file.exists(file.path(ofolder, paste0('Hansen_GFC-2018-v1.6_datamask_',ULlat, '_',ULlon, '.tif')))){
         tryCatch({download.file(paste0('https://storage.googleapis.com/earthenginepartners-hansen/GFC-2018-v1.6/Hansen_GFC-2018-v1.6_datamask_',ULlat, '_',ULlon, '.tif'), file.path(ofolder, paste0('Hansen_GFC-2018-v1.6_datamask_',ULlat, '_',ULlon, '.tif')))},
                  error=function(cond) {
-                   line <- sprintf("%s not downloaded at %s",paste0('Hansen_GFC-2018-v1.6_datamask_',ULlat, '_',ULlon, '.tif'), ofolder)
+                   line <- sprintf("%s not downloaded at %s \n",paste0('Hansen_GFC-2018-v1.6_datamask_',ULlat, '_',ULlon, '.tif'), ofolder)
                    write(line,file=logfile,append=TRUE)
                    message(line)
                  })
@@ -246,7 +246,7 @@ dllFire <- function(ofolder, logfile){
           },
         error = function(e){
           skip_to_next <<- TRUE
-          line <- sprintf("%s not downloaded at %s",firetar[miss[i]], ofolder)
+          line <- sprintf("%s not downloaded at %s \n",firetar[miss[i]], ofolder)
           write(line,file=logfile,append=TRUE)
           message(line)
         })

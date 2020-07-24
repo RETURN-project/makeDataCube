@@ -87,13 +87,11 @@ dllWVP(wvpfolder, logfile = wvplogfile)
 ```
 
 # Process the level 1 Landsat data to level 2 and generate a vrt
+
+- process data to level 2
+- generate vrt
+- summarize log files of all scenes
 ```{r}
-# process data
-system(paste0("force-level2 ", file.path(paramfolder,paramfile)), intern = TRUE, ignore.stderr = TRUE)
-# generate vrt
-system(paste0("force-mosaic ",l2folder), intern = TRUE, ignore.stderr = TRUE)
-# summarize log files of all scenes
-LSscenes <- paste0(LSscenes, '.tar.gz.log')
-checkLSlog(LSscenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
+Landsat2L2(paramfolder, paramfile, l2folder, LSscenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
 ```
 

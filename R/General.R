@@ -81,7 +81,7 @@ setFolders <- function(forcefolder){
 #' successful processing, failed due to unrecognized mission, skipped, and other
 #'
 #' @param scenes the names of the log files to be screened
-#' @param logfolder the folder where the logfiles are located
+#' @param logfolder full path to the folder where the logfiles are located
 #' @param Sskiplogfile full path to the log file for skipped scenes
 #' @param Ssuccesslogfile full path to the log file for successful scenes
 #' @param Smissionlogfile full path to the log file for scenes with unknown mission
@@ -110,7 +110,6 @@ checkLSlog <- function(scenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissio
   line <- paste(c(lgs$doc_id[ct == 3],''), collapse = '\n')
   write(line,file=Smissionlogfile,append=TRUE)
 }
-
 
 #' Convert CCI fire stack to a stack with a predefined temporal resolution and containing the value 0 when no fire is present and 1 if a fire is present
 #'

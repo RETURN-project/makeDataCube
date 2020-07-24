@@ -78,7 +78,7 @@ dllLPDAAC<- function(dl_dir = Sys.getenv("HOME"), files, logfile){
       print(sprintf("%s downloaded at %s", filename, dl_dir))
     } else {
       print(sprintf("%s not downloaded. Verify that the url is valid and your username and password are correct in %s", filename, netrc))
-      line <- sprintf("%s not downloaded at %s", filename, dl_dir)
+      line <- sprintf("%s not downloaded at %s \n", filename, dl_dir)
       write(line,file=logfile,append=TRUE)
     }
   }
