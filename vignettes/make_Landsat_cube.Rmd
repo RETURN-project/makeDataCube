@@ -52,6 +52,10 @@ paramfolder <- fldrs['paramfolder']
 paramfile <- 'l2param.prm'
 demlogfile <- fldrs['demlogfile']
 wvplogfile <- fldrs['wvplogfile']
+Sskiplogfile <- fldrs['Sskiplogfile']
+Ssuccesslogfile <- fldrs['Ssuccesslogfile']
+Smissionlogfile <- fldrs['Smissionlogfile']
+Sotherlogfile <- fldrs['Sotherlogfile']
 ```
 
 # Generate a parameter file
@@ -89,6 +93,7 @@ system(paste0("force-level2 ", file.path(paramfolder,paramfile)), intern = TRUE,
 # generate vrt
 system(paste0("force-mosaic ",l2folder), intern = TRUE, ignore.stderr = TRUE)
 # summarize log files of all scenes
-checkLSlog
+LSscenes <- paste0(LSscenes, '.tar.gz.log')
+checkLSlog(LSscenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
 ```
 

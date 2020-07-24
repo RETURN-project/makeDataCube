@@ -41,10 +41,3 @@ dllLS <- function(l1folder, queuefolder, queuefile, tmpfolder, ext, starttime, e
   return(scenes)
 }
 
-checkLSlog <- function(LSscenes, logfolder){
-  LSscenes <- paste0(LSscenes, '.tar.gz.log')
-  for (i in 1: LSscenes){
-
-  }
-
-}

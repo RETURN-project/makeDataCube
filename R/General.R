@@ -41,6 +41,9 @@ setFolders <- function(forcefolder){
   lclogfile <- file.path(logfolder, 'LC.txt')
   firelogfile <- file.path(logfolder,'fire.txt')
   tclogfile <- file.path(logfolder, 'tc.txt')
+  Sskiplogfile <- file.path(logfolder, 'Sskip.txt')
+  Ssuccesslogfile <- file.path(logfolder, 'Ssuccess.txt')
+  Smissionlogfile <- file.path(logfolder, 'Smission.txt')
 
   if(!dir.exists(forcefolder)){dir.create(forcefolder)}
   if(!dir.exists(tmpfolder)){dir.create(tmpfolder)}
@@ -55,7 +58,11 @@ setFolders <- function(forcefolder){
   if(!file.exists(landsatlogfile)){file.create(landsatlogfile)}# logfile for DEM
   if(!file.exists(lclogfile)){file.create(lclogfile)}# logfile for DEM
   if(!file.exists(firelogfile)){file.create(firelogfile)}# logfile for DEM
-  if(!file.exists(tclogfile)){file.create(tclogfile)}# logfile for DEM
+  if(!file.exists(tclogfile)){file.create(tclogfile)}# logfile for DEMS
+  if(!file.exists(Sskiplogfile)){file.create(Sskiplogfile)}# logfile for skipped scenes
+  if(!file.exists(Ssuccesslogfile)){file.create(Ssuccesslogfile)}# logfile for successful scenes
+  if(!file.exists(Smissionlogfile)){file.create(Smissionlogfile)}# logfile for scenes with an unknown mission
+  if(!file.exists(Sotherlogfile)){file.create(Sotherlogfile)}# logfile for scenes with an unrecoginized processing status
   if(!file.exists(file.path(queuefolder,queuefile))){file.create(file.path(queuefolder,queuefile))}# generate a queue file
   if(!dir.exists(paramfolder)){dir.create(paramfolder)}
   if(!dir.exists(lcfolder)){dir.create(lcfolder)}
@@ -63,12 +70,47 @@ setFolders <- function(forcefolder){
   if(!dir.exists(firefolder)){dir.create(firefolder)}
 
   out <- c(tmpfolder, l1folder, l2folder, queuefolder, queuefile, demfolder, wvpfolder, logfolder, paramfolder, paramfile,
-         lcfolder, tcfolder, firefolder, demlogfile, wvplogfile, landsatlogfile, lclogfile, firelogfile, tclogfile)
+         lcfolder, tcfolder, firefolder, demlogfile, wvplogfile, landsatlogfile, lclogfile, firelogfile, tclogfile, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
   names(out) <- c('tmpfolder', 'l1folder', 'l2folder', 'queuefolder', 'queuefile', 'demfolder', 'wvpfolder', 'logfolder', 'paramfolder', 'paramfile',
-                  'lcfolder', 'tcfolder', 'firefolder', 'demlogfile', 'wvplogfile', 'landsatlogfile', 'lclogfile', 'firelogfile', 'tclogfile')
+                  'lcfolder', 'tcfolder', 'firefolder', 'demlogfile', 'wvplogfile', 'landsatlogfile', 'lclogfile', 'firelogfile', 'tclogfile','Sskiplogfile', 'Ssuccesslogfile', 'Smissionlogfile', 'Sotherlogfile')
   return(out)
 
 }
+
+#' Screenes the FORCE log file and add scenes to logfiles dependent on their processing category. Four categories are defined:
+#' successful processing, failed due to unrecognized mission, skipped, and other
+#'
+#' @param scenes the names of the log files to be screened
+#' @param logfolder the folder where the logfiles are located
+#' @param Sskiplogfile full path to the log file for skipped scenes
+#' @param Ssuccesslogfile full path to the log file for successful scenes
+#' @param Smissionlogfile full path to the log file for scenes with unknown mission
+#' @param Sotherlogfile full path to the log file for other scenes
+#'
+#' @return adds scenes to logfile based on processing category
+#' @export
+#' @import readtext
+#'
+checkLSlog <- function(scenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile){
+  lgs <- readtext(file.path(logfolder,scenes))
+  ct <- rep(0,dim(lgs)[1])
+  # which scenes were succesfully processed?
+  ct[grepl('product(s) written. Success! Processing time', lgs, fixed = TRUE)] <- 1
+  # which scenes were skipped?
+  ct[grepl('. Skip. Processing time', lgs, fixed = TRUE)] <- 2
+  # which scenes were not processed due to unknown Satellite Mission?
+  ct[grepl('unknown Satellite Mission. Parsing metadata failed.', lgs, fixed = TRUE)] <- 3
+  # add scenes to each log file category
+  line <- paste(c(lgs$doc_id[ct == 0],''), collapse = '\n')
+  write(line,file=Sotherlogfile,append=TRUE)
+  line <- paste(c(lgs$doc_id[ct == 1],''), collapse = '\n')
+  write(line,file=Ssuccesslogfile,append=TRUE)
+  line <- paste(c(lgs$doc_id[ct == 2],''), collapse = '\n')
+  write(line,file=Sskiplogfile,append=TRUE)
+  line <- paste(c(lgs$doc_id[ct == 3],''), collapse = '\n')
+  write(line,file=Smissionlogfile,append=TRUE)
+}
+
 
 #' Convert CCI fire stack to a stack with a predefined temporal resolution and containing the value 0 when no fire is present and 1 if a fire is present
 #'
