@@ -44,6 +44,7 @@ setFolders <- function(forcefolder){
   Sskiplogfile <- file.path(logfolder, 'Sskip.txt')
   Ssuccesslogfile <- file.path(logfolder, 'Ssuccess.txt')
   Smissionlogfile <- file.path(logfolder, 'Smission.txt')
+  Sotherlogfile <- file.path(logfolder, 'Sother.txt')
 
   if(!dir.exists(forcefolder)){dir.create(forcefolder)}
   if(!dir.exists(tmpfolder)){dir.create(tmpfolder)}
