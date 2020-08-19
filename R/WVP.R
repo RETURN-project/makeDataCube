@@ -22,13 +22,15 @@ dllWVP <- function(wvpfolder, logfile){
     # extract the files
     system(paste0("tar -xvzf ", file.path(wvpfolder, 'wvp-global.tar.gz'), " -C ", wvpfolder), intern = TRUE, ignore.stderr = TRUE)
     # move all files into the main wvp directory
-    system(paste0("mv -v ", file.path(wvpfolder, 'wvp-global','global','*'), " ", wvpfolder), intern = TRUE, ignore.stderr = TRUE)
+    system(paste0("mv -v ", file.path(wvpfolder, 'global','*'), " ", wvpfolder), intern = TRUE, ignore.stderr = TRUE)
     # remove the .tar.gz file
     system(paste0("rm ",file.path(wvpfolder,'wvp-global.tar.gz')), intern = TRUE, ignore.stderr = TRUE)
     # remove the empty folder
-    system(paste0("rm -rd ",file.path(wvpfolder,'wvp-global')), intern = TRUE, ignore.stderr = TRUE)
+    system(paste0("rm -rd ",file.path(wvpfolder,'global')), intern = TRUE, ignore.stderr = TRUE)
 
   }
+  # Check if water vapor data are available
+  wvpfiles <- list.files(wvpfolder, pattern = '^WVP_[1:2].*\\.txt$' )
   # check the time span of the available data
   wvpdts <- as.Date(wvpfiles, 'WVP_%Y-%m-%d.txt')
   endDate <- as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3]))

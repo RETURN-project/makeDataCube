@@ -37,7 +37,7 @@ def dllLandsat(queuefolder, queuefile, tmpfolder, logfile, ext, starttime, endti
     
     # Download scenes
     # dllFiles = [Product(x).download(out_dir= tmpfolder) for x in dllList]#Downloaded files
-    dllFiles = [checkdll(x, out_dir= tmpfolder, logfile) for x in dllList]#Downloaded files
+    dllFiles = [checkdll(x, tmpfolder, logfile) for x in dllList]#Downloaded files
     return dllList
 
 def checkdll(x, out_dir, logfile):

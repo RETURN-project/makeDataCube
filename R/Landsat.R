@@ -20,12 +20,12 @@
 #' @import reticulate
 #'
 #' @examples
-dllLS <- function(l1folder, queuefolder, queuefile, tmpfolder, ext, starttime, endtime, sensors, tiers, cld){
+dllLS <- function(l1folder, queuefolder, queuefile, tmpfolder, logfile, ext, starttime, endtime, sensors, tiers, cld){
   # Sync the catalog
   system("pylandsat sync-database")#system("pylandsat sync-database -f")
   # Download tiles that are not in the queue yet
   source_python('../python/dllLandsat.py')
-  scenes <- dllLandsat(queuefolder, queuefile, tmpfolder, ext, starttime, endtime, sensors, tiers, cld)
+  scenes <- dllLandsat(queuefolder, queuefile, tmpfolder, logfile, ext, starttime, endtime, sensors, tiers, cld)
 
   # compress data to .tar.gz file
   for(i in 1:length(scenes)){

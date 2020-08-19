@@ -49,6 +49,8 @@ setFolders <- function(forcefolder){
   if(!dir.exists(forcefolder)){dir.create(forcefolder)}
   if(!dir.exists(tmpfolder)){dir.create(tmpfolder)}
   if(!dir.exists(l1folder)){dir.create(l1folder)}
+  if(!dir.exists(file.path(l1folder,'landsat'))){dir.create(file.path(l1folder,'landsat'))}
+  if(!dir.exists(file.path(l1folder,'sentinel'))){dir.create(file.path(l1folder,'sentinel'))}
   if(!dir.exists(l2folder)){dir.create(l2folder)}
   if(!dir.exists(queuefolder)){dir.create(queuefolder)}
   if(!dir.exists(demfolder)){dir.create(demfolder, recursive = TRUE)}

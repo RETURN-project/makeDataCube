@@ -29,13 +29,16 @@ dllDEM <- function(ext, dl_dir= Sys.getenv("HOME"), logfile){
   fls <- list.files(path = dl_dir, pattern ='*.hgt')# all files that are already downloaded
   fls <- gsub(".hgt", ".SRTMGL1.hgt", fls)
   todll <- setdiff(todll, fls)# files that meet criteria annd are not downloaded yet
-  urls <- paste0('http://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11/',todll,'.zip')#urls that meet  the criteria
-  # download
-  dllLPDAAC(dl_dir, urls, logfile)
-  # unzip the downloaded files and remove them
-  system(paste0("unzip '",file.path(dl_dir,"*.zip'"), " -d ", dl_dir), intern = TRUE, ignore.stderr = TRUE)
-  system(paste0("rm ",file.path(dl_dir,"*.zip")), intern = TRUE, ignore.stderr = TRUE)
-  # return a list of downloaded files
+  if(length(todll)>0){
+    urls <- paste0('http://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11/',todll,'.zip')#urls that meet  the criteria
+    # download
+    dllLPDAAC(dl_dir, urls, logfile)
+    # unzip the downloaded files and remove them
+    system(paste0("unzip '",file.path(dl_dir,"*.zip'"), " -d ", dl_dir), intern = TRUE, ignore.stderr = TRUE)
+    system(paste0("rm ",file.path(dl_dir,"*.zip")), intern = TRUE, ignore.stderr = TRUE)
+
+  }
+   # return a list of downloaded files
   todll
 }
 
