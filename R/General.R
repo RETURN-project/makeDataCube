@@ -35,6 +35,8 @@ setFolders <- function(forcefolder){
   lcfolder <- file.path(forcefolder, 'misc','lc')# raw land cover data
   tcfolder <- file.path(forcefolder, 'misc','tc')# raw tree cover data
   firefolder <- file.path(forcefolder, 'misc','fire')# raw fire data
+  S2auxfolder <- file.path(forcefolder, 'misc', 'S2')# auxiliary S2 data (eg tile grid)
+
   demlogfile <- file.path(logfolder,'DEM.txt')
   wvplogfile <- file.path(logfolder,'WVP.txt')
   landsatlogfile <- file.path(logfolder, 'Landsat.txt')
@@ -56,6 +58,8 @@ setFolders <- function(forcefolder){
   if(!dir.exists(demfolder)){dir.create(demfolder, recursive = TRUE)}
   if(!dir.exists(wvpfolder)){dir.create(wvpfolder, recursive = TRUE)}
   if(!dir.exists(logfolder)){dir.create(logfolder)}
+  if(!dir.exists(S2auxfolder)){dir.create(S2auxfolder)}
+
   if(!file.exists(demlogfile)){file.create(demlogfile)}# logfile for DEM
   if(!file.exists(wvplogfile)){file.create(wvplogfile)}# logfile for WVP
   if(!file.exists(landsatlogfile)){file.create(landsatlogfile)}# logfile for DEM
@@ -73,9 +77,9 @@ setFolders <- function(forcefolder){
   if(!dir.exists(firefolder)){dir.create(firefolder)}
 
   out <- c(tmpfolder, l1folder, l2folder, queuefolder, queuefile, demfolder, wvpfolder, logfolder, paramfolder, paramfile,
-         lcfolder, tcfolder, firefolder, demlogfile, wvplogfile, landsatlogfile, lclogfile, firelogfile, tclogfile, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
+         lcfolder, tcfolder, firefolder, S2auxfolder, demlogfile, wvplogfile, landsatlogfile, lclogfile, firelogfile, tclogfile, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
   names(out) <- c('tmpfolder', 'l1folder', 'l2folder', 'queuefolder', 'queuefile', 'demfolder', 'wvpfolder', 'logfolder', 'paramfolder', 'paramfile',
-                  'lcfolder', 'tcfolder', 'firefolder', 'demlogfile', 'wvplogfile', 'landsatlogfile', 'lclogfile', 'firelogfile', 'tclogfile','Sskiplogfile', 'Ssuccesslogfile', 'Smissionlogfile', 'Sotherlogfile')
+                  'lcfolder', 'tcfolder', 'firefolder', 'S2auxfolder', 'demlogfile', 'wvplogfile', 'landsatlogfile', 'lclogfile', 'firelogfile', 'tclogfile','Sskiplogfile', 'Ssuccesslogfile', 'Smissionlogfile', 'Sotherlogfile')
   return(out)
 
 }
