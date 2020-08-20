@@ -29,7 +29,7 @@ Other pixels are set to 0.
 
 ## Inputs
 ```{r}
-forcefolder <- '/home/wanda/Documents/data/force'#file.path('..', 'data')#forcefolder <- '/home/wanda/Documents/data/force'
+forcefolder <- normalizePath(file.path('..', 'data'))#'/home/wanda/Documents/data/force_small'#file.path('..', 'data')#forcefolder <- '/home/wanda/Documents/data/force'
 ext <- c(-43.38238361637443,-43.27938679020256,-4.555765244985907,-4.451717415449725)#extent, vector with xmin, xmax, ymin, ymax in degrees
 starttime <- c(1998,01,01)#start date: year, month, day
 endtime <- c(2018,12,31)#end date: year, month, day
@@ -78,7 +78,6 @@ elist <- lapply(1:length(p_wgs), function(i) extent(p_wgs[i,]))
 ```
 
 ## iterate over the tiles and prepare mask and fire data
-
 ```{r}
 for(ti in 1:length(elist)){
   exti <- elist[[ti]]
