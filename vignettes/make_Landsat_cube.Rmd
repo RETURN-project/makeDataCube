@@ -9,6 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE, eval = T)
 library(reticulate)
 library(makeDataCube)
+library(tidyverse)
+library(sf)
 
 # Find Python in this machine
 ## Default installation folder for Python with Anaconda, including the user name
@@ -27,7 +29,8 @@ This document generates a data cube of level-2 Landsat data over a user-defined 
 
 # Inputs
 ```{r}
-forcefolder <- file.path('..', 'data')#'/home/wanda/Documents/data/force_small' #file.path('..', 'data')#forcefolder <- '/home/wanda/Documents/data/force'
+forcefolder <- normalizePath(file.path('..', 'data'))#'/home/wanda/Documents/data/force_small' #file.path('..', 'data')#forcefolder <- '/home/wanda/Documents/data/force'
+S2folder <- normalizePath(file.path('..', 'data'))# folder where Level-1 Sentinel-2 data are stored
 ext <- c(-43.38238361637443,-43.27938679020256,-4.555765244985907,-4.451717415449725)#extent, vector with xmin, xmax, ymin, ymax in degrees
 cld <- 50 # maximum cloud cover
 starttime <- c(2000,11,01)#start date: year, month, day
@@ -57,6 +60,7 @@ Sskiplogfile <- fldrs['Sskiplogfile']
 Ssuccesslogfile <- fldrs['Ssuccesslogfile']
 Smissionlogfile <- fldrs['Smissionlogfile']
 Sotherlogfile <- fldrs['Sotherlogfile']
+S2auxfolder <- fldrs['S2auxfolder']
 ```
 
 # Generate a parameter file
@@ -68,10 +72,64 @@ source_python('../python/makeParFile.py')
 makeParFile(paramfolder, file.path(paramfolder, paramfile), FILE_QUEUE = file.path(queuefolder, queuefile), DIR_LEVEL2 = l2folder, DIR_LOG = logfolder, DIR_TEMP = tmpfolder, FILE_DEM = file.path(demfolder,'srtm.vrt'), ORIGIN_LON = '-90', ORIGIN_LAT = '60', RESAMPLING = 'NN', DIR_WVPLUT = wvpfolder, RES_MERGE = 'REGRESSION',  NPROC = '1', NTHREAD = '1', DELAY = '10', OUTPUT_DST = 'TRUE',  OUTPUT_VZN = 'TRUE', OUTPUT_HOT = 'TRUE', OUTPUT_OVV = 'TRUE', DEM_NODATA= '-32768',TILE_SIZE = '3000',BLOCK_SIZE = '300')
 ```
  
-# Search Landsat scenes and download
+# Search Landsat scenes, download and add to queue
 ```{r}
 LSscenes <- dllLS(l1folder, queuefolder, queuefile, tmpfolder, landsatlogfile, ext, starttime, endtime, sensors, tiers, cld)
 ```
+
+# Add Sentinel-2 data to queue
+```{r}
+# get the Sentinel-2 tile grid
+if(!file.exists(file.path(S2auxfolder, 'S2grid.kml'))){
+  download.file('https://sentinel.esa.int/documents/247904/1955685/S2A_OPER_GIP_TILPAR_MPC__20151209T095117_V20150622T000000_21000101T000000_B00.kml', file.path(S2auxfolder, 'S2grid.kml'))
+}
+s2grid <- st_read(file.path(S2auxfolder, 'S2grid.kml'),'Features')
+
+# search which tiles intersect with area of interest
+df <- data.frame(
+  lon = c(ext[1], ext[2], ext[2], ext[1], ext[1]),
+  lat = c(ext[3], ext[3], ext[4], ext[4], ext[3])
+)
+aoi <- df %>%
+  st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
+  summarise(geometry = st_combine(geometry)) %>%
+  st_cast("POLYGON")#polygon with area of interest
+
+tiles <- s2grid[which(st_within(s2grid, aoi, sparse = F) == T | st_intersects(s2grid, aoi, sparse = F) == T),]# tiles of interest
+
+# list of scenes of interest
+s2sc <- list.files(S2folder,pattern = '*.zip')# all available scenes
+spl <- str_split(s2sc,'_')
+s_dts <- as.Date(substr(unlist(lapply(spl, `[[`, 4)),1,8),'%Y%m%d')# dates of available scenes
+s_tls <- unlist(lapply(spl, `[[`, 7))# tile numbers of available scenes
+startdt <- as.Date(paste(sprintf("%02d", starttime),collapse =''),'%Y%m%d')# start period of interest
+enddt <- as.Date(paste(sprintf("%02d", endtime),collapse =''),'%Y%m%d')# end period of interest
+s2sel <- s2sc[which((s_dts > startdt) & (s_dts < enddt) & (s_tls %in% paste0('T',tiles$Name)))]# scenes that meet requirements
+
+# generate scenes to level 1 folder
+for(i in 1:length(tiles$Name)){
+  # generate the folder for the Sentinel-2 tile
+  if(!dir.exists(file.path(l1folder,'sentinel',paste0('T',tiles$Name[i])))){dir.create(file.path(l1folder,'sentinel',paste0('T',tiles$Name[i])))}
+}
+
+# unzip scenes in the right folder
+library(tidyverse)
+walk(s2sel, ~ unzip(zipfile = file.path(S2folder, .x), 
+                         exdir = file.path(l1folder,'sentinel',paste0('T',substr(.x,50,55)))))
+# add scenes to queue
+line <-paste(paste0(file.path(l1folder,'sentinel',substr(s2sel,50,55), paste0(substr(s2sel,12,71),'.SAFE')),' QUEUED'), collapse = '\n')
+write(line,file=file.path(queuefolder,queuefile),append=TRUE)
+  
+# s2sc <- c('2020-08-11_S2B_MSIL1C_20190609T132239_N0207_R038_T23MPQ_20190609T150131.zip',
+# '2020-08-11_S2B_MSIL1C_20190609T132239_N0207_R038_T23MPR_20190609T150131.zip',
+# '2020-08-11_S2B_MSIL1C_20190619T132239_N0207_R038_T23MPQ_20190619T150157.zip',
+# '2020-08-11_S2B_MSIL1C_20190619T132239_N0207_R038_T23MPR_20190619T150157.zip',
+# '2020-08-11_S2B_MSIL1C_20190629T132239_N0207_R038_T23MPQ_20190629T133645.zip',
+# '2020-08-11_S2B_MSIL1C_20190629T132239_N0207_R038_T23MPR_20190629T133645.zip')
+
+
+```
+
 # Download the DEM and generate a VRT
 ```{r}
 # download DEM over study area
@@ -87,7 +145,7 @@ system(paste0("gdalbuildvrt -input_file_list ",file.path(demfolder,'srtm.txt'),"
 dllWVP(wvpfolder, logfile = wvplogfile)
 ```
 
-# Process the level 1 Landsat data to level 2 and generate a vrt
+# Process the level 1 data to level 2 and generate a vrt
 
 - process data to level 2
 - generate vrt
