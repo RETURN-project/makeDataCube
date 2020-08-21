@@ -9,6 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE, eval = T)
 library(reticulate)
 library(makeDataCube)
+library(tidyverse)
+library(sf)
 
 # Find Python in this machine
 ## Default installation folder for Python with Anaconda, including the user name
@@ -17,7 +19,7 @@ use_python(py_location, required = TRUE)
 py_config()
 ```
 # General
-This document generates a data cube of level-2 Landsat data over a user-defined area and study period, using only data below a user-defined cloud coverage threshold. 
+This document generates a data cube of level-2 Landsat and Sentinel-2 data over a user-defined area and study period, using only Landsat data below a user-defined cloud coverage threshold. The Landsat Level-1 scenes are downloaded from the public dataset hosted on Google Cloud, while Sentinel-2 Level-1 scenes should be available locally. These scenes are processed to Level-2 and a data cube is generated using FORCE software.
 
 ## Requirements
 - Python 3 should be installed and the pylandsat (https://pypi.org/project/pylandsat/) and shapely modules should be available to download data. pylandsat can be installed via 'pip install pylandsat'.
@@ -27,197 +29,63 @@ This document generates a data cube of level-2 Landsat data over a user-defined 
 
 # Inputs
 ```{r}
-forcefolder <- file.path('..', 'data')
-#Sys.getenv("HOME")#'Sys.getenv("HOME")#'/home/wanda/Documents/data/force'
+forcefolder <- normalizePath(file.path('..', 'data'))#'/home/wanda/Documents/data/force_small' #file.path('..', 'data')#forcefolder <- '/home/wanda/Documents/data/force'
+S2folder <- normalizePath(file.path('..', 'data'))# folder where Level-1 Sentinel-2 data are stored
 ext <- c(-43.38238361637443,-43.27938679020256,-4.555765244985907,-4.451717415449725)#extent, vector with xmin, xmax, ymin, ymax in degrees
 cld <- 50 # maximum cloud cover
 starttime <- c(2000,11,01)#start date: year, month, day
-endtime <- c(2001,4,28)#end date: year, month, day
+endtime <- c(2001,5,28)#end date: year, month, day
 tiers <- 'T1'#Tier level
 sensors <- c('LC08', 'LE07', 'LT05', 'LT04')#sensors, 'LM05', 'LM04'
 ```
 
 # Generate the directory structure
 ```{r}
-tmpfolder <- file.path(forcefolder, 'temp')
-l1folder <- file.path(forcefolder, 'level1')
-l2folder <- file.path(forcefolder, 'level2')
-queuefolder <- file.path(forcefolder, 'level1')
-queuefile <- 'queue.txt'
-demfolder <- file.path(forcefolder, 'misc','dem')
-wvpfolder <- file.path(forcefolder, 'misc','wvp')
-logfolder <- file.path(forcefolder, 'log')
-paramfolder <- file.path(forcefolder, 'param') 
+# generate folder structure
+fldrs <- setFolders(forcefolder)
+tmpfolder <- fldrs['tmpfolder']
+l1folder <- fldrs['l1folder']
+l2folder <- fldrs['l2folder']
+queuefolder <- fldrs['queuefolder']
+queuefile <- fldrs['queuefile']
+demfolder <- fldrs['demfolder']
+wvpfolder <- fldrs['wvpfolder']
+logfolder <- fldrs['logfolder']
+paramfolder <- fldrs['paramfolder']
 paramfile <- 'l2param.prm'
-
-if(!dir.exists(forcefolder)){dir.create(forcefolder)}
-if(!dir.exists(tmpfolder)){dir.create(tmpfolder)}
-if(!dir.exists(l1folder)){dir.create(l1folder)}
-if(!dir.exists(l2folder)){dir.create(l2folder)}
-if(!dir.exists(queuefolder)){dir.create(queuefolder)}
-if(!dir.exists(demfolder)){dir.create(demfolder, recursive = TRUE)}
-if(!dir.exists(wvpfolder)){dir.create(wvpfolder, recursive = TRUE)}
-if(!dir.exists(logfolder)){dir.create(logfolder)}
-if(!dir.exists(paramfolder)){dir.create(paramfolder)}
+demlogfile <- fldrs['demlogfile']
+wvplogfile <- fldrs['wvplogfile']
+landsatlogfile <- fldrs['landsatlogfile']
+Sskiplogfile <- fldrs['Sskiplogfile']
+Ssuccesslogfile <- fldrs['Ssuccesslogfile']
+Smissionlogfile <- fldrs['Smissionlogfile']
+Sotherlogfile <- fldrs['Sotherlogfile']
+S2auxfolder <- fldrs['S2auxfolder']
 ```
 
 # Generate a parameter file
-```{python}
-import fileinput
-import os.path
-import os
-
-filename = os.path.join(r.paramfolder, 'l2param.prm')
-FILE_QUEUE = os.path.join(r.queuefolder, r.queuefile)
-DIR_LEVEL2 = r.l2folder
-DIR_LOG = r.logfolder
-DIR_TEMP = r.tmpfolder
-FILE_DEM = os.path.join(r.demfolder,'srtm.vrt')
-DIR_WVPLUT = r.wvpfolder
+```{r}
 # more information about the parameter settings can be found in https://davidfrantz.github.io/tutorials/force-ard/l2-ard/
 # or https://force-eo.readthedocs.io/en/latest/components/lower-level/level2/param.html
-def makeParFile(paramfolder, filename, FILE_QUEUE = 'NULL', DIR_LEVEL2 = 'NULL', DIR_LOG = 'NULL', DIR_TEMP = 'NULL', FILE_DEM = 'NULL',
-DEM_NODATA= '-32767', DO_REPROJ = 'TRUE', DO_TILE = 'TRUE',FILE_TILE = 'NULL',TILE_SIZE = '30000',BLOCK_SIZE = '3000', RESOLUTION_LANDSAT = '30', RESOLUTION_SENTINEL2 = '10', ORIGIN_LON = '-25', ORIGIN_LAT = '60', PROJECTION = 'GLANCE7', RESAMPLING = 'CC', DO_ATMO = 'TRUE', DO_TOPO = 'TRUE', DO_BRDF = 'TRUE', ADJACENCY_EFFECT = 'TRUE', MULTI_SCATTERING = 'TRUE', DIR_WVPLUT = 'NULL', WATER_VAPOR = 'NULL', DO_AOD = 'TRUE', DIR_AOD = 'NULL', MAX_CLOUD_COVER_FRAME = '75', MAX_CLOUD_COVER_TILE = '75', CLOUD_THRESHOLD = '0.225', SHADOW_THRESHOLD = '0.02', RES_MERGE = 'IMPROPHE', DIR_MASTER = 'NULL', MASTER_NODATA = '-32767', IMPULSE_NOISE = 'TRUE', BUFFER_NODATA = 'FALSE', TIER = '1', NPROC = '32', NTHREAD = '2', PARALLEL_READS = 'FALSE', DELAY = '3', TIMEOUT_ZIP = '30', OUTPUT_FORMAT = 'GTiff', OUTPUT_DST = 'FALSE', OUTPUT_AOD = 'FALSE', OUTPUT_WVP = 'FALSE', OUTPUT_VZN = 'FALSE', OUTPUT_HOT = 'FALSE', OUTPUT_OVV = 'FALSE'):
-    # check if the parameter file exists
-    if(not os.path.isfile(filename)):
-        # generate an empty parameter file
-        os.system("force-parameter " + r.paramfolder + " LEVEL2 0")
-        # rename
-        os.system("mv " + os.path.join(r.paramfolder,'LEVEL2-skeleton.prm')+" "+filename)
-        # modify the file
-        with fileinput.FileInput(filename, inplace=True, backup='.bak') as file:
-            for line in file:
-                print(line.replace('FILE_QUEUE = NULL', 'FILE_QUEUE = ' + FILE_QUEUE)
-                .replace('DIR_LEVEL2 = NULL', 'DIR_LEVEL2 = ' + DIR_LEVEL2)
-                .replace('DIR_LOG = NULL', 'DIR_LOG = ' + DIR_LOG)
-                .replace('DIR_TEMP = NULL', 'DIR_TEMP = ' + DIR_TEMP)
-                .replace('FILE_DEM = NULL', 'FILE_DEM = ' + FILE_DEM)
-                .replace('DEM_NODATA = -32767', 'DEM_NODATA = ' + DEM_NODATA)
-                .replace('DO_REPROJ = TRUE', 'DO_REPROJ = ' + DO_REPROJ)
-                .replace('DO_TILE = TRUE', 'DO_TILE = ' + DO_TILE)
-                .replace('FILE_TILE = NULL', 'FILE_TILE = ' + FILE_TILE)
-                .replace('TILE_SIZE = 30000', 'TILE_SIZE = ' + TILE_SIZE)
-                .replace('BLOCK_SIZE = 3000', 'BLOCK_SIZE = ' + BLOCK_SIZE)
-                .replace('RESOLUTION_LANDSAT = 30', 'RESOLUTION_LANDSAT = ' + RESOLUTION_LANDSAT)
-                .replace('RESOLUTION_SENTINEL2 = 10', 'RESOLUTION_SENTINEL2 = ' + RESOLUTION_SENTINEL2)
-                .replace('ORIGIN_LON = -25', 'ORIGIN_LON = ' + ORIGIN_LON)
-                .replace('ORIGIN_LAT = 60', 'ORIGIN_LAT = ' + ORIGIN_LAT)
-                .replace('PROJECTION = GLANCE7', 'PROJECTION = ' + PROJECTION)
-                .replace('RESAMPLING = CC', 'RESAMPLING = ' + RESAMPLING)
-                .replace('DO_ATMO = TRUE', 'DO_ATMO = ' + DO_ATMO)
-                .replace('DO_TOPO = TRUE', 'DO_TOPO = ' + DO_TOPO)
-                .replace('DO_BRDF = TRUE', 'DO_BRDF = ' + DO_BRDF)
-                .replace('ADJACENCY_EFFECT = TRUE', 'ADJACENCY_EFFECT = ' + ADJACENCY_EFFECT)
-                .replace('MULTI_SCATTERING = TRUE', 'MULTI_SCATTERING = ' + MULTI_SCATTERING)
-                .replace('DIR_WVPLUT = NULL', 'DIR_WVPLUT = ' + DIR_WVPLUT)
-                .replace('WATER_VAPOR = NULL', 'WATER_VAPOR = ' + WATER_VAPOR)
-                .replace('DO_AOD = TRUE', 'DO_AOD = ' + DO_AOD)
-                .replace('DIR_AOD = NULL', 'DIR_AOD = ' + DIR_AOD)
-                .replace('MAX_CLOUD_COVER_FRAME = 75', 'MAX_CLOUD_COVER_FRAME = ' + MAX_CLOUD_COVER_FRAME)
-                .replace('MAX_CLOUD_COVER_TILE = 75', 'MAX_CLOUD_COVER_TILE = ' + MAX_CLOUD_COVER_TILE)
-                .replace('CLOUD_THRESHOLD = 0.225', 'CLOUD_THRESHOLD = ' + CLOUD_THRESHOLD)
-                .replace('SHADOW_THRESHOLD = 0.02', 'SHADOW_THRESHOLD = ' + SHADOW_THRESHOLD)
-                .replace('RES_MERGE = IMPROPHE', 'RES_MERGE = ' + RES_MERGE)
-                .replace('DIR_MASTER = NULL', 'DIR_MASTER = ' + DIR_MASTER)
-                .replace('MASTER_NODATA = -32767', 'MASTER_NODATA = ' + MASTER_NODATA)
-                .replace('IMPULSE_NOISE = TRUE', 'IMPULSE_NOISE = ' + IMPULSE_NOISE)
-                .replace('BUFFER_NODATA = FALSE', 'BUFFER_NODATA = ' + BUFFER_NODATA)
-                .replace('TIER = 1', 'TIER = ' + TIER)
-                .replace('NPROC = 32', 'NPROC = ' + NPROC)
-                .replace('NTHREAD = 2', 'NTHREAD = ' + NTHREAD)
-                .replace('PARALLEL_READS = FALSE', 'PARALLEL_READS = ' + PARALLEL_READS)
-                .replace('DELAY = 3', 'DELAY = ' + DELAY)
-                .replace('TIMEOUT_ZIP = 30', 'TIMEOUT_ZIP = ' + TIMEOUT_ZIP)
-                .replace('OUTPUT_FORMAT = GTiff', 'OUTPUT_FORMAT = ' + OUTPUT_FORMAT)
-                .replace('OUTPUT_DST = FALSE', 'OUTPUT_DST = ' + OUTPUT_DST)
-                .replace('OUTPUT_AOD = FALSE', 'OUTPUT_AOD = ' + OUTPUT_AOD)
-                .replace('OUTPUT_WVP = FALSE', 'OUTPUT_WVP = ' + OUTPUT_WVP)
-                .replace('OUTPUT_VZN = FALSE', 'OUTPUT_VZN = ' + OUTPUT_VZN)
-                .replace('OUTPUT_HOT = FALSE', 'OUTPUT_HOT = ' + OUTPUT_HOT)
-                .replace('OUTPUT_OVV = FALSE', 'OUTPUT_OVV = ' + OUTPUT_OVV), end='')
-        return;
+source_python('../python/makeParFile.py')
 
-makeParFile(r.paramfolder, filename, FILE_QUEUE = FILE_QUEUE, DIR_LEVEL2 = DIR_LEVEL2, DIR_LOG = DIR_LOG, DIR_TEMP = DIR_TEMP, FILE_DEM = FILE_DEM, ORIGIN_LON = '-90', ORIGIN_LAT = '60', RESAMPLING = 'NN', DIR_WVPLUT = DIR_WVPLUT, RES_MERGE = 'REGRESSION',  NPROC = '1', NTHREAD = '1', DELAY = '10', OUTPUT_DST = 'TRUE',  OUTPUT_VZN = 'TRUE', OUTPUT_HOT = 'TRUE', OUTPUT_OVV = 'TRUE', DEM_NODATA= '-32768',TILE_SIZE = '3000',BLOCK_SIZE = '300')
+makeParFile(paramfolder, file.path(paramfolder, paramfile), FILE_QUEUE = file.path(queuefolder, queuefile), DIR_LEVEL2 = l2folder, DIR_LOG = logfolder, DIR_TEMP = tmpfolder, FILE_DEM = file.path(demfolder,'srtm.vrt'), ORIGIN_LON = '-90', ORIGIN_LAT = '60', RESAMPLING = 'NN', DIR_WVPLUT = wvpfolder, RES_MERGE = 'REGRESSION',  NPROC = '1', NTHREAD = '1', DELAY = '10', OUTPUT_DST = 'TRUE',  OUTPUT_VZN = 'TRUE', OUTPUT_HOT = 'TRUE', OUTPUT_OVV = 'TRUE', DEM_NODATA= '-32768',TILE_SIZE = '3000',BLOCK_SIZE = '300')
 ```
-        
-# Search Landsat scenes and download
+ 
+# Search Landsat scenes, download and add to queue
 ```{r}
-# generate a queue file 
-system(paste0("touch ", file.path(queuefolder,queuefile)), intern = TRUE, ignore.stderr = TRUE)
-# Sync the catalog
-system("pylandsat sync-database", intern = TRUE, ignore.stderr = TRUE)
+LSscenes <- dllLS(l1folder, queuefolder, queuefile, tmpfolder, landsatlogfile, ext, starttime, endtime, sensors, tiers, cld)
 ```
 
-```{python}
-from pylandsat import Catalog, Product
-from datetime import datetime
-from shapely.geometry import Point
-from shapely.geometry import Polygon
-import re
-import os
-
-# Search scenes of interest over the study area
-# define area of interest
-xmin = r.ext[0]
-xmax = r.ext[1]
-ymin = r.ext[2]
-ymax = r.ext[3]
-pol = Polygon([[xmin,ymin],[xmax,ymin],[xmax,ymax],[xmin,ymax],[xmin,ymin]])
-# define time period of interest
-begin = datetime(int(r.starttime[0]), int(r.starttime[1]), int(r.starttime[2])) 
-end = datetime(int(r.endtime[0]), int(r.endtime[1]), int(r.endtime[2]))
-# search scenes in catalog that fulfill requirements
-catalog = Catalog()
-scenes = catalog.search(
-    begin=begin,
-    end=end,
-    geom=pol,
-    sensors=r.sensors,
-    tiers=r.tiers,
-    maxcloud=r.cld
-)
-
-# check which scenes are not downloaded yet
-scenesid = [item['product_id'] for item in scenes]# product id of scenes that match the query
-queue_file = open(os.path.join(r.queuefolder, r.queuefile), "r")
-lines = re.findall(r'(\/.*?\.[\w:]+)', queue_file.read())
-queue = [os.path.splitext(os.path.basename(x))[0] for x in lines]# list of scenes that are already in the queue
-
-dllList = [s for s in scenesid if all(xs not in s for xs in queue)] # items that match the query but are not in queue
-
-# Download scenes
-dllFiles = [Product(x).download(out_dir=r.tmpfolder) for x in dllList]#Downloaded files
-```
-
-# Make sure the Landsat scenes are in the right format to be processed with FORCE
+# Add Sentinel-2 data to queue
 ```{r}
-# list of downloaded scenes
-scenes <- py$dllList
-
-# compress data to .tar.gz file
-for(i in 1:length(scenes)){
-     system(paste0("tar -zcvf ",file.path(tmpfolder,paste0(scenes[i],'.tar.gz'))," -C",file.path(tmpfolder,scenes[i]), " ."), intern = TRUE, ignore.stderr = TRUE)
-}
-```
-
-# Add the Landsat scenes to the FORCE queue
-```{r}
-# add scenes to queue 
-system(paste0("force-level1-landsat ",tmpfolder," ",file.path(l1folder,'landsat')," ",file.path(queuefolder,'queue.txt')," mv"), intern = TRUE, ignore.stderr = TRUE)
-
-# remove temporary files and folders
-system(paste0("rm ",file.path(tmpfolder,"*.tar.gz")), intern = TRUE, ignore.stderr = TRUE)
-system(paste0("rm -rd ",file.path(tmpfolder,"L*")), intern = TRUE, ignore.stderr = TRUE)
+addSen2queue(S2auxfolder, ext, S2folder, starttime, endtime, queuefolder, queuefile, l1folder)
 ```
 
 # Download the DEM and generate a VRT
 ```{r}
 # download DEM over study area
-flsDEM <- dllDEM(ext, dl_dir= demfolder)
-
-# unzip the downloaded files and remove them
-system(paste0("unzip '",file.path(demfolder,"*.zip'"), " -d ", demfolder), intern = TRUE, ignore.stderr = TRUE)
-system(paste0("rm ",file.path(demfolder,"*.zip")), intern = TRUE, ignore.stderr = TRUE)
+flsDEM <- dllDEM(ext, dl_dir= demfolder, logfile = demlogfile)
 
 # generate a vrt
 system(paste0("find ",demfolder," -name '*.hgt' > ",file.path(demfolder,'srtm.txt')), intern = TRUE, ignore.stderr = TRUE)
@@ -226,50 +94,15 @@ system(paste0("gdalbuildvrt -input_file_list ",file.path(demfolder,'srtm.txt'),"
 
 # Download the WVP data
 ```{r}
-# Check if water vapor data are available 
-wvpfiles <- list.files(wvpfolder, pattern = '^WVP_[1:2].*\\.txt$' )
-if (length(wvpfiles) < 6675){
-    # If not, download precompiled WVP data
-    download.file('http://hs.pangaea.de/sat/MODIS/Frantz-Stellmes_2018/wvp-global.tar.gz', file.path(wvpfolder, 'wvp-global.tar.gz'))
-    # extract the files
-    system(paste0("tar -xvzf ", file.path(wvpfolder, 'wvp-global.tar.gz'), " -C ", wvpfolder), intern = TRUE, ignore.stderr = TRUE)
-    # move all files into the main wvp directory
-    system(paste0("mv -v ", file.path(wvpfolder, 'wvp-global','global','*'), " ", wvpfolder), intern = TRUE, ignore.stderr = TRUE)
-    # remove the .tar.gz file
-    system(paste0("rm ",file.path(wvpfolder,'wvp-global.tar.gz')), intern = TRUE, ignore.stderr = TRUE)
-    # remove the empty folder
-    system(paste0("rm -rd ",file.path(wvpfolder,'wvp-global')), intern = TRUE, ignore.stderr = TRUE)
-    
-}else{
-    # check the time span of the available data
-    wvpdts <- as.Date(wvpfiles, 'WVP_%Y-%m-%d.txt')
-    endDate <- as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3]))
-    # If period is not sufficient, extend dataset 
-    if(max(wvpdts)<endDate){
-        # create folders
-        if(!dir.exists(file.path(wvpfolder,'geo'))){dir.create(file.path(wvpfolder,'geo'))}# geo files
-        if(!dir.exists(file.path(wvpfolder,'hdf'))){dir.create(file.path(wvpfolder,'hdf'))}# hdf files
-        # check if the .laads file exists
-        if(!file.exists(file.path(Sys.getenv("HOME"),'.laads'))){print('No .laads file is found in the home directory. You need authentification to download data from the LAADS DAAC. This works by requesting an App Key from NASA Earthdata (https://ladsweb.modaps.eosdis.nasa.gov/tools-and-services/data-download-scripts/#requesting). You can make this key available to FORCE by putting the character string in a file .laads in your home directory.')}
-        # update the dataset
-        system(paste0("force-lut-modis ",file.path(wvpfolder, 'wrs-2-land.coo')," ",wvpfolder," ",file.path(wvpfolder,'geo')," ",file.path(wvpfolder,'hdf')," ",format(max(wvpdts),"%Y")," ",format(max(wvpdts),"%m")," ",format(max(wvpdts),"%d")," ",format(endDate,"%Y")," ",format(endDate,"%m")," ",format(endDate,"%d")))
-        # remove the redundant folders
-        system(paste0("rm -rd ",file.path(wvpfolder,'geo')), intern = TRUE, ignore.stderr = TRUE)
-        system(paste0("rm -rd ",file.path(wvpfolder,'hdf')), intern = TRUE, ignore.stderr = TRUE)
-    }
-}
+dllWVP(wvpfolder, logfile = wvplogfile)
 ```
 
-# Process the level 1 Landsat data to level 2 and generate a vrt
+# Process the level 1 data to level 2 and generate a vrt
+
+- process data to level 2
+- generate vrt
+- summarize log files of all scenes
 ```{r}
-# process data
-system(paste0("force-level2 ", file.path(paramfolder,paramfile)), intern = TRUE, ignore.stderr = TRUE)
-# generate vrt
-system(paste0("force-mosaic ",l2folder), intern = TRUE, ignore.stderr = TRUE)
-# generate an overview of the grid
+Landsat2L2(paramfolder, paramfile, l2folder, LSscenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
 ```
 
-# Plot
-```{r}
-
-```

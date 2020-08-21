@@ -12,10 +12,12 @@ The data can also be visualised here: https://plataforma.mapbiomas.org/map#cover
 To be cited as: "Project MapBiomas - Collection [version] of Brazilian Land Cover & Use Map Series, accessed on [date] through the link: [LINK]"
 "MapBiomas Project - is a multi-institutional initiative to generate annual land cover and use maps using automatic classification processes applied to satellite images. The complete description of the project can be found at http://mapbiomas.org".}
 \usage{
-dllLandcover(ofolder)
+dllLandcover(ofolder, logfile)
 }
 \arguments{
 \item{ofolder}{Full path to store the dataset}
+
+\item{logfile}{logfile}
 }
 \value{
 stores file to disk

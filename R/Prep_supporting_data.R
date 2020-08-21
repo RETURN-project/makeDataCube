@@ -8,20 +8,32 @@
 #'The data can also be visualised here: https://plataforma.mapbiomas.org/map#coverage
 #'To be cited as: "Project MapBiomas - Collection [version] of Brazilian Land Cover & Use Map Series, accessed on [date] through the link: [LINK]"
 #'"MapBiomas Project - is a multi-institutional initiative to generate annual land cover and use maps using automatic classification processes applied to satellite images. The complete description of the project can be found at http://mapbiomas.org".
+#'
 #' @param ofolder Full path to store the dataset
+#' @param logfile logfile
 #'
 #' @return stores file to disk
 #' @export
 #' @import RCurl
 #'
-dllLandcover <- function(ofolder){
+dllLandcover <- function(ofolder, logfile){
   lcfiles <- c('COLECAO_4_1_CONSOLIDACAO_amazonia.tif', 'COLECAO_4_1_CONSOLIDACAO_caatinga.tif', 'COLECAO_4_1_CONSOLIDACAO_cerrado.tif', 'COLECAO_4_1_CONSOLIDACAO_mataatlantica.tif', 'COLECAO_4_1_CONSOLIDACAO_pampa.tif', 'COLECAO_4_1_CONSOLIDACAO_pantanal.tif')
   lcurl <- c('https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/amazonia.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/caatinga.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/cerrado.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/mataatlantica.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/pampa.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/pantanal.tif')
 
   # download missing land cover files
   miss <- which(! lcfiles %in% list.files(ofolder))# files that are not available
+
   if (length(miss)>0){
-    sapply(1:length(miss), function(i) download.file(lcurl[miss[i]], file.path(ofolder, lcfiles[miss[i]])))
+    for(i in 1:length(miss)){
+        tryCatch(
+          {download.file(lcurl[miss[i]], file.path(ofolder, lcfiles[miss[i]]))},
+          error=function(cond) {
+            line <- sprintf("%s not downloaded at %s \n", lcfiles[miss[i]], ofolder)
+            write(line,file=logfile,append=TRUE)
+            message(line)
+          })
+    }
+    # sapply(1:length(miss), function(i) download.file(lcurl[miss[i]], file.path(ofolder, lcfiles[miss[i]])))
   }}
 
 #' Prepare the MapBiomas land cover data:
@@ -79,11 +91,12 @@ prepLandcover <- function(ifolder, datafolder, ext, fname = 'landcover.tif', sta
 #'
 #' @param ofolder Full path to store the dataset
 #' @param ext Geographic extent that should be processed
+#' @param logfile logfile
 #'
 #' @return stores file to disk
 #' @export
 #'
-dllTreecover <- function(ofolder, ext){
+dllTreecover <- function(ofolder, ext, logfile){
   hanext <- c(floor(min(ext[1:2])/10)*10, ceiling(min(ext[1:2])/10)*10, floor(min(ext[3:4])/10)*10, ceiling(min(ext[3:4])/10)*10)# total extent of the area of the hansen tiles of interest, each tile has an extent of 10 x 10 degrees
   hanfiles <- c()
   hanmaskfiles <- c()
@@ -100,13 +113,22 @@ dllTreecover <- function(ofolder, ext){
 
       # download treecover file if it is not available
       if(! file.exists(file.path(ofolder, paste0('Hansen_GFC-2018-v1.6_treecover2000_',ULlat, '_',ULlon, '.tif')))){
-        download.file(paste0('https://storage.googleapis.com/earthenginepartners-hansen/GFC-2018-v1.6/Hansen_GFC-2018-v1.6_treecover2000_',ULlat, '_',ULlon, '.tif'), file.path(ofolder, paste0('Hansen_GFC-2018-v1.6_treecover2000_',ULlat, '_',ULlon, '.tif')))
+        tryCatch({download.file(paste0('https://storage.googleapis.com/earthenginepartners-hansen/GFC-2018-v1.6/Hansen_GFC-2018-v1.6_treecover2000_',ULlat, '_',ULlon, '.tif'), file.path(ofolder, paste0('Hansen_GFC-2018-v1.6_treecover2000_',ULlat, '_',ULlon, '.tif')))},
+          error=function(cond) {
+            line <- sprintf("%s not downloaded at %s \n", paste0('Hansen_GFC-2018-v1.6_treecover2000_',ULlat, '_',ULlon, '.tif'), ofolder)
+            write(line,file=logfile,append=TRUE)
+            message(line)
+          })
       }
       # download mask file if it is not available
       if(! file.exists(file.path(ofolder, paste0('Hansen_GFC-2018-v1.6_datamask_',ULlat, '_',ULlon, '.tif')))){
-        download.file(paste0('https://storage.googleapis.com/earthenginepartners-hansen/GFC-2018-v1.6/Hansen_GFC-2018-v1.6_datamask_',ULlat, '_',ULlon, '.tif'), file.path(ofolder, paste0('Hansen_GFC-2018-v1.6_datamask_',ULlat, '_',ULlon, '.tif')))
-      }
-
+        tryCatch({download.file(paste0('https://storage.googleapis.com/earthenginepartners-hansen/GFC-2018-v1.6/Hansen_GFC-2018-v1.6_datamask_',ULlat, '_',ULlon, '.tif'), file.path(ofolder, paste0('Hansen_GFC-2018-v1.6_datamask_',ULlat, '_',ULlon, '.tif')))},
+                 error=function(cond) {
+                   line <- sprintf("%s not downloaded at %s \n",paste0('Hansen_GFC-2018-v1.6_datamask_',ULlat, '_',ULlon, '.tif'), ofolder)
+                   write(line,file=logfile,append=TRUE)
+                   message(line)
+                 })
+        }
     }
   }
   out <- list(hanfiles, hanmaskfiles)
@@ -183,13 +205,14 @@ prepTreecover <- function(ifolder, datafolder, ext, fname = 'treecover.tif', han
 #' Chuvieco E., Lizundia-Loiola J., Pettinari M.L. Ramo R., Padilla M., Tansey K., Mouillot F., Laurent P., Storm T., Heil A., Plummer S. (2018) “Generation and analysis of a new global burned area product based on MODIS 250m reflectance bands and thermal anomalies”. Earth System Science Data 10: 2015-2031, https://doi.org/10.5194/essd-10-2015-2018.
 #'
 #' @param ofolder Full path to store the dataset
+#' @param logfile logfile
 #'
 #' @return stores file to disk
 #' @export
 #' @import RCurl
 #' @import tidyverse
 #'
-dllFire <- function(ofolder){
+dllFire <- function(ofolder, logfile){
   # for which years is fire data available?
   yrs <- getURL('ftp://anon-ftp.ceda.ac.uk/neodc/esacci/fire/data/burned_area/MODIS/pixel/v5.1/compressed/',  dirlistonly = TRUE)
   yrs <- as.numeric(strsplit(yrs, "\r*\n")[[1]])
@@ -223,6 +246,9 @@ dllFire <- function(ofolder){
           },
         error = function(e){
           skip_to_next <<- TRUE
+          line <- sprintf("%s not downloaded at %s \n",firetar[miss[i]], ofolder)
+          write(line,file=logfile,append=TRUE)
+          message(line)
         })
       if(skip_to_next) {
         failed <- c(failed, miss[i])

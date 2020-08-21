@@ -4,12 +4,14 @@
 \alias{dllLPDAAC}
 \title{Download data from LP DAAC DATa Pool}
 \usage{
-dllLPDAAC(dl_dir = Sys.getenv("HOME"), files)
+dllLPDAAC(dl_dir = Sys.getenv("HOME"), files, logfile)
 }
 \arguments{
 \item{dl_dir}{where do you want to store the data?}
 
 \item{files}{url of the files to download. This should either be (i) a single url, (ii) a list of urls, or (iii) the full path the a text file that contains the urls of interest}
+
+\item{logfile}{logfile}
 }
 \value{
 Downloads data from LP DAAC Data Pool
