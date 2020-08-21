@@ -19,7 +19,7 @@ use_python(py_location, required = TRUE)
 py_config()
 ```
 # General
-This document generates a data cube of level-2 Landsat data over a user-defined area and study period, using only data below a user-defined cloud coverage threshold. 
+This document generates a data cube of level-2 Landsat and Sentinel-2 data over a user-defined area and study period, using only Landsat data below a user-defined cloud coverage threshold. The Landsat Level-1 scenes are downloaded from the public dataset hosted on Google Cloud, while Sentinel-2 Level-1 scenes should be available locally. These scenes are processed to Level-2 and a data cube is generated using FORCE software.
 
 ## Requirements
 - Python 3 should be installed and the pylandsat (https://pypi.org/project/pylandsat/) and shapely modules should be available to download data. pylandsat can be installed via 'pip install pylandsat'.
@@ -79,55 +79,7 @@ LSscenes <- dllLS(l1folder, queuefolder, queuefile, tmpfolder, landsatlogfile, e
 
 # Add Sentinel-2 data to queue
 ```{r}
-# get the Sentinel-2 tile grid
-if(!file.exists(file.path(S2auxfolder, 'S2grid.kml'))){
-  download.file('https://sentinel.esa.int/documents/247904/1955685/S2A_OPER_GIP_TILPAR_MPC__20151209T095117_V20150622T000000_21000101T000000_B00.kml', file.path(S2auxfolder, 'S2grid.kml'))
-}
-s2grid <- st_read(file.path(S2auxfolder, 'S2grid.kml'),'Features')
-
-# search which tiles intersect with area of interest
-df <- data.frame(
-  lon = c(ext[1], ext[2], ext[2], ext[1], ext[1]),
-  lat = c(ext[3], ext[3], ext[4], ext[4], ext[3])
-)
-aoi <- df %>%
-  st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
-  summarise(geometry = st_combine(geometry)) %>%
-  st_cast("POLYGON")#polygon with area of interest
-
-tiles <- s2grid[which(st_within(s2grid, aoi, sparse = F) == T | st_intersects(s2grid, aoi, sparse = F) == T),]# tiles of interest
-
-# list of scenes of interest
-s2sc <- list.files(S2folder,pattern = '*.zip')# all available scenes
-spl <- str_split(s2sc,'_')
-s_dts <- as.Date(substr(unlist(lapply(spl, `[[`, 4)),1,8),'%Y%m%d')# dates of available scenes
-s_tls <- unlist(lapply(spl, `[[`, 7))# tile numbers of available scenes
-startdt <- as.Date(paste(sprintf("%02d", starttime),collapse =''),'%Y%m%d')# start period of interest
-enddt <- as.Date(paste(sprintf("%02d", endtime),collapse =''),'%Y%m%d')# end period of interest
-s2sel <- s2sc[which((s_dts > startdt) & (s_dts < enddt) & (s_tls %in% paste0('T',tiles$Name)))]# scenes that meet requirements
-
-# generate scenes to level 1 folder
-for(i in 1:length(tiles$Name)){
-  # generate the folder for the Sentinel-2 tile
-  if(!dir.exists(file.path(l1folder,'sentinel',paste0('T',tiles$Name[i])))){dir.create(file.path(l1folder,'sentinel',paste0('T',tiles$Name[i])))}
-}
-
-# unzip scenes in the right folder
-library(tidyverse)
-walk(s2sel, ~ unzip(zipfile = file.path(S2folder, .x), 
-                         exdir = file.path(l1folder,'sentinel',paste0('T',substr(.x,50,55)))))
-# add scenes to queue
-line <-paste(paste0(file.path(l1folder,'sentinel',substr(s2sel,50,55), paste0(substr(s2sel,12,71),'.SAFE')),' QUEUED'), collapse = '\n')
-write(line,file=file.path(queuefolder,queuefile),append=TRUE)
-  
-# s2sc <- c('2020-08-11_S2B_MSIL1C_20190609T132239_N0207_R038_T23MPQ_20190609T150131.zip',
-# '2020-08-11_S2B_MSIL1C_20190609T132239_N0207_R038_T23MPR_20190609T150131.zip',
-# '2020-08-11_S2B_MSIL1C_20190619T132239_N0207_R038_T23MPQ_20190619T150157.zip',
-# '2020-08-11_S2B_MSIL1C_20190619T132239_N0207_R038_T23MPR_20190619T150157.zip',
-# '2020-08-11_S2B_MSIL1C_20190629T132239_N0207_R038_T23MPQ_20190629T133645.zip',
-# '2020-08-11_S2B_MSIL1C_20190629T132239_N0207_R038_T23MPR_20190629T133645.zip')
-
-
+addSen2queue(S2auxfolder, ext, S2folder, starttime, endtime, queuefolder, queuefile, l1folder)
 ```
 
 # Download the DEM and generate a VRT

@@ -15,7 +15,9 @@ Imports: raster,
          getPass,
          httr,
          RCurl,
-         tidyverse
+         tidyverse,
+         sf, 
+         readtext
 Suggests: testthat,
           knitr,
           rmarkdown,
