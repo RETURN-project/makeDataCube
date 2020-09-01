@@ -17,7 +17,9 @@ Imports: raster,
          RCurl,
          tidyverse,
          sf, 
-         readtext
+         readtext,
+         zoo,
+         bfast
 Suggests: testthat,
           knitr,
           rmarkdown,
