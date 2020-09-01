@@ -13,6 +13,7 @@ dllLS(
   queuefolder,
   queuefile,
   tmpfolder,
+  logfile,
   ext,
   starttime,
   endtime,
