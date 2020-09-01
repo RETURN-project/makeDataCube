@@ -17,9 +17,11 @@ Imports: raster,
          RCurl,
          tidyverse,
          sf, 
-         readtext
+         readtext,
+         zoo,
+         bfast,
+         reticulate
 Suggests: testthat,
           knitr,
-          rmarkdown,
-          reticulate
+          rmarkdown
 VignetteBuilder: knitr
