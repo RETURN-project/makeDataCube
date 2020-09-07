@@ -11,7 +11,7 @@ library(reticulate)
 library(makeDataCube)
 library(tidyverse)
 library(sf)
-
+library(unixtools)
 # Find Python in this machine
 ## Default installation folder for Python with Anaconda, including the user name
 py_location <- file.path("/home", Sys.getenv("USER"), "anaconda3/bin/python")
@@ -31,6 +31,7 @@ This document generates a data cube of level-2 Landsat and Sentinel-2 data over 
 ```{r inputs}
 forcefolder <- normalizePath(file.path('..', 'data'))#'/home/wanda/Documents/data/force_small' #file.path('..', 'data')#forcefolder <- '/home/wanda/Documents/data/force'
 S2folder <- normalizePath(file.path('..', 'data'))# folder where Level-1 Sentinel-2 data are stored
+Rtmpfolder <- normalizePath(file.path('..', 'data'))# folder where all temporary R files should be stored
 ext <- c(-43.38238361637443,-43.27938679020256,-4.555765244985907,-4.451717415449725)#extent, vector with xmin, xmax, ymin, ymax in degrees
 cld <- 50 # maximum cloud cover
 starttime <- c(2000,11,01)#start date: year, month, day
@@ -41,6 +42,10 @@ sensors <- c('LC08', 'LE07', 'LT05', 'LT04')#sensors, 'LM05', 'LM04'
 
 # Generate the directory structure
 ```{r folders}
+# set the folder to store temporary data
+unixtools::set.tempdir(Rtmpfolder)
+# set the upper memory limit for raster data. Raster will move data to disk if it exceeds the upper limit (defaults to 100MB). 
+# options(rasterMaxMemory = 1e10)
 # generate folder structure
 fldrs <- setFolders(forcefolder)
 tmpfolder <- fldrs['tmpfolder']

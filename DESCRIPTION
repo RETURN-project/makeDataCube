@@ -23,5 +23,6 @@ Imports: raster,
          reticulate
 Suggests: testthat,
           knitr,
-          rmarkdown
+          rmarkdown,
+          unixtools
 VignetteBuilder: knitr
