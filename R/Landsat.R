@@ -38,6 +38,7 @@ dllLS <- function(l1folder, queuefolder, queuefile, tmpfolder, logfile, ext, sta
   # remove temporary files and folders
   system(paste0("rm ",file.path(tmpfolder,"*.tar.gz")), intern = TRUE, ignore.stderr = TRUE)
   system(paste0("rm -rd ",file.path(tmpfolder,"L*")), intern = TRUE, ignore.stderr = TRUE)
+  system(paste0("rm -rd ",file.path(tmpfolder,"index.csv")), intern = TRUE, ignore.stderr = TRUE)
   return(scenes)
 }
 
