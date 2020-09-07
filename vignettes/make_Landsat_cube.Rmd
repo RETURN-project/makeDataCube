@@ -11,7 +11,7 @@ library(reticulate)
 library(makeDataCube)
 library(tidyverse)
 library(sf)
-
+library(unixtools)
 # Find Python in this machine
 ## Default installation folder for Python with Anaconda, including the user name
 py_location <- file.path("/home", Sys.getenv("USER"), "anaconda3/bin/python")
@@ -28,9 +28,10 @@ This document generates a data cube of level-2 Landsat and Sentinel-2 data over 
 - Finally, you need authentification to download data from the LAADS DAAC (WVP data). To that end, you need an create a .laads file is in your home directory with a an App Key. The App Key can be requested from NASA Earthdata (https://ladsweb.modaps.eosdis.nasa.gov/tools-and-services/data-download-scripts/#requesting). This key should be put in a file .laads in your home directory.
 
 # Inputs
-```{r}
+```{r inputs}
 forcefolder <- normalizePath(file.path('..', 'data'))#'/home/wanda/Documents/data/force_small' #file.path('..', 'data')#forcefolder <- '/home/wanda/Documents/data/force'
 S2folder <- normalizePath(file.path('..', 'data'))# folder where Level-1 Sentinel-2 data are stored
+Rtmpfolder <- normalizePath(file.path('..', 'data'))# folder where all temporary R files should be stored
 ext <- c(-43.38238361637443,-43.27938679020256,-4.555765244985907,-4.451717415449725)#extent, vector with xmin, xmax, ymin, ymax in degrees
 cld <- 50 # maximum cloud cover
 starttime <- c(2000,11,01)#start date: year, month, day
@@ -40,7 +41,11 @@ sensors <- c('LC08', 'LE07', 'LT05', 'LT04')#sensors, 'LM05', 'LM04'
 ```
 
 # Generate the directory structure
-```{r}
+```{r folders}
+# set the folder to store temporary data
+unixtools::set.tempdir(Rtmpfolder)
+# set the upper memory limit for raster data. Raster will move data to disk if it exceeds the upper limit (defaults to 100MB). 
+# options(rasterMaxMemory = 1e10)
 # generate folder structure
 fldrs <- setFolders(forcefolder)
 tmpfolder <- fldrs['tmpfolder']
@@ -64,7 +69,7 @@ S2auxfolder <- fldrs['S2auxfolder']
 ```
 
 # Generate a parameter file
-```{r}
+```{r parameters}
 # more information about the parameter settings can be found in https://davidfrantz.github.io/tutorials/force-ard/l2-ard/
 # or https://force-eo.readthedocs.io/en/latest/components/lower-level/level2/param.html
 source_python('../python/makeParFile.py')
@@ -73,17 +78,17 @@ makeParFile(paramfolder, file.path(paramfolder, paramfile), FILE_QUEUE = file.pa
 ```
  
 # Search Landsat scenes, download and add to queue
-```{r}
+```{r Landsat}
 LSscenes <- dllLS(l1folder, queuefolder, queuefile, tmpfolder, landsatlogfile, ext, starttime, endtime, sensors, tiers, cld)
 ```
 
 # Add Sentinel-2 data to queue
-```{r}
+```{r Sentinel}
 addSen2queue(S2auxfolder, ext, S2folder, starttime, endtime, queuefolder, queuefile, l1folder)
 ```
 
 # Download the DEM and generate a VRT
-```{r}
+```{r DEM}
 # download DEM over study area
 flsDEM <- dllDEM(ext, dl_dir= demfolder, logfile = demlogfile)
 
@@ -93,7 +98,7 @@ system(paste0("gdalbuildvrt -input_file_list ",file.path(demfolder,'srtm.txt'),"
 ```
 
 # Download the WVP data
-```{r}
+```{r WVP}
 dllWVP(wvpfolder, logfile = wvplogfile)
 ```
 
@@ -102,7 +107,7 @@ dllWVP(wvpfolder, logfile = wvplogfile)
 - process data to level 2
 - generate vrt
 - summarize log files of all scenes
-```{r}
+```{r process}
 Landsat2L2(paramfolder, paramfile, l2folder, LSscenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
 ```
 

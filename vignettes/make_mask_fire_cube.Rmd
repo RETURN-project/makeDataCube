@@ -28,7 +28,7 @@ The mask equals 1 for pixels that meet the following requirements:
 Other pixels are set to 0.
 
 ## Inputs
-```{r}
+```{r inputs}
 forcefolder <- normalizePath(file.path('..', 'data'))#'/home/wanda/Documents/data/force_small'#file.path('..', 'data')#forcefolder <- '/home/wanda/Documents/data/force'
 ext <- c(-43.38238361637443,-43.27938679020256,-4.555765244985907,-4.451717415449725)#extent, vector with xmin, xmax, ymin, ymax in degrees
 starttime <- c(1998,01,01)#start date: year, month, day
@@ -47,7 +47,7 @@ cubefolder <- 's-america'# folder where data cube is stored
 ## Generate the directory structure
 A standard structure of the data folders is assumed. 
 
-```{r}
+```{r folders}
 # generate folder structure
 fldrs <- setFolders(forcefolder)
 tmpfolder <- fldrs['tmpfolder']  # temporary files
@@ -66,7 +66,7 @@ paramfile <- fldrs['paramfile']# name parameter file
 
 ## generate a shapefile of the grid
 
-```{r}
+```{r grid}
 # generate a shapefile of the grid
 system(paste0("force-tabulate-grid ", file.path(l2folder, cubefolder), " ", ext[3]," ", ext[4]," ", ext[1]," ", ext[2], " shp"), intern = TRUE, ignore.stderr = TRUE)
 # load shapefile
@@ -78,7 +78,7 @@ elist <- lapply(1:length(p_wgs), function(i) extent(p_wgs[i,]))
 ```
 
 ## iterate over the tiles and prepare mask and fire data
-```{r}
+```{r mask}
 for(ti in 1:length(elist)){
   exti <- elist[[ti]]
   # generate folder for temporary data of study area of interest

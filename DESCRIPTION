@@ -19,9 +19,10 @@ Imports: raster,
          sf, 
          readtext,
          zoo,
-         bfast
+         bfast,
+         reticulate
 Suggests: testthat,
           knitr,
           rmarkdown,
-          reticulate
+          unixtools
 VignetteBuilder: knitr
