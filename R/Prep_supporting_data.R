@@ -54,19 +54,32 @@ prepLandcover <- function(ifolder, datafolder, ext, fname = 'landcover.tif', sta
   lcfiles <- c('COLECAO_4_1_CONSOLIDACAO_amazonia.tif', 'COLECAO_4_1_CONSOLIDACAO_caatinga.tif', 'COLECAO_4_1_CONSOLIDACAO_cerrado.tif', 'COLECAO_4_1_CONSOLIDACAO_mataatlantica.tif', 'COLECAO_4_1_CONSOLIDACAO_pampa.tif', 'COLECAO_4_1_CONSOLIDACAO_pantanal.tif')
   # Generate land cover file for the study area
   rst <- stack(file.path(ifolder, lcfiles[1])) # open land cover data file
-  lc <- crop(rst, ext)# cut the image to the extent of interest
-  lc <- reclassify(lc,c(27,27, NA))# set missing values to NA
+  lcc <- crop(rst, ext, filename=file.path(datafolder, 'lcCrop.tif'))# cut the image to the extent of interest
+  lc <- reclassify(lcc,c(27,27, NA), filename=file.path(datafolder, 'lcReclass.tif'))# set missing values to NA
+  # remove temporary files
+  rm(rst, lcc)
+  unlink(file.path(datafolder, 'lcCrop.tif'))
+  unlink(file.path(datafolder, 'lcReclass.tif'))
+
   for(i in 2:length(lcfiles)){
     rst <- stack(file.path(ifolder, lcfiles[i])) # open land cover data file
-    sti <- crop(rst, ext)# cut the image to the extent of interest
-    sti <- reclassify(sti,c(27,27, NA))
-    lc <- overlay(lc, sti, fun=max)# merge all raster stacks to one stack for the study region
+    stci <- crop(rst, ext, filename=file.path(datafolder, 'lcCrop.tif'))# cut the image to the extent of interest
+    sti <- reclassify(stci,c(27,27, NA), filename=file.path(datafolder, 'lcReclass.tif'))
+    lc <- overlay(lc, sti, fun=max, filename = file.path(datafolder, paste0('lc_',i,'.tif')))# merge all raster stacks to one stack for the study region
+    # remove temporary files
+    rm(rst, stci, sti)
+    unlink(file.path(datafolder, 'lcCrop.tif'))
+    unlink(file.path(datafolder, 'lcReclass.tif'))
   }
 
   dtslc <- as.Date(paste0(1985:2018, '-01-01'), format = '%Y-%m-%d')# dates of each layer
   names(lc) <- dtslc
   lc <- lc[[which((dtslc >= startyr) & (dtslc <= endyr))]]# remove observations outside the predefined observation period
   dtslc <- dtslc[which((dtslc >= startyr) & (dtslc <= endyr))]
+  # remove temporary files
+  for(i in 2:length(lcfiles)){unlink(file.path(datafolder, paste0('lc_',i,'.tif')))}
+
+  # save results
   save(dtslc, file = file.path(datafolder,'lcDates'))
   writeRaster(lc, file.path(datafolder, fname), format="GTiff", overwrite=TRUE)# save the raster as geoTIFF file
 }
@@ -157,17 +170,24 @@ prepTreecover <- function(ifolder, datafolder, ext, fname = 'treecover.tif', han
     han <- raster(file.path(ifolder, hanfiles[i]))
     hanmsk <- raster(file.path(ifolder, hanmaskfiles[i]))
     # crop the extent of the rasters to the extent of interest
-    han <- crop(han, ext)
-    hanmsk <- crop(hanmsk,ext)
+    han <- crop(han, ext, filename = file.path(datafolder, 'hanCrop.tif'))
+    hanmsk <- crop(hanmsk,ext, filename = file.path(datafolder, 'hanmskCrop.tif'))
     # remove irrelevant observations
     han[hanmsk == 0] <- NA
     if(i == 1){
       han_cov <- han
     } else{
-      merge(han_cov, han)# if the study area covers more than one tile, merge the tiles into one layer
+      han_cov <- merge(han_cov, han, filename = file.path(datafolder,paste0('hanMerge',i,'.tif')))# if the study area covers more than one tile, merge the tiles into one layer
     }
+    # remove temporary variables and files
+    rm(han, hanmsk)
+    unlink(file.path(datafolder, 'hanCrop.tif'))
+    unlink(file.path(datafolder, 'hanmskCrop.tif'))
   }
+  # write result to file
   writeRaster(han_cov, file.path(datafolder, fname), format="GTiff", overwrite=TRUE)# save the raster as geoTIFF file
+  # remove temporary files
+  for(i in 2:length(hanfiles)){unlink(file.path(datafolder,paste0('hanMerge',i,'.tif')))}
 }
 
 #' Download CCI fire data
@@ -285,21 +305,23 @@ dllFire <- function(ofolder, logfile){
 prepFire <- function(ifolder, datafolder, ext, fjdname = 'fireJD.tif', fclname = 'fireCL.tif', startyr, endyr, fireclfiles, firejdfiles){
   # prepare the dataset over the area of interest
   st <- stack(file.path(ifolder,fireclfiles))# create a stack of all confidence layer files
-  st <- crop(st, ext)# crop stack to the area of interest
+  stc <- crop(st, ext, filename = file.path(datafolder, 'fireclCrop.tif'))# crop stack to the area of interest
   fdts<- as.Date(fireclfiles, format = "%Y%m%d-ESACCI-L3S_FIRE-BA-MODIS-AREA_2-fv5.1-CL.tif") # dates associated with the fire data stack
-  names(st) <- fdts
-  fcl <- st[[which((fdts >= startyr) & (fdts <= endyr))]]# remove observations outside the predefined observation period
+  names(stc) <- fdts
+  fcl <- stc[[which((fdts >= startyr) & (fdts <= endyr))]]# remove observations outside the predefined observation period
   fdts <- fdts[which((fdts >= startyr) & (fdts <= endyr))]
   writeRaster(fcl, file.path(datafolder, fclname), format="GTiff", overwrite=TRUE)# save the raster as geoTIFF file
-  rm(st)
+  rm(st, stc)
+  unlink(file.path(datafolder, 'fireclCrop.tif'))
 
   st <- stack(file.path(ifolder,firejdfiles))# create a stack of all julian date files
-  st <- crop(st, ext)# crop stack to the area of interest
+  stc <- crop(st, ext, filename = file.path(datafolder, 'firejdCrop.tif'))# crop stack to the area of interest
   fdts<- as.Date(firejdfiles, format = "%Y%m%d-ESACCI-L3S_FIRE-BA-MODIS-AREA_2-fv5.1-JD.tif") # dates associated with the fire data stack
-  names(st) <- fdts
-  fjd <- st[[which((fdts >= startyr) & (fdts <= endyr))]]# remove observations outside the predefined observation period
+  names(stc) <- fdts
+  fjd <- stc[[which((fdts >= startyr) & (fdts <= endyr))]]# remove observations outside the predefined observation period
   fdts <- fdts[which((fdts >= startyr) & (fdts <= endyr))]
   writeRaster(fjd, file.path(datafolder, fjdname), format="GTiff", overwrite=TRUE)# save the raster as geoTIFF file
   save(fdts, file = file.path(datafolder,'fireDates'))
-  rm(st)
+  rm(st,stc)
+  unlink(file.path(datafolder, 'firejdCrop.tif'))
 }
