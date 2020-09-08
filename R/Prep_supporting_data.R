@@ -56,7 +56,7 @@ prepLandcover <- function(ifolder, datafolder, ext, fname = 'landcover.tif', sta
   it <- 0
   for(i in 1:length(lcfiles)){
     rst <- stack(file.path(ifolder, lcfiles[i])) # open land cover data file
-    lc1 <- crop(rst[[1]], ext, filename=file.path(datafolder, 'lcCrop.tif'))# cut the first image to the extent of interest
+    lc1 <- crop(rst[[1]], ext, filename=file.path(datafolder, 'lcCrop1.tif'))# cut the first image to the extent of interest
     vals <- unique(lc1)# values of the raster
     if(length(vals) > 1 | vals[1]!=0){# raster is not empty
       it <- it + 1
@@ -71,10 +71,10 @@ prepLandcover <- function(ifolder, datafolder, ext, fname = 'landcover.tif', sta
       }
       # remove temporary files
       rm(lcc)
-      unlink(file.path(datafolder, 'lcCrop.tif'))
       # unlink(file.path(datafolder, 'lcReclass.tif'))
     }
-    rm(rst)
+    rm(rst, lc1, vals)
+    unlink(file.path(datafolder, 'lcCrop1.tif'))
   }
   dtslc <- as.Date(paste0(1985:2018, '-01-01'), format = '%Y-%m-%d')# dates of each layer
   names(lc) <- dtslc
