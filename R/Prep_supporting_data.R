@@ -57,7 +57,11 @@ prepLandcover <- function(ifolder, datafolder, ext, fname = 'landcover.tif', sta
   lcc <- crop(rst, ext, filename=file.path(datafolder, 'lcCrop.tif'))# cut the image to the extent of interest
   lc <- reclassify(lcc,c(27,27, NA), filename=file.path(datafolder, 'lcReclass.tif'))# set missing values to NA
   # remove temporary files
+<<<<<<< HEAD
   rm(rst, lcc)
+=======
+  rm('rst', 'lcc')
+>>>>>>> 912d39878b66e1ac0b81d86e73b29e472bb6336b
   unlink(file.path(datafolder, 'lcCrop.tif'))
   unlink(file.path(datafolder, 'lcReclass.tif'))
 
@@ -67,7 +71,11 @@ prepLandcover <- function(ifolder, datafolder, ext, fname = 'landcover.tif', sta
     sti <- reclassify(stci,c(27,27, NA), filename=file.path(datafolder, 'lcReclass.tif'))
     lc <- overlay(lc, sti, fun=max, filename = file.path(datafolder, paste0('lc_',i,'.tif')))# merge all raster stacks to one stack for the study region
     # remove temporary files
+<<<<<<< HEAD
     rm(rst, stci, sti)
+=======
+    rm('rst', 'stci', 'sti')
+>>>>>>> 912d39878b66e1ac0b81d86e73b29e472bb6336b
     unlink(file.path(datafolder, 'lcCrop.tif'))
     unlink(file.path(datafolder, 'lcReclass.tif'))
   }
