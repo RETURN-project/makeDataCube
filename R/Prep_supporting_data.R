@@ -52,7 +52,6 @@ dllLandcover <- function(ofolder, logfile){
 #'
 prepLandcover <- function(ifolder, datafolder, ext, fname = 'landcover.tif', startyr, endyr){
   lcfiles <- c('COLECAO_4_1_CONSOLIDACAO_amazonia.tif', 'COLECAO_4_1_CONSOLIDACAO_caatinga.tif', 'COLECAO_4_1_CONSOLIDACAO_cerrado.tif', 'COLECAO_4_1_CONSOLIDACAO_mataatlantica.tif', 'COLECAO_4_1_CONSOLIDACAO_pampa.tif', 'COLECAO_4_1_CONSOLIDACAO_pantanal.tif')
-
   #
   it <- 0
   for(i in 1:length(lcfiles)){
