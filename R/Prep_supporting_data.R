@@ -52,36 +52,80 @@ dllLandcover <- function(ofolder, logfile){
 #'
 prepLandcover <- function(ifolder, datafolder, ext, fname = 'landcover.tif', startyr, endyr){
   lcfiles <- c('COLECAO_4_1_CONSOLIDACAO_amazonia.tif', 'COLECAO_4_1_CONSOLIDACAO_caatinga.tif', 'COLECAO_4_1_CONSOLIDACAO_cerrado.tif', 'COLECAO_4_1_CONSOLIDACAO_mataatlantica.tif', 'COLECAO_4_1_CONSOLIDACAO_pampa.tif', 'COLECAO_4_1_CONSOLIDACAO_pantanal.tif')
-  # Generate land cover file for the study area
-  rst <- stack(file.path(ifolder, lcfiles[1])) # open land cover data file
-  lcc <- crop(rst, ext, filename=file.path(datafolder, 'lcCrop.tif'))# cut the image to the extent of interest
-  lc <- reclassify(lcc,c(27,27, NA), filename=file.path(datafolder, 'lcReclass.tif'))# set missing values to NA
-  # remove temporary files
-  rm(rst, lcc)
-  unlink(file.path(datafolder, 'lcCrop.tif'))
-  unlink(file.path(datafolder, 'lcReclass.tif'))
 
-  for(i in 2:length(lcfiles)){
+  #
+  it <- 0
+  for(i in 1:length(lcfiles)){
     rst <- stack(file.path(ifolder, lcfiles[i])) # open land cover data file
-    stci <- crop(rst, ext, filename=file.path(datafolder, 'lcCrop.tif'))# cut the image to the extent of interest
-    sti <- reclassify(stci,c(27,27, NA), filename=file.path(datafolder, 'lcReclass.tif'))
-    lc <- overlay(lc, sti, fun=max, filename = file.path(datafolder, paste0('lc_',i,'.tif')))# merge all raster stacks to one stack for the study region
-    # remove temporary files
-    rm(rst, stci, sti)
-   unlink(file.path(datafolder, 'lcCrop.tif'))
-    unlink(file.path(datafolder, 'lcReclass.tif'))
+    lc1 <- crop(rst[[1]], ext, filename=file.path(datafolder, 'lcCrop.tif'))# cut the first image to the extent of interest
+    vals <- unique(lc1)# values of the raster
+    if(length(vals) > 1 | vals[1]!=0){# raster is not empty
+      it <- it + 1
+      lcc <- crop(rst, ext, filename=file.path(datafolder, 'lcCrop.tif'))# cut the image to the extent of interest
+      if(it ==1){
+        lc <- reclassify(lcc,c(27,27, NA), filename=file.path(datafolder, 'lcReclass.tif'))# set missing values to NA
+      } else{# if study area covers more than one land cover raster, append rasters
+        sti <- reclassify(lcc,c(27,27, NA), filename=file.path(datafolder, paste0('lcReclass_',i,'.tif')))
+        lc <- overlay(lc, sti, fun=max, filename = file.path(datafolder, paste0('lc_',i,'.tif')))# merge all raster stacks to one stack for the study region
+        # remove temporary files
+        rm(sti)
+      }
+      # remove temporary files
+      rm(lcc)
+      unlink(file.path(datafolder, 'lcCrop.tif'))
+      # unlink(file.path(datafolder, 'lcReclass.tif'))
+    }
+    rm(rst)
   }
-
   dtslc <- as.Date(paste0(1985:2018, '-01-01'), format = '%Y-%m-%d')# dates of each layer
   names(lc) <- dtslc
   lc <- lc[[which((dtslc >= startyr) & (dtslc <= endyr))]]# remove observations outside the predefined observation period
   dtslc <- dtslc[which((dtslc >= startyr) & (dtslc <= endyr))]
   # remove temporary files
-  for(i in 2:length(lcfiles)){unlink(file.path(datafolder, paste0('lc_',i,'.tif')))}
+  for(i in 2:length(lcfiles)){
+    unlink(file.path(datafolder, paste0('lc_',i,'.tif')))
+    unlink(file.path(datafolder, paste0('lcReclass_',i,'.tif')))
+    }
 
   # save results
   save(dtslc, file = file.path(datafolder,'lcDates'))
   writeRaster(lc, file.path(datafolder, fname), format="GTiff", overwrite=TRUE)# save the raster as geoTIFF file
+
+
+
+
+
+
+  # # Generate land cover file for the study area
+  # rst <- stack(file.path(ifolder, lcfiles[1])) # open land cover data file
+  # lcc <- crop(rst, ext, filename=file.path(datafolder, 'lcCrop.tif'))# cut the image to the extent of interest
+  # lc <- reclassify(lcc,c(27,27, NA), filename=file.path(datafolder, 'lcReclass.tif'))# set missing values to NA
+  # # remove temporary files
+  # rm(rst, lcc)
+  # unlink(file.path(datafolder, 'lcCrop.tif'))
+  # unlink(file.path(datafolder, 'lcReclass.tif'))
+  #
+  # for(i in 2:length(lcfiles)){
+  #   rst <- stack(file.path(ifolder, lcfiles[i])) # open land cover data file
+  #   stci <- crop(rst, ext, filename=file.path(datafolder, 'lcCrop.tif'))# cut the image to the extent of interest
+  #   sti <- reclassify(stci,c(27,27, NA), filename=file.path(datafolder, 'lcReclass.tif'))
+  #   lc <- overlay(lc, sti, fun=max, filename = file.path(datafolder, paste0('lc_',i,'.tif')))# merge all raster stacks to one stack for the study region
+  #   # remove temporary files
+  #   rm(rst, stci, sti)
+  #  unlink(file.path(datafolder, 'lcCrop.tif'))
+  #   unlink(file.path(datafolder, 'lcReclass.tif'))
+  # }
+
+  # dtslc <- as.Date(paste0(1985:2018, '-01-01'), format = '%Y-%m-%d')# dates of each layer
+  # names(lc) <- dtslc
+  # lc <- lc[[which((dtslc >= startyr) & (dtslc <= endyr))]]# remove observations outside the predefined observation period
+  # dtslc <- dtslc[which((dtslc >= startyr) & (dtslc <= endyr))]
+  # # remove temporary files
+  # for(i in 2:length(lcfiles)){unlink(file.path(datafolder, paste0('lc_',i,'.tif')))}
+  #
+  # # save results
+  # save(dtslc, file = file.path(datafolder,'lcDates'))
+  # writeRaster(lc, file.path(datafolder, fname), format="GTiff", overwrite=TRUE)# save the raster as geoTIFF file
 }
 
 
