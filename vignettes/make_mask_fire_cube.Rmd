@@ -118,13 +118,13 @@ for(ti in 1:length(elist)){
   han <- stack(file.path(extfolder,'treecover.tif'))
   
   lc <- stack(file.path(extfolder,'landcover.tif'))
-  lc30 <- resample(lc, han, method ='ngb')
+  lc30 <- resample(lc, han, method ='ngb', filename = file.path(extfolder, 'lc30.tif'))
   names(lc30) <- as.Date(loadRData(file.path(extfolder,'lcDates')))
   
   rm(fcl, lc, fjd)
   # select areas that consist of only natural land cover types
   msklc <- lc30
-  msklc <- ((msklc == 9) | ((msklc >= 14) & (msklc <= 22)) | (msklc >= 24))
+  msklc <- ((msklc == 0) | (msklc == 9) | ((msklc >= 14) & (msklc <= 22)) | (msklc >= 24))
   msklc <- sum(msklc)
   msklc <- (msklc == 0)
   
@@ -141,16 +141,16 @@ for(ti in 1:length(elist)){
   
   # resample fire data to same grid
   fcl <- stack(file.path(extfolder,'fireCL.tif'))
-  fcl30 <- resample(fcl, han, method ='ngb')
+  fcl30 <- resample(fcl, han, method ='ngb', filename = file.path(extfolder, 'fcl30'))
   fdts <- as.Date(loadRData(file.path(extfolder,'fireDates')))
   names(fcl30) <- fdts
   
   fjd <- stack(file.path(extfolder,'fireJD.tif'))
-  fjd30  <- resample(fjd, han, method ='ngb')
+  fjd30  <- resample(fjd, han, method ='ngb', filename = file.path(extfolder, 'fjd30'))
   names(fjd30) <- fdts
   
   # generate an image stack containing regular fire time series at the predefined temporal resolution with value 1 if a fire occured and 0 if no fire occured
-  tsFire <- calc(stack(msk,fcl30, fjd30), function(x){createFireStack(x, dts = fdts, resol = tempRes, thres = Tconf)})
+  tsFire <- calc(stack(msk,fcl30, fjd30), function(x){createFireStack(x, dts = fdts, resol = tempRes, thres = Tconf)}, filename = file.path(extfolder, 'tsFire'))
   rm(fcl30, fjd30)
   
   # Get associated dates
