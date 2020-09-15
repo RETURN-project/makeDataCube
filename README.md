@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/github/RETURN-project/makeDataCube.svg?branch=master)](https://travis-ci.com/github/RETURN-project/makeDataCube)
+[![Build Status](https://travis-ci.com/RETURN-project/makeDataCube.svg?branch=master&status=started)](https://travis-ci.com/github/RETURN-project/makeDataCube)
 [![codecov](https://codecov.io/gh/RETURN-project/makeDataCube/graph/badge.svg)](https://codecov.io/gh/RETURN-project/makeDataCube)
 [![codecov](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/)
 
