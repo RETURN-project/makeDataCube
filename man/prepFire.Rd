@@ -3,43 +3,46 @@
 \name{prepFire}
 \alias{prepFire}
 \title{Prepare CCI fire data
-Create a raster stack of the CCI fire data, crop the stack to the extent of interest, and select the period of interest.}
+Create a raster stack of the CCI fire data, crop the stack to the extent of interest, select the period of interest, and convert to binary rasters (1 = fire, 0 = no fire).}
 \usage{
 prepFire(
-  ifolder,
-  datafolder,
-  ext,
-  fjdname = "fireJD.tif",
-  fclname = "fireCL.tif",
-  startyr,
-  endyr,
-  fireclfiles,
-  firejdfiles
+  fcl,
+  fjd,
+  fdts,
+  han,
+  msk,
+  tempRes,
+  Tconf,
+  starttime,
+  endtime,
+  extfolder
 )
 }
 \arguments{
-\item{ifolder}{folder where the CCI file files are stored}
+\item{fcl}{a SpatRaster stack with the fire confidence layers}
 
-\item{datafolder}{folder where the output files should be stored}
+\item{fjd}{a SpatRaster stack with the fire julian day of year layers}
 
-\item{ext}{geographic extent of interest}
+\item{fdts}{Date object associated with fire layers}
 
-\item{fjdname}{output file name of the fire julian date raster stack}
+\item{han}{SpatRaster layer with output grid of interest}
 
-\item{fclname}{ouput file name of the fire confidence raster stack}
+\item{msk}{a mask indicating which pixels should be stored (0=should not be processed, 1=should be processed), should have the same grid as the han layer}
 
-\item{startyr}{start date of the observation period}
+\item{tempRes}{temporal resolution of interest for the output fire SpatRaster stack, can be 'monthly', 'daily', or 'quart'}
 
-\item{endyr}{end date of the observation period}
+\item{Tconf}{threshold on the fire confidence, only observations with a fire confidence higher than the threshold are considered to be a true fire}
 
-\item{fireclfiles}{names of the fire confidence layers}
+\item{starttime}{start time of study period of interest (vector with year, month, day)}
 
-\item{firejdfiles}{names of the fire julian date layers}
+\item{endtime}{end time of study period of interest (vector with year, month, day)}
+
+\item{extfolder}{directory where temporary files are stored}
 }
 \value{
-saves raster stacks to disk
+
 }
 \description{
 Prepare CCI fire data
-Create a raster stack of the CCI fire data, crop the stack to the extent of interest, and select the period of interest.
+Create a raster stack of the CCI fire data, crop the stack to the extent of interest, select the period of interest, and convert to binary rasters (1 = fire, 0 = no fire).
 }
