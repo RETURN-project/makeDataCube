@@ -98,3 +98,24 @@ test_that("generate regular ts",{
   # case 4 - quarterly
   expect_equal(as.numeric(brquart),c(30,-2, -7,-6))
 })
+
+test_that("generate regular ts",{
+  library(terra)
+  empty_rast <- rast(nrows =5, ncols = 5)
+  lc1 <- empty_rast; values(lc1) <- c(1,2,3,4,5,6,7,1,3,4,5,12,1,1,1,3,9,4,2,3,1,1,5,6,4)
+  lc2 <- empty_rast; values(lc2) <- c(1,2,3,4,5,6,7,1,3,4,5,12,1,9,1,3,9,4,2,3,1,1,5,6,4)
+  lc <- c(lc1,lc2)
+  empty_rast2 <- rast(nrows = 5, ncols = 5)#, xmin = -99, xmax = 99, ymin = -33, ymax = 33
+  han <- empty_rast2; values(han) <- c(99,86,87,82,88,96,94,92,93,99,86,87,82,88,96,94,92,93,99,86,87,82,88,96,94)
+  extfolder <- normalizePath('./data')
+  lcDates <- as.Date(c('2000-01-01','2001-01-01'))
+
+  out <- makeMaskNoFire(lc, lcDates, han, extfolder, Tyr = 2000, Ttree = 85)
+
+  empty_rast2 <- rast(nrows = 3, ncols = 3, xmin = -99, xmax = 99, ymin = -33, ymax = 33)#, xmin = -99, xmax = 99, ymin = -33, ymax = 33
+  han <- empty_rast2; values(han) <- c(99,86,87,82,88,96,94,92,93)
+  out2 <- makeMaskNoFire(lc, lcDates, han, extfolder, Tyr = 2000, Ttree = 85)
+
+  expect_equal(as.numeric(out[,]),c(1,1,1,0,1,0,0,1,1,1,1,0,0,0,1,1,0,1,1,1,1,0,1,0,1))
+  expect_equal(as.numeric(out2[,]),c(0,1,1,0,1,0,0,1,1))
+  })
