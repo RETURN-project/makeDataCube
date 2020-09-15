@@ -13,6 +13,7 @@ library(lubridate)
 library(raster)
 library(tidyverse)
 library(rgdal)
+library(terra)
 ```
 
 ## General 
@@ -73,13 +74,7 @@ paramfile <- fldrs['paramfile']# name parameter file
 
 ```{r grid}
 # generate a shapefile of the grid
-system(paste0("force-tabulate-grid ", file.path(l2folder, cubefolder), " ", ext[3]," ", ext[4]," ", ext[1]," ", ext[2], " shp"), intern = TRUE, ignore.stderr = TRUE)
-# load shapefile
-p <- shapefile(file.path(l2folder, cubefolder, 'shp',"grid.shp"))
-# transform crs to crs of interest
-p_wgs <- spTransform(p, CRS("+proj=longlat +datum=WGS84"))
-# extent of each polygon/tile
-elist <- lapply(1:length(p_wgs), function(i) extent(p_wgs[i,]))
+elist <- getGrid(l2folder, cubefolder, ext)
 ```
 
 ## iterate over the tiles and prepare mask and fire data
@@ -107,89 +102,37 @@ for(ti in 1:length(elist)){
   prepTreecover(tcfolder, extfolder, exti, fname = 'treecover.tif', tcfls$hanfiles, tcfls$hanmaskfiles)
   
   # ----------------------
+  ## Generate mask without fire information
+  han <- terra::rast(file.path(extfolder,'treecover.tif'))
+  lc <- terra::rast(file.path(extfolder,'landcover.tif'))
+  lcDates <- as.Date(loadRData(file.path(extfolder,'lcDates')))
+  
+  msk <- makeMaskNoFire(lc, lcDates, han, extfolder)
+  rm(lc)
+  
+  # ----------------------
   ## Prepare fire data
   # Download fire data
   firefls <- dllFire(firefolder, firelogfile)
-  # Crop the fire data to exent and time period of interest 
-  prepFire(firefolder, extfolder, exti, fjdname = 'fireJD.tif', fclname = 'fireCL.tif', as.Date(paste0(starttime[1],'-',starttime[2],'-',starttime[3])), as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3])), firefls$fireclfiles, firefls$firejdfiles)
-  # ----------------------
-  ## Generate mask without fire information
-  # resample and project all rasters to the same grid
-  han <- stack(file.path(extfolder,'treecover.tif'))
-  
-  lc <- stack(file.path(extfolder,'landcover.tif'))
-  lc30 <- resample(lc, han, method ='ngb', filename = file.path(extfolder, 'lc30.tif'))
-  names(lc30) <- as.Date(loadRData(file.path(extfolder,'lcDates')))
-  
-  rm(fcl, lc, fjd)
-  # select areas that consist of only natural land cover types
-  msklc <- lc30
-  msklc <- ((msklc == 0) | (msklc == 9) | ((msklc >= 14) & (msklc <= 22)) | (msklc >= 24))
-  msklc <- sum(msklc)
-  msklc <- (msklc == 0)
-  
-  # select areas that were forested in a user-defined year
-  mskfor <- (lc30[[paste0('X',Tyr,'.01.01')]] <6)
-  # select areas with tree cover percentage larger than user-defined threshold in 2000
-  mskcov <- (han > Ttree)
-  # mask without fire information
-  msk <- ((msklc == 1) & (mskfor == 1) & (mskcov == 1))*1
-  rm(mskcov, mskfor, msklc)
-  
-  # ----------------------
-  ## Prepare and add fire data to the mask
-  
-  # resample fire data to same grid
-  fcl <- stack(file.path(extfolder,'fireCL.tif'))
-  fcl30 <- resample(fcl, han, method ='ngb', filename = file.path(extfolder, 'fcl30'))
+  # Crop the fire data to exent and time period of interest, resample and generate a binary time series (1 = fire, 0 = no fire) at the temporal resolution of interest
+  fcl <- terra:rast(file.path(extfolder,'fireCL.tif'))
+  fjd <- terra::rast(file.path(extfolder,'fireJD.tif'))
   fdts <- as.Date(loadRData(file.path(extfolder,'fireDates')))
-  names(fcl30) <- fdts
   
-  fjd <- stack(file.path(extfolder,'fireJD.tif'))
-  fjd30  <- resample(fjd, han, method ='ngb', filename = file.path(extfolder, 'fjd30'))
-  names(fjd30) <- fdts
-  
-  # generate an image stack containing regular fire time series at the predefined temporal resolution with value 1 if a fire occured and 0 if no fire occured
-  tsFire <- calc(stack(msk,fcl30, fjd30), function(x){createFireStack(x, dts = fdts, resol = tempRes, thres = Tconf)}, filename = file.path(extfolder, 'tsFire'))
-  rm(fcl30, fjd30)
-  
-  # Get associated dates
-  dtsfr <- as.Date(toRegularTS(fdts, fdts, fun='max', resol = tempRes))
-  if(tempRes == 'monthly'){
-    dtsfr <- rollback(dtsfr, roll_to_first = TRUE, preserve_hms = TRUE)
-  }
-  names(tsFire) <- dtsfr
-  
-  # extend the fire data time span to the study period
-  rstNA <- han
-  rstNA[] <- NA
-  startyr <- as.Date(paste0(starttime[1],'-',starttime[2],'-',starttime[3])) 
-  endyr <- as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3]))
-  dtstot <- as.Date(toRegularTS(c(startyr, dtsfr, endyr), c(startyr, dtsfr, endyr), fun='max', resol = tempRes))
-  
-  tsFire2 <- tsFire
-  npre <- sum(dtstot<min(dtsfr))
-  npost <- sum(dtstot>max(dtsfr))
-  if(npre>0){for(i in 1:npre){tsFire2 <- addLayer(rstNA, tsFire2)}}
-  if(npost>0){for(i in 1:npost){tsFire2 <- addLayer(tsFire2,rstNA)}}
-  names(tsFire2) <- dtstot
+  tsFire2 <- prepFire(fcl, fjd, fdts, han, msk, tempRes, Tconf, starttime, endtime, extfolder)
+  # Export the fire data to the temporary folder
+  nms <-str_replace_all(names(tsFire2),'-','_')
+  terra::writeRaster(tsFire2, file.path(extfolder, paste0('fire_',nms,'.tif')), bylayer=TRUE, overwrite=TRUE)
   
   # ----------------------
   ## update mask with locations that experienced fire
-  msk <- (sum(tsFire2, na.rm=T) > 0) # areas that have experienced a fire get the value 1, other areas the value 0
+  msk <- terra::app(tsFire2, sum, na.rm=T, filename = file.path(extfolder, 'fresum.tif'), overwrite=T)
+  msk <- (msk > 0) # areas that have experienced a fire get the value 1, other areas the value 0
+  # Export the mask layer tot the temporary folder
+  terra::writeRaster(msk, file.path(extfolder, 'mask.tif'), overwrite=TRUE)
   
   # ----------------------
   ## Add mask and fire data to data cube
-  # Export the mask layer tot the temporary folder
-  writeRaster(msk, file.path(extfolder, 'mask.tif'), format="GTiff", overwrite=TRUE)
-  # Export the fire data to the temporary folder
-  nms <-str_replace_all(names(tsFire2),'\\.','_')
-  writeRaster(tsFire2, file.path(extfolder, paste0('fire_',nms,'.tif')), bylayer=TRUE, format="GTiff", overwrite=TRUE)
-  
-  # writeRaster(tsFire2, file.path(extfolder, 'fire.tif'), format="GTiff", overwrite=TRUE)
-  # save(dtstot, file = file.path(extfolder,'fireDatesCube'))
-  
-  # Add the mask and fire data to the cube
   system(paste0("force-cube ",file.path(extfolder, 'mask.tif')," ", file.path(l2folder, cubefolder)," near ", resMask), intern = TRUE, ignore.stderr = TRUE)
   
   for(i in 1:dim(tsFire2)[3]){
@@ -203,146 +146,3 @@ for(ti in 1:length(elist)){
 # remove folder with shapefile of tiles
  unlink(file.path(l2folder, cubefolder, 'shp'), recursive=TRUE)
 ```
-
-
-<!-- ## Prepare land cover data -->
-<!-- First MapBiomas land cover data are downloaded if they are not available yet. Then the land cover data are cropped to the extent of the study area, and the study period of interest. Currently, MapBiomas data are only available for the years 1985 - 2018. -->
-
-<!-- ```{r} -->
-<!-- # Download MapBiomas land cover data -->
-<!-- dllLandcover(lcfolder, lclogfile) -->
-<!-- # Crop the land cover data to extent and time period of interest  -->
-<!-- prepLandcover(lcfolder, extfolder, ext, fname = 'landcover.tif', as.Date(paste0(starttime[1],'-',starttime[2],'-',starttime[3])), as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3]))) -->
-
-<!-- ``` -->
-
-<!-- ## Prepare tree cover data -->
-<!-- ```{r} -->
-<!-- # Download tree cover data -->
-<!-- tcfls <- dllTreecover(tcfolder, ext, tclogfile) -->
-<!-- # Crop the tree cover data to exent of interest and mask nodata values -->
-<!-- prepTreecover(tcfolder, extfolder, ext, fname = 'treecover.tif', tcfls$hanfiles, tcfls$hanmaskfiles) -->
-<!-- ``` -->
-
-<!-- ## Prepare fire data -->
-<!-- ```{r} -->
-<!-- # Download fire data -->
-<!-- firefls <- dllFire(firefolder, firelogfile) -->
-<!-- # Crop the fire data to exent and time period of interest  -->
-<!-- prepFire(firefolder, extfolder, ext, fjdname = 'fireJD.tif', fclname = 'fireCL.tif', as.Date(paste0(starttime[1],'-',starttime[2],'-',starttime[3])), as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3])), firefls$fireclfiles, firefls$firejdfiles) -->
-<!-- ``` -->
-
-<!-- ## Generate mask without fire information -->
-<!-- ```{r} -->
-<!-- library(raster) -->
-<!-- # resample and project all rasters to the same grid -->
-<!-- han <- stack(file.path(extfolder,'treecover.tif')) -->
-
-<!-- lc <- stack(file.path(extfolder,'landcover.tif')) -->
-<!-- lc30 <- resample(lc, han, method ='ngb') -->
-<!-- names(lc30) <- as.Date(loadRData(file.path(extfolder,'lcDates'))) -->
-
-<!-- rm(fcl, lc, fjd) -->
-<!-- # select areas that consist of only natural land cover types -->
-<!-- msklc <- lc30 -->
-<!-- msklc <- ((msklc == 9) | ((msklc >= 14) & (msklc <= 22)) | (msklc >= 24)) -->
-<!-- msklc <- sum(msklc) -->
-<!-- msklc <- (msklc == 0) -->
-
-<!-- # select areas that were forested in a user-defined year -->
-<!-- mskfor <- (lc30[[paste0('X',Tyr,'.01.01')]] <6) -->
-<!-- # select areas with tree cover percentage larger than user-defined threshold in 2000 -->
-<!-- mskcov <- (han > Ttree) -->
-<!-- # mask without fire information -->
-<!-- msk <- ((msklc == 1) & (mskfor == 1) & (mskcov == 1))*1 -->
-<!-- rm(mskcov, mskfor, msklc) -->
-<!-- ``` -->
-
-<!-- ## Prepare and add fire data to the mask -->
-<!-- ```{r} -->
-<!-- # resample fire data to same grid -->
-<!-- fcl <- stack(file.path(extfolder,'fireCL.tif')) -->
-<!-- fcl30 <- resample(fcl, han, method ='ngb') -->
-<!-- fdts <- as.Date(loadRData(file.path(extfolder,'fireDates'))) -->
-<!-- names(fcl30) <- fdts -->
-
-<!-- fjd <- stack(file.path(extfolder,'fireJD.tif')) -->
-<!-- fjd30  <- resample(fjd, han, method ='ngb') -->
-<!-- names(fjd30) <- fdts -->
-
-<!-- # generate an image stack containing regular fire time series at the predefined temporal resolution with value 1 if a fire occured and 0 if no fire occured -->
-<!-- tsFire <- calc(stack(msk,fcl30, fjd30), function(x){createFireStack(x, dts = fdts, resol = tempRes, thres = Tconf)}) -->
-<!-- rm(fcl30, fjd30) -->
-
-<!-- # Get associated dates -->
-<!-- dtsfr <- as.Date(toRegularTS(fdts, fdts, fun='max', resol = tempRes)) -->
-<!-- if(tempRes == 'monthly'){ -->
-<!--   dtsfr <- rollback(dtsfr, roll_to_first = TRUE, preserve_hms = TRUE) -->
-<!-- } -->
-<!-- names(tsFire) <- dtsfr -->
-
-<!-- # extend the fire data time span to the study period -->
-<!-- rstNA <- han -->
-<!-- rstNA[] <- NA -->
-<!-- startyr <- as.Date(paste0(starttime[1],'-',starttime[2],'-',starttime[3]))  -->
-<!-- endyr <- as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3])) -->
-<!-- dtstot <- as.Date(toRegularTS(c(startyr, dtsfr, endyr), c(startyr, dtsfr, endyr), fun='max', resol = tempRes)) -->
-
-<!-- tsFire2 <- tsFire -->
-<!-- npre <- sum(dtstot<min(dtsfr)) -->
-<!-- npost <- sum(dtstot>max(dtsfr)) -->
-<!-- if(npre>0){for(i in 1:npre){tsFire2 <- addLayer(rstNA, tsFire2)}} -->
-<!-- if(npost>0){for(i in 1:npost){tsFire2 <- addLayer(tsFire2,rstNA)}} -->
-<!-- names(tsFire2) <- dtstot -->
-
-<!-- # # update mask with locations that experienced fire -->
-<!-- msk <- (sum(tsFire2, na.rm=T) > 0) # areas that have experienced a fire get the value 1, other areas the value 0 -->
-
-<!-- ``` -->
-
-<!-- ## Plot mask -->
-<!-- ```{r} -->
-<!-- # plot the mask -->
-<!-- plot(msk) -->
-
-<!-- ``` -->
-
-<!-- ## Add mask and fire data to data cube -->
-<!-- ```{r} -->
-<!-- # Export the mask layer tot the temporary folder -->
-<!-- writeRaster(msk, file.path(extfolder, 'mask.tif'), format="GTiff", overwrite=TRUE) -->
-<!-- # Export the fire data to the temporary folder -->
-<!-- nms <-str_replace_all(names(tsFire2),'\\.','_') -->
-<!-- writeRaster(tsFire2, file.path(extfolder, paste0('fire_',nms,'.tif')), bylayer=TRUE, format="GTiff", overwrite=TRUE) -->
-
-<!-- # writeRaster(tsFire2, file.path(extfolder, 'fire.tif'), format="GTiff", overwrite=TRUE) -->
-<!-- # save(dtstot, file = file.path(extfolder,'fireDatesCube')) -->
-
-<!-- # Add the mask and fire data to the cube -->
-<!-- system(paste0("force-cube ",file.path(extfolder, 'mask.tif')," ", file.path(l2folder, cubefolder)," near ", resMask), intern = TRUE, ignore.stderr = TRUE) -->
-
-<!-- for(i in 1:dim(tsFire2)[3]){ -->
-<!--   system(paste0("force-cube ",file.path(extfolder,  paste0('fire_',nms[i],'.tif'))," ", file.path(l2folder, cubefolder)," near ", resFire), intern = TRUE, ignore.stderr = TRUE) -->
-<!-- } -->
-
-<!-- # remove temporary folder and its contents -->
-<!-- unlink(extfolder, recursive=TRUE) -->
-<!-- ``` -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -49,23 +49,29 @@ dllLandcover <- function(ofolder, logfile){
 #' @return saves land cover raster
 #' @export
 #' @import raster
+#' @import terra
 #'
 prepLandcover <- function(ifolder, datafolder, ext, fname = 'landcover.tif', startyr, endyr){
   lcfiles <- c('COLECAO_4_1_CONSOLIDACAO_amazonia.tif', 'COLECAO_4_1_CONSOLIDACAO_caatinga.tif', 'COLECAO_4_1_CONSOLIDACAO_cerrado.tif', 'COLECAO_4_1_CONSOLIDACAO_mataatlantica.tif', 'COLECAO_4_1_CONSOLIDACAO_pampa.tif', 'COLECAO_4_1_CONSOLIDACAO_pantanal.tif')
   #
   it <- 0
   for(i in 1:length(lcfiles)){
-    rst <- stack(file.path(ifolder, lcfiles[i])) # open land cover data file
-    lc1 <- crop(rst[[1]], ext, filename=file.path(datafolder, 'lcCrop1.tif'))# cut the first image to the extent of interest
+    rst <- terra::rast(file.path(ifolder, lcfiles[i])) # open land cover data file
+    lc1 <- terra::crop(rst[[1]], ext, snap = 'in', filename=file.path(datafolder, 'lcCrop1.tif'), overwrite=T)# cut the first image to the extent of interest
     vals <- unique(lc1)# values of the raster
     if(length(vals) > 1 | vals[1]!=0){# raster is not empty
       it <- it + 1
-      lcc <- crop(rst, ext, filename=file.path(datafolder, 'lcCrop.tif'))# cut the image to the extent of interest
+      lcc <- terra::crop(rst, ext, snap = 'in', filename=file.path(datafolder, 'lcCrop.tif'), overwrite=T)# cut the image to the extent of interest
       if(it ==1){
-        lc <- reclassify(lcc,c(27,27, NA), filename=file.path(datafolder, 'lcReclass.tif'))# set missing values to NA
-      } else{# if study area covers more than one land cover raster, append rasters
-        sti <- reclassify(lcc,c(27,27, NA), filename=file.path(datafolder, paste0('lcReclass_',i,'.tif')))
-        lc <- overlay(lc, sti, fun=max, filename = file.path(datafolder, paste0('lc_',i,'.tif')))# merge all raster stacks to one stack for the study region
+        lc <- terra::classify(lcc,matrix(c(27, NA, 2,2), ncol=2, byrow=TRUE), include.lowest=TRUE, filename=file.path(datafolder, 'lcReclass.tif'), overwrite=T)# set missing values to NA
+      }else{# if study area covers more than one land cover raster, append rasters
+        sti <- terra::classify(lcc,matrix(c(27, NA, 2,2), ncol=2, byrow=TRUE), include.lowest=TRUE, filename=file.path(datafolder, paste0('lcReclass_',i,'.tif')), overwrite=T)
+        lc <- raster::overlay(raster(file.path(datafolder, 'lcReclass.tif')),
+                              raster(file.path(datafolder, paste0('lcReclass_',i,'.tif'))),
+                              fun=max,
+                              filename = file.path(datafolder, paste0('lcReclass.tif')),
+                              overwrite=TRUE)# merge all raster stacks to one stack for the study region
+        lc <- terra::rast(raster(file.path(datafolder, 'lcReclass.tif')))
         # remove temporary files
         rm(sti)
       }
@@ -78,18 +84,16 @@ prepLandcover <- function(ifolder, datafolder, ext, fname = 'landcover.tif', sta
   }
   dtslc <- as.Date(paste0(1985:2018, '-01-01'), format = '%Y-%m-%d')# dates of each layer
   names(lc) <- dtslc
-  lc <- lc[[which((dtslc >= startyr) & (dtslc <= endyr))]]# remove observations outside the predefined observation period
+  lcfin <- lc[[which((dtslc >= startyr) & (dtslc <= endyr))]]# remove observations outside the predefined observation period
   dtslc <- dtslc[which((dtslc >= startyr) & (dtslc <= endyr))]
+  # save results
+  save(dtslc, file = file.path(datafolder,'lcDates'))
+  terra::writeRaster(lcfin, file.path(datafolder, fname), overwrite=TRUE)# save the raster as geoTIFF file
   # remove temporary files
   unlink(file.path(datafolder, 'lcReclass.tif'))
   for(i in 2:length(lcfiles)){
-    unlink(file.path(datafolder, paste0('lc_',i,'.tif')))
     unlink(file.path(datafolder, paste0('lcReclass_',i,'.tif')))
-    }
-
-  # save results
-  save(dtslc, file = file.path(datafolder,'lcDates'))
-  writeRaster(lc, file.path(datafolder, fname), format="GTiff", overwrite=TRUE)# save the raster as geoTIFF file
+  }
 }
 
 
@@ -170,22 +174,23 @@ dllTreecover <- function(ofolder, ext, logfile){
 #' @return writes processed raster to disk
 #' @export
 #' @import raster
+#' @import terra
 #'
 prepTreecover <- function(ifolder, datafolder, ext, fname = 'treecover.tif', hanfiles, hanmaskfiles){
   # iterate over the tree cover tiles
   for (i in 1:length(hanfiles)){
     #load data
-    han <- raster(file.path(ifolder, hanfiles[i]))
-    hanmsk <- raster(file.path(ifolder, hanmaskfiles[i]))
+    han <- terra::rast(file.path(ifolder, hanfiles[i]))
+    hanmsk <- terra::rast(file.path(ifolder, hanmaskfiles[i]))
     # crop the extent of the rasters to the extent of interest
-    han <- crop(han, ext, filename = file.path(datafolder, 'hanCrop.tif'))
-    hanmsk <- crop(hanmsk,ext, filename = file.path(datafolder, 'hanmskCrop.tif'))
+    han <- terra::crop(han, ext, snap = 'in', filename = file.path(datafolder, 'hanCrop.tif'))
+    hanmsk <- terra::crop(hanmsk,ext, snap = 'in', filename = file.path(datafolder, 'hanmskCrop.tif'))
     # remove irrelevant observations
     han[hanmsk == 0] <- NA
     if(i == 1){
       han_cov <- han
     } else{
-      han_cov <- merge(han_cov, han, filename = file.path(datafolder,paste0('hanMerge',i,'.tif')))# if the study area covers more than one tile, merge the tiles into one layer
+      han_cov <- terra::merge(han_cov, han, filename = file.path(datafolder,paste0('hanMerge',i,'.tif')))# if the study area covers more than one tile, merge the tiles into one layer
     }
     # remove temporary variables and files
     rm(han, hanmsk)
@@ -193,7 +198,7 @@ prepTreecover <- function(ifolder, datafolder, ext, fname = 'treecover.tif', han
     unlink(file.path(datafolder, 'hanmskCrop.tif'))
   }
   # write result to file
-  writeRaster(han_cov, file.path(datafolder, fname), format="GTiff", overwrite=TRUE)# save the raster as geoTIFF file
+  terra::writeRaster(han_cov, file.path(datafolder, fname), format="GTiff", overwrite=TRUE)# save the raster as geoTIFF file
   # remove temporary files
   for(i in 2:length(hanfiles)){unlink(file.path(datafolder,paste0('hanMerge',i,'.tif')))}
   removeTmpFiles(h=24)# remove temporary R files older than 24 hours
@@ -295,42 +300,275 @@ dllFire <- function(ofolder, logfile){
 }
 
 #' Prepare CCI fire data
-#' Create a raster stack of the CCI fire data, crop the stack to the extent of interest, and select the period of interest.
+#' Create a raster stack of the CCI fire data, crop the stack to the extent of interest, select the period of interest, and convert to binary rasters (1 = fire, 0 = no fire).
 #'
-#' @param ifolder folder where the CCI file files are stored
-#' @param datafolder folder where the output files should be stored
-#' @param ext geographic extent of interest
-#' @param fjdname output file name of the fire julian date raster stack
-#' @param fclname ouput file name of the fire confidence raster stack
-#' @param startyr start date of the observation period
-#' @param endyr end date of the observation period
-#' @param fireclfiles names of the fire confidence layers
-#' @param firejdfiles names of the fire julian date layers
+#' @param fcl a SpatRaster stack with the fire confidence layers
+#' @param fjd a SpatRaster stack with the fire julian day of year layers
+#' @param fdts Date object associated with fire layers
+#' @param han SpatRaster layer with output grid of interest
+#' @param msk a mask indicating which pixels should be stored (0=should not be processed, 1=should be processed), should have the same grid as the han layer
+#' @param tempRes temporal resolution of interest for the output fire SpatRaster stack, can be 'monthly', 'daily', or 'quart'
+#' @param Tconf threshold on the fire confidence, only observations with a fire confidence higher than the threshold are considered to be a true fire
+#' @param starttime start time of study period of interest (vector with year, month, day)
+#' @param endtime end time of study period of interest (vector with year, month, day)
+#' @param extfolder directory where temporary files are stored
 #'
-#' @return saves raster stacks to disk
+#' @return
 #' @export
-#' @import raster
+#' @import terra
 #'
-prepFire <- function(ifolder, datafolder, ext, fjdname = 'fireJD.tif', fclname = 'fireCL.tif', startyr, endyr, fireclfiles, firejdfiles){
-  # prepare the dataset over the area of interest
-  st <- stack(file.path(ifolder,fireclfiles))# create a stack of all confidence layer files
-  stc <- crop(st, ext, filename = file.path(datafolder, 'fireclCrop.tif'))# crop stack to the area of interest
-  fdts<- as.Date(fireclfiles, format = "%Y%m%d-ESACCI-L3S_FIRE-BA-MODIS-AREA_2-fv5.1-CL.tif") # dates associated with the fire data stack
-  names(stc) <- fdts
-  fcl <- stc[[which((fdts >= startyr) & (fdts <= endyr))]]# remove observations outside the predefined observation period
-  fdts <- fdts[which((fdts >= startyr) & (fdts <= endyr))]
-  writeRaster(fcl, file.path(datafolder, fclname), format="GTiff", overwrite=TRUE)# save the raster as geoTIFF file
-  rm(st, stc)
-  unlink(file.path(datafolder, 'fireclCrop.tif'))
+prepFire <- function(fcl, fjd, fdts, han, msk, tempRes, Tconf, starttime, endtime, extfolder){
+# resample fire data to same grid
+fcl30 <- terra::resample(fcl, han, method ='near', filename = file.path(extfolder, 'fcl30.tif'), overwrite = T)
+names(fcl30) <- fdts
 
-  st <- stack(file.path(ifolder,firejdfiles))# create a stack of all julian date files
-  stc <- crop(st, ext, filename = file.path(datafolder, 'firejdCrop.tif'))# crop stack to the area of interest
-  fdts<- as.Date(firejdfiles, format = "%Y%m%d-ESACCI-L3S_FIRE-BA-MODIS-AREA_2-fv5.1-JD.tif") # dates associated with the fire data stack
-  names(stc) <- fdts
-  fjd <- stc[[which((fdts >= startyr) & (fdts <= endyr))]]# remove observations outside the predefined observation period
-  fdts <- fdts[which((fdts >= startyr) & (fdts <= endyr))]
-  writeRaster(fjd, file.path(datafolder, fjdname), format="GTiff", overwrite=TRUE)# save the raster as geoTIFF file
-  save(fdts, file = file.path(datafolder,'fireDates'))
-  rm(st,stc)
-  unlink(file.path(datafolder, 'firejdCrop.tif'))
+fjd30  <- terra::resample(fjd, han, method ='ngb', filename = file.path(extfolder, 'fjd30.tif'), overwrite = T)
+names(fjd30) <- fdts
+# generate an image stack containing regular fire time series at the predefined temporal resolution with value 1 if a fire occured and 0 if no fire occured
+tsFire <- createFireStack(msk, fcl30, fjd30, fdts, resol= tempRes, thres=Tconf, extfolder)
+
+rm(fcl30, fjd30)
+# Get associated dates
+dtsfr <- as.Date(toRegularTS(fdts, fdts, fun='max', resol = tempRes))
+if(tempRes == 'monthly'){
+  dtsfr <- rollback(dtsfr, roll_to_first = TRUE, preserve_hms = TRUE)
+}
+names(tsFire) <- dtsfr
+# extend the fire data time span to the study period
+rstNA <- han
+values(rstNA) <- rep(NaN,ncell(han))
+# rstNA[] <- NA
+startyr <- as.Date(paste0(starttime[1],'-',starttime[2],'-',starttime[3]))
+endyr <- as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3]))
+dtstot <- as.Date(toRegularTS(c(startyr, dtsfr, endyr), c(startyr, dtsfr, endyr), fun='max', resol = tempRes))
+
+tsFire2 <- tsFire
+npre <- sum(dtstot<min(dtsfr))
+npost <- sum(dtstot>max(dtsfr))
+if(npre>0){tsFire2 <- c(rep(rstNA,npre), tsFire2)}
+if(npost>0){tsFire2 <- c(tsFire2,rep(rstNA,npost))}
+names(tsFire2) <- dtstot
+return(tsFire2)
+}
+
+#' Extract the extent of each grid tile that covers an area of interest
+#'
+#' @param l2folder directory of the level2 data cube
+#' @param cubefolder folder inside the level2 directory where the data cube is stored
+#' @param ext extent of the area of interest
+#'
+#' @return list of extents
+#' @import raster
+#' @import sp
+#' @export
+#'
+getGrid <- function(l2folder, cubefolder, ext){
+  system(paste0("force-tabulate-grid ", file.path(l2folder, cubefolder), " ", ext[3]," ", ext[4]," ", ext[1]," ", ext[2], " shp"), intern = TRUE, ignore.stderr = TRUE)
+  # load shapefile
+  p <- shapefile(file.path(l2folder, cubefolder, 'shp',"grid.shp"))
+  # transform crs to crs of interest
+  p_wgs <- spTransform(p, CRS("+proj=longlat +datum=WGS84"))
+  # extent of each polygon/tile
+  elist <- lapply(1:length(p_wgs), function(i) extent(p_wgs[i,]))
+  return(elist)
+}
+#' Make a mask without fire information
+#' The mask identifies pixels that (i) did not have a non-natural land cover type,
+#' (ii) have a tree cover higher than a user-defined threshold and
+#' (iii) were classified as forest in a user-defined year
+#'
+#' @param lc land cover raster stack (SpatRaster object; terra package)
+#' @param lcDates dates associated with the layers of the land cover raster stack
+#' @param han Hansen tree cover raster (SpatRaster object; terra package)
+#' @param extfolder directory where temporary files should be stored
+#' @param Tyr year that pixel should be forested
+#' @param Ttree threshold on tree cover percentage
+#'
+#' @return SpatRaster layer with data mask (1 equals )
+#' @export
+#' @import terra
+#'
+makeMaskNoFire <- function(lc, lcDates, han, extfolder, Tyr, Ttree){
+  # resample and project all rasters to the same grid
+  lc30 <- terra::resample(lc, han, method ='ngb', filename = file.path(extfolder, 'lc30.tif'), overwrite = T)
+  names(lc30) <- lcDates
+
+  # select areas that consist of only natural land cover types
+  m <- c(0, 0, 1,
+         1, 8, 0,
+         9, 9, 1,
+         10,13,0,
+         14,22,1,
+         23,23,0,
+         24,50,1)
+  rclmat <- matrix(m, ncol=3, byrow=TRUE)
+  msklc <- terra::classify(lc30, rclmat, include.lowest=TRUE)
+  msklc <- sum(msklc)
+  msklc <- (msklc == 0)
+  # select areas that were forested in a user-defined year
+  mskfor <- (lc30[[paste0('X',Tyr,'-01-01')]] <6)
+  # select areas with tree cover percentage larger than user-defined threshold in 2000
+  mskcov <- (han > Ttree)
+  # mask without fire information
+  msk <- ((msklc == 1) & (mskfor == 1) & (mskcov == 1))*1
+  rm(mskcov, mskfor, msklc)
+  rm(lc30)
+  unlink(file.path(extfolder, 'lc30.tif'))
+  return(msk)
+}
+
+
+#' Convert CCI fire stack to a stack with a predefined temporal resolution and containing the value 0 when no fire is present and 1 if a fire is present
+#'
+#' @param x stack of CCI fire imagery, the first layer contains a mask (here the value 0 denotes that the pixel should not be included, the value 1 denotes that the pixel should be included), followed by n fire confidence layers and n fire doy layers
+#' @param dts dates associated with the stack
+#' @param resol the desired temporal resolution of the output data
+#' @param thres threshold on the fire confidence layer, only fires having a confidence higher than the threshold are included
+#'
+#' @return a stack with with a predefined temporal resolution and containing the value 0 when no fire is present and 1 if a fire is present
+#' @export
+toFireTS <- function(x, dts, resol, thres, olen){
+  msk <- x[1]
+  if(msk == 1){
+    x <- as.numeric(x[-1])
+    len <- length(x)
+    cl <- x[1:(len/2)] # confidence values
+    jd <- x[(1+(len/2)):len] # doy of fire
+    if(resol == 'monthly'){
+      out <- rep(0,length(cl)) # initialise a vector of zeros
+      out[cl>thres & jd>0] <- 1 # dates with high fire confidence and doy of fire > 0 are set to 1
+    }else if (resol == 'daily'){
+      # create daily time series and associated dates
+      strtyr <- format(dts[1], "%Y") # start year of the fire dataset
+      endyr <- format(dts[length(dts)], "%Y") # end year of the fire dataset
+      tsdts <- seq(as.Date(paste0(strtyr,'-01-01')), as.Date(paste0(endyr,'-12-31')), by = "1 day")  # all potential fire dates
+      out <- rep(0,length(tsdts))# initialise output vector with zeros
+
+      # get timing of fires
+      ind <- which(cl>thres & jd>0) # find observations with high fire confidence and doy of fire > 0
+      fireyr <- format(dts[ind], "%Y") # year of the observed fires
+      firedoy <- jd[ind] # doy of the observed fires
+      firedate <- as.Date(paste0(fireyr,'-',firedoy),'%Y-%j')# create fire observation dates
+      out[tsdts %in% firedate] = 1# set fire observation dates to 1
+    }else if (resol == 'quart'){
+      outm <- rep(0,length(cl)) # initialise a vector of zeros
+      outm[cl>thres & jd>0] <- 1 # dates with high fire confidence and doy of fire > 0 are set to 1
+      out <- toRegularTS(outm, dts, 'max', 'quart')
+    }}else{
+      out <- rep(NA,olen)
+    }
+  return(out)
+}
+
+#' Generate a binary fire stack (0=no fire, 1=fire) at the temporal resolution of interest
+#'
+#' @param msk mask indicating which pixels should be processed (0=not processed, 1 = processed)
+#' @param fcl SpatRaster stack with fire confidence layers
+#' @param fjd SpatRaster stack with fire julian date of year
+#' @param dts dates associated with the fire layers
+#' @param resol temporal resolution of the ouput stack, can be 'daily', 'monthly', or 'quart'
+#' @param thres threshold on the fire confidence, observations with a fire confidence higher than the threshold are considered to be a true fire
+#' @param extfolder folder where temporary files are stored
+#'
+#' @return
+#' @export
+#' @import terra
+#'
+createFireStack <- function(msk, fcl, fjd, dts, resol, thres, extfolder){
+  # derive the length of the output stack
+  strtyr <- format(dts[1], "%Y")
+  endyr <- format(dts[length(dts)], "%Y")
+  if(resol == 'monthly'){
+    len <- length(dts)}else if(resol == 'daily'){
+      len <- length(seq(as.Date(paste0(strtyr,'-01-01')), as.Date(paste0(endyr,'-12-31')), by = "1 day"))
+    }else if (resol == 'quart'){
+      len <- length(seq(as.Date(paste0(strtyr,'-01-01')), as.Date(paste0(endyr,'-12-31')), by = "3 months"))
+    }
+  # iterate over pixels and generate the stack
+  tsFire <- terra::app(c(msk,fcl, fjd),
+                       function(x){
+                         toFireTS(x, dts = dts, resol = resol, thres = thres, olen = len)},
+                       filename = file.path(extfolder, 'tsFire.tif'),
+                       overwrite=T,nodes=1)
+  return(tsFire)
+}
+
+
+#' Create regular time series
+#'
+#' @param tsi vector of observations
+#' @param dts dates associated with the observations. This should be a Date object.
+#' @param fun function used to aggregate observations to monthly observations. This should be 'max' or 'mean'.
+#' @param resol desired temporal resolution of the output. This could be 'monthly', 'quart', or 'daily'
+#'
+#' @return a vector with a regular time series object
+#' @export
+#' @import zoo
+#' @import bfast
+toRegularTS <- function(tsi, dts, fun, resol){
+  # len <- length(tsi)
+  # tdist <- tsi[1:(len/2)]
+  # tsi <- tsi[(1+(len/2)):len]
+  tsi <- as.numeric(tsi)
+  if(resol == 'monthly'){
+    z <- zoo(tsi, dts) ## create a zoo (time) series
+    if(fun == 'max'){
+      mz <- as.ts(aggregate(z, as.yearmon, mmax)) ## max
+    }
+    if(fun == 'mean'){
+      mz <- as.ts(aggregate(z, as.yearmon, mean)) ## mean
+    }
+  }else if (resol == 'daily'){
+    mz <- bfastts(tsi, dts, type = "irregular")
+  }else if (resol == 'quart'){
+    z <- zoo(tsi, dts) ## create a zoo (time) series
+    if(fun == 'max'){
+      mz <- as.ts(aggregate(z, as.yearqtr, mmax)) ## max
+    }
+    if(fun == 'mean'){
+      mz <- as.ts(aggregate(z, as.yearqtr, mean)) ## mean
+    }
+  }
+  return(mz)
+}
+
+
+#' Convert a raster stack with irregular time observations to regular time series
+#'
+#' @param x stack of observations, the first raster is a mask (with values 0 and 1). The pixels of the mask that have a value 1 are processed, the pixels with a 0 value are not processed.
+#' @param dts dates of the observations
+#' @param fun unction used to aggregate observations to monthly observations. This should be 'max' or 'mean'.
+#' @param resol desired temporal resolution of the output. This could be 'monthly', 'quart', or 'daily'
+#'
+#' @return stack with regular observations
+#' @export
+toRegularTSStack <- function(x, dts, fun, resol)
+{
+  msk <- x[,1]
+  x <- x[,-1]
+  mask <- apply(x, 1, FUN = function(x) { sum(is.na(x)) / length(x) } )
+  i <- ((mask < 1) & (msk == 1))
+  len <- length(toRegularTS(dts, dts, fun=fun, resol = resol))
+  res <- matrix(NA, length(i), len)
+  if(sum(i) == 1) {
+    res[i,] <- toRegularTS(x[i,], dts, fun=fun, resol = resol)
+  } else if(sum(i) > 1) {
+    res[i,] <- t(apply(x[i,], 1, toRegularTS, dts, fun, resol))
+  }
+  res
+}
+
+#' Helper function for the toRegularTSStack function
+#'
+#' @param x vector of observations
+#'
+#' @return the maximum value of the vector
+#' @export
+mmax <- function(x) {
+  if(length(which.max(x)) == 0) {
+    out <- NA
+  } else {
+    out <- as.numeric(x[which.max(x)])
+  }
+  return(out)
 }
