@@ -99,7 +99,7 @@ test_that("generate regular ts",{
   expect_equal(as.numeric(brquart),c(30,-2, -7,-6))
 })
 
-test_that("generate regular ts",{
+test_that("make mask without fire data",{
   library(terra)
   empty_rast <- rast(nrows =5, ncols = 5)
   lc1 <- empty_rast; values(lc1) <- c(1,2,3,4,5,6,7,1,3,4,5,12,1,1,1,3,9,4,2,3,1,1,5,6,4)
