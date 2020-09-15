@@ -2,7 +2,7 @@
 % Please edit documentation in R/Prep_supporting_data.R
 \name{mmax}
 \alias{mmax}
-\title{Helper function for the toRegularTSStack function}
+\title{Helper function for the toRegularTS function}
 \usage{
 mmax(x)
 }
@@ -13,5 +13,5 @@ mmax(x)
 the maximum value of the vector
 }
 \description{
-Helper function for the toRegularTSStack function
+Helper function for the toRegularTS function
 }

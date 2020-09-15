@@ -532,33 +532,7 @@ toRegularTS <- function(tsi, dts, fun, resol){
   return(mz)
 }
 
-
-#' Convert a raster stack with irregular time observations to regular time series
-#'
-#' @param x stack of observations, the first raster is a mask (with values 0 and 1). The pixels of the mask that have a value 1 are processed, the pixels with a 0 value are not processed.
-#' @param dts dates of the observations
-#' @param fun unction used to aggregate observations to monthly observations. This should be 'max' or 'mean'.
-#' @param resol desired temporal resolution of the output. This could be 'monthly', 'quart', or 'daily'
-#'
-#' @return stack with regular observations
-#' @export
-toRegularTSStack <- function(x, dts, fun, resol)
-{
-  msk <- x[,1]
-  x <- x[,-1]
-  mask <- apply(x, 1, FUN = function(x) { sum(is.na(x)) / length(x) } )
-  i <- ((mask < 1) & (msk == 1))
-  len <- length(toRegularTS(dts, dts, fun=fun, resol = resol))
-  res <- matrix(NA, length(i), len)
-  if(sum(i) == 1) {
-    res[i,] <- toRegularTS(x[i,], dts, fun=fun, resol = resol)
-  } else if(sum(i) > 1) {
-    res[i,] <- t(apply(x[i,], 1, toRegularTS, dts, fun, resol))
-  }
-  res
-}
-
-#' Helper function for the toRegularTSStack function
+#' Helper function for the toRegularTS function
 #'
 #' @param x vector of observations
 #'
