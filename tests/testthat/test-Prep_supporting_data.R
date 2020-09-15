@@ -39,13 +39,12 @@ test_that("Prepare fire time series", {
   dts <- seq(as.Date(paste0(2001,'-01-01')), as.Date(paste0(2001,'-12-31')), by = "1 month")
 
   extfolder <- normalizePath('./data')
+  # to monthly observations
   firemo <- createFireStack(m, fcl, fjd, dts, resol= 'monthly', thres=95, extfolder)
   mfmo <- firemo[,]#rast::as.matrix(firemo)
+  # to daily observations
   fireday <- createFireStack(m, fcl, fjd, dts, resol= 'daily', thres=95, extfolder)
   mfday <- fireday[,]#raster::as.matrix(fireday)
-  # firemo <- calc(st, function(x){createFireStack(x, dts, resol = 'monthly', thres = 95)})
-  # fireday <- calc(st, function(x){createFireStack(x, dts, resol = 'daily', thres = 95)})
-
 
   d1 <- rep(0,365)
   d1[c(33,220)] <- 1
@@ -53,7 +52,6 @@ test_that("Prepare fire time series", {
   d7[232] <- 1
 
   # case 1 - monthly
-  # toFireTS(c(m[,][1,],fcl[,][1,],fjd[,][1,]), dts = dts, resol = 'monthly', thres = 95, olen = 12)
   expect_equal(as.numeric(mfmo[1,]), c(0,1,0,0,0,0,0,1,0,0,0,0), tolerance = 1e-4)
   expect_equal(as.numeric(mfmo[7,]), c(0,0,0,0,0,0,0,1,0,0,0,0), tolerance = 1e-4)
   expect_equal(sum(is.na(mfmo[3,])), 12, tolerance = 1e-4)
@@ -63,3 +61,40 @@ test_that("Prepare fire time series", {
   unlink(file.path(extfolder, 'tsFire.tif'))
 })
 
+test_that("max with NA", {
+  x <- c(1,8,3,9,4,5,NA,20)
+  expect_equal(mmax(x),20)
+})
+
+test_that("generate regular ts",{
+  library(zoo)
+  library(bfast)
+  library(lubridate)
+  tsi <-  c(1, 2, 1,20, 1, 30, -12, -2, -11, -21, -10, -30, -9, -39, -8,-48, -7, -57, -6, -66)
+  dts <- as.Date(c('2001-01-02','2001-01-03','2001-02-02','2001-02-04','2001-03-02','2001-03-04','2001-04-02','2001-04-05','2001-05-02','2001-05-12',
+                          '2001-06-02','2001-06-03','2001-07-02','2001-07-22','2001-08-02','2001-08-12','2001-09-02','2001-09-22','2001-12-02','2001-10-02'))
+  dts <- as.Date(dts, format = "X%Y.%m.%d") ## needed as input in the helper function of get_m_agg
+
+  # create time series of monthly max
+  brmomax <- toRegularTS(tsi, dts, fun = 'max', resol = 'monthly')
+  names(brmomax) <- as.Date(toRegularTS(dts, dts, fun = 'max', resol = 'monthly'))
+  # create time series of monthly mean values
+  brmomean <- toRegularTS(tsi, dts, fun = 'mean', resol = 'monthly')
+  names(brmomean) <- as.Date(toRegularTS(dts, dts, fun = 'mean', resol = 'monthly'))
+  # create daily time series
+  brday <- toRegularTS(tsi, dts, fun = 'max', resol = 'daily')
+  names(brday) <- date_decimal(as.numeric(time(bfastts(rep(1,length(dts)), dts, type = "irregular"))))
+  # create quarterly time series
+  brquart <- toRegularTS(tsi, dts, fun = 'max', resol = 'quart')
+  names(brquart) <- as.Date(toRegularTS(dts, dts, fun = 'mean', resol = 'quart'))
+
+  # case 1 - monthly max
+  expect_equal(as.numeric(brmomax), c(2,20,30,-2,-11,-10,-9,-8,-7,-66,NA,-6), tolerance = 1e-4)
+  # case 2 - monthly mean
+  expect_equal(as.numeric(brmomean), c(1.5,10.5,15.5,-7.0,-16.0,-20.0,-24.0,-28.0,-32.0,-66.0,NA,-6.0), tolerance = 1e-4)
+  # case 3 - daily
+  expect_equal(as.numeric(brday[c(1,2,32,34,60,62,91,94,121,131,152,153,182,202,213,223,244,264,274,335)]),
+               c(1,2,1,20,1,30,-12,-2,-11,-21,-10,-30,-9,-39,-8,-48,-7,-57,-66,-6), tolerance = 1e-4)
+  # case 4 - quarterly
+  expect_equal(as.numeric(brquart),c(30,-2, -7,-6))
+})
