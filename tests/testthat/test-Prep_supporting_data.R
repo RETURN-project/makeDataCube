@@ -120,7 +120,7 @@ test_that("make mask without fire data",{
   expect_equal(as.numeric(out2[,]),c(0,1,1,0,1,0,0,1,1))
   })
 
-test_that("make mask without fire data",{
+test_that("prepare fire data",{
   library(terra)
   empty_rast <- rast(nrows =3, ncols = 3)
   fcl1 <- empty_rast; values(fcl1) <- c(99,3,5,9,1,5,0,0,0)
