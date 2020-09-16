@@ -25,9 +25,9 @@ prepFire(
 
 \item{fdts}{Date object associated with fire layers}
 
-\item{han}{SpatRaster layer with output grid of interest}
+\item{han}{SpatRaster layer with output grid of interest, the CRS of all datasets should be equal to han}
 
-\item{msk}{a mask indicating which pixels should be stored (0=should not be processed, 1=should be processed), should have the same grid as the han layer}
+\item{msk}{a mask indicating which pixels should be stored (0=should not be processed, 1=should be processed)}
 
 \item{tempRes}{temporal resolution of interest for the output fire SpatRaster stack, can be 'monthly', 'daily', or 'quart'}
 

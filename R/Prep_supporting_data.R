@@ -305,8 +305,8 @@ dllFire <- function(ofolder, logfile){
 #' @param fcl a SpatRaster stack with the fire confidence layers
 #' @param fjd a SpatRaster stack with the fire julian day of year layers
 #' @param fdts Date object associated with fire layers
-#' @param han SpatRaster layer with output grid of interest
-#' @param msk a mask indicating which pixels should be stored (0=should not be processed, 1=should be processed), should have the same grid as the han layer
+#' @param han SpatRaster layer with output grid of interest, the CRS of all datasets should be equal to han
+#' @param msk a mask indicating which pixels should be stored (0=should not be processed, 1=should be processed)
 #' @param tempRes temporal resolution of interest for the output fire SpatRaster stack, can be 'monthly', 'daily', or 'quart'
 #' @param Tconf threshold on the fire confidence, only observations with a fire confidence higher than the threshold are considered to be a true fire
 #' @param starttime start time of study period of interest (vector with year, month, day)
@@ -316,8 +316,19 @@ dllFire <- function(ofolder, logfile){
 #' @return
 #' @export
 #' @import terra
+#' @import lubridate
 #'
 prepFire <- function(fcl, fjd, fdts, han, msk, tempRes, Tconf, starttime, endtime, extfolder){
+# check if extent, spatial resolution and CRS of han and msk match
+  if ((res(han)[2] != res(msk)[2])|| (crs(han) != crs(msk))||
+      (res(han)[2] != res(fcl)[2])|| (crs(han) != crs(fcl))||
+      (res(han)[2] != res(fjd)[2])|| (crs(han) != crs(fjd))){
+    stop("the CRS of the SpatRaster layers do not match")
+  }
+  # only resample mask data if needed
+  if ((ext(han) != ext(msk)) || (res(han)[1] != res(msk)[1])){
+    msk <- terra::resample(msk, han, method ='near')
+  }
 # resample fire data to same grid
 fcl30 <- terra::resample(fcl, han, method ='near', filename = file.path(extfolder, 'fcl30.tif'), overwrite = T)
 names(fcl30) <- fdts
@@ -337,7 +348,6 @@ names(tsFire) <- dtsfr
 # extend the fire data time span to the study period
 rstNA <- han
 values(rstNA) <- rep(NaN,ncell(han))
-# rstNA[] <- NA
 startyr <- as.Date(paste0(starttime[1],'-',starttime[2],'-',starttime[3]))
 endyr <- as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3]))
 dtstot <- as.Date(toRegularTS(c(startyr, dtsfr, endyr), c(startyr, dtsfr, endyr), fun='max', resol = tempRes))
