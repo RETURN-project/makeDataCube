@@ -72,7 +72,7 @@ test_that("generate regular ts",{
   library(lubridate)
   tsi <-  c(1, 2, 1,20, 1, 30, -12, -2, -11, -21, -10, -30, -9, -39, -8,-48, -7, -57, -6, -66)
   dts <- as.Date(c('2001-01-02','2001-01-03','2001-02-02','2001-02-04','2001-03-02','2001-03-04','2001-04-02','2001-04-05','2001-05-02','2001-05-12',
-                          '2001-06-02','2001-06-03','2001-07-02','2001-07-22','2001-08-02','2001-08-12','2001-09-02','2001-09-22','2001-12-02','2001-10-02'))
+                   '2001-06-02','2001-06-03','2001-07-02','2001-07-22','2001-08-02','2001-08-12','2001-09-02','2001-09-22','2001-12-02','2001-10-02'))
   dts <- as.Date(dts, format = "X%Y.%m.%d") ## needed as input in the helper function of get_m_agg
 
   # create time series of monthly max
@@ -118,7 +118,7 @@ test_that("make mask without fire data",{
 
   expect_equal(as.numeric(out[,]),c(1,1,1,0,1,0,0,1,1,1,1,0,0,0,1,1,0,1,1,1,1,0,1,0,1))
   expect_equal(as.numeric(out2[,]),c(0,1,1,0,1,0,0,1,1))
-  })
+})
 
 test_that("prepare fire data",{
   library(terra)
@@ -138,6 +138,7 @@ test_that("prepare fire data",{
   jd6 <- empty_rast; values(jd6) <- c(232,0,0,0,0,0,239,0,0)#aug
   fjd <- c(jd1,jd2,jd3,jd4,jd5,jd6)
   # empty_rast2 <- rast(nrows = 5, ncols = 5)#, xmin = -99, xmax = 99, ymin = -33, ymax = 33
+
   han <- empty_rast; values(han) <- c(99,86,87,82,88,96,94,92,93)
   extfolder <- normalizePath('./data')
   fdts <- as.Date(c('2001-03-01','2001-04-01','2001-05-01','2001-06-01','2001-07-01','2001-08-01'))
@@ -146,16 +147,25 @@ test_that("prepare fire data",{
   starttime <- c(2001,1,1)
   endtime <- c(2001,12,1)
   extfolder <- normalizePath('./data')
+
+  # same spatial resolution and extent
   out <- prepFire(fcl, fjd, fdts, han, msk, tempRes, Tconf = 85, starttime, endtime, extfolder)
   outm <- out[,]
 
+  # different spatial resolution and extent, need to extend observation period
   empty_rast2 <- rast(nrows = 3, ncols = 3, xmin = -180, xmax = 180, ymin = -90, ymax = 27)#, xmin = -99, xmax = 99, ymin = -33, ymax = 33
   han <- empty_rast2; values(han) <- c(99,86,87,82,88,96,94,92,93)
   msk <- empty_rast2; values(msk) <- c(1,1,0,1,1,1,1,1,1)
   out2 <- prepFire(fcl, fjd, fdts, han, msk, tempRes, Tconf = 85, starttime, endtime, extfolder)
   out2m <- out2[,]
 
+  # start date of study period later than start of fire dataset
+  starttime <- c(2001,4,1)
+  out3 <- prepFire(fcl, fjd, fdts, han, msk, tempRes, Tconf = 85, starttime, endtime, extfolder)
+  out3m <- out3[,]
+
   expect_equal(as.numeric(outm[1,]),c(NaN,NaN,1,0,0,0,1,0,NaN, NaN, NaN, NaN))
-  expect_equal(as.numeric(outm[1,]),c(NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN, NaN, NaN, NaN))
+  expect_equal(as.numeric(outm[3,]),c(NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN, NaN, NaN, NaN))
   expect_equal(as.numeric(out2m[1,]),c(NaN,NaN,0,0,0,0,1,0,NaN, NaN, NaN, NaN))
+  expect_equal(as.numeric(out3m[1,]),c(0,0,0,1,0,NaN, NaN, NaN, NaN))
 })
