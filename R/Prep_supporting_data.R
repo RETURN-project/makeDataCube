@@ -317,18 +317,45 @@ dllFire <- function(ofolder, logfile){
 #' @export
 #' @import terra
 #' @import lubridate
+#' @import zoo
 #'
 prepFire <- function(fcl, fjd, fdts, han, msk, tempRes, Tconf, starttime, endtime, extfolder){
-# check if extent, spatial resolution and CRS of han and msk match
-  if ((res(han)[2] != res(msk)[2])|| (crs(han) != crs(msk))||
-      (res(han)[2] != res(fcl)[2])|| (crs(han) != crs(fcl))||
-      (res(han)[2] != res(fjd)[2])|| (crs(han) != crs(fjd))){
+  # convert to date object
+  startyr <- as.Date(paste0(starttime[1],'-',starttime[2],'-',starttime[3]))
+  endyr <- as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3]))
+
+# check if spatial resolution and CRS of han and msk match
+  if ((crs(han) != crs(msk))|| (crs(han) != crs(fcl))|| (crs(han) != crs(fjd))){
     stop("the CRS of the SpatRaster layers do not match")
   }
+  # check if the number of layers match the number expected by the supplied dates
+  dtsexp <- as.Date(toRegularTS(fdts, fdts, fun='max', resol = 'monthly'))#expected dates if no missing observations
+  if(length(dtsexp) != length(fdts) ){
+    stop("There are likely missing layers in the fire dataset. Check if all dates were downloaded")
+  }
+  # check if the number of layers match the number of supplied dates
+  if(dim(fcl)[3] != length(fdts) ){
+    stop("The number of dates does not match the number of layers in the fire dataset")
+  }
   # only resample mask data if needed
-  if ((ext(han) != ext(msk)) || (res(han)[1] != res(msk)[1])){
+  if ((res(han)[1] != res(msk)[1]) || (res(han)[2] != res(msk)[2])||(ext(han) != ext(msk))){
     msk <- terra::resample(msk, han, method ='near')
   }
+  # prepare the dataset over the area of interest
+  fclc <- terra::crop(fcl, ext(han), snap = 'out', filename = file.path(extfolder, 'fireclCrop.tif'),
+                      overwrite = T)# crop stack to the area of interest
+  names(fclc) <- fdts
+  fcl <- fclc[[which((fdts >= startyr) & (fdts <= endyr))]]# remove observations outside the predefined observation period
+  terra::writeRaster(fcl, file.path(extfolder, 'fcl.tif'), overwrite=TRUE)# save the raster as geoTIFF file
+
+  fjdc <- terra::crop(fjd, ext(han), snap = 'out',filename = file.path(extfolder, 'firejdCrop.tif'),
+                      overwrite = T)# crop stack to the area of interest
+  names(fjdc) <- fdts
+  fjd <- fjdc[[which((fdts >= startyr) & (fdts <= endyr))]]# remove observations outside the predefined observation period
+  fdts <- fdts[which((fdts >= startyr) & (fdts <= endyr))]
+  terra::writeRaster(fjd, file.path(extfolder, 'fjd.tif'), overwrite=TRUE)# save the raster as geoTIFF file
+  save(fdts, file = file.path(extfolder,'fireDates'))
+
 # resample fire data to same grid
 fcl30 <- terra::resample(fcl, han, method ='near', filename = file.path(extfolder, 'fcl30.tif'), overwrite = T)
 names(fcl30) <- fdts
@@ -338,18 +365,25 @@ names(fjd30) <- fdts
 # generate an image stack containing regular fire time series at the predefined temporal resolution with value 1 if a fire occured and 0 if no fire occured
 tsFire <- createFireStack(msk, fcl30, fjd30, fdts, resol= tempRes, thres=Tconf, extfolder)
 
-rm(fcl30, fjd30)
 # Get associated dates
 dtsfr <- as.Date(toRegularTS(fdts, fdts, fun='max', resol = tempRes))
 if(tempRes == 'monthly'){
   dtsfr <- rollback(dtsfr, roll_to_first = TRUE, preserve_hms = TRUE)
 }
 names(tsFire) <- dtsfr
+
+# remove temp files
+rm(fcl30, fclc, fjd30, fjdc, fcl, fjd)
+unlink(file.path(extfolder, 'fcl30.tif'))
+unlink(file.path(extfolder, 'fjd30.tif'))
+unlink(file.path(extfolder, 'fcl.tif'))
+unlink(file.path(extfolder, 'fjd.tif'))
+unlink(file.path(extfolder, 'fireclCrop.tif'))
+unlink(file.path(extfolder, 'firejdCrop.tif'))
+
 # extend the fire data time span to the study period
 rstNA <- han
 values(rstNA) <- rep(NaN,ncell(han))
-startyr <- as.Date(paste0(starttime[1],'-',starttime[2],'-',starttime[3]))
-endyr <- as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3]))
 dtstot <- as.Date(toRegularTS(c(startyr, dtsfr, endyr), c(startyr, dtsfr, endyr), fun='max', resol = tempRes))
 
 tsFire2 <- tsFire
@@ -399,6 +433,13 @@ getGrid <- function(l2folder, cubefolder, ext){
 #' @import terra
 #'
 makeMaskNoFire <- function(lc, lcDates, han, extfolder, Tyr, Ttree){
+  # check if extent, spatial resolution and CRS of han and msk match
+  if (crs(han) != crs(lc)){
+    stop("the CRS of the SpatRaster layers does not match")
+  }
+  if (dim(lc)[3] != length(lcDates)){
+    stop("the number of dates does not match the number of land cover layers")
+  }
   # resample and project all rasters to the same grid
   lc30 <- terra::resample(lc, han, method ='ngb', filename = file.path(extfolder, 'lc30.tif'), overwrite = T)
   names(lc30) <- lcDates
