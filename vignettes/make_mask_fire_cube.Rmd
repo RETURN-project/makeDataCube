@@ -115,10 +115,9 @@ for(ti in 1:length(elist)){
   # Download fire data
   firefls <- dllFire(firefolder, firelogfile)
   # Crop the fire data to exent and time period of interest, resample and generate a binary time series (1 = fire, 0 = no fire) at the temporal resolution of interest
-  fcl <- terra:rast(file.path(extfolder,'fireCL.tif'))
-  fjd <- terra::rast(file.path(extfolder,'fireJD.tif'))
-  fdts <- as.Date(loadRData(file.path(extfolder,'fireDates')))
-  
+  fcl <- terra:rast(file.path(firefolder,firefls$fireclfiles))
+  fjd <- terra::rast(file.path(firefolder,firefls$firejdfiles))
+  fdts <- as.Date(firefls$fireclfiles, format = "%Y%m%d-ESACCI-L3S_FIRE-BA-MODIS-AREA_2-fv5.1-CL.tif")
   tsFire2 <- prepFire(fcl, fjd, fdts, han, msk, tempRes, Tconf, starttime, endtime, extfolder)
   # Export the fire data to the temporary folder
   nms <-str_replace_all(names(tsFire2),'-','_')
