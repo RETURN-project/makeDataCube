@@ -119,3 +119,43 @@ test_that("make mask without fire data",{
   expect_equal(as.numeric(out[,]),c(1,1,1,0,1,0,0,1,1,1,1,0,0,0,1,1,0,1,1,1,1,0,1,0,1))
   expect_equal(as.numeric(out2[,]),c(0,1,1,0,1,0,0,1,1))
   })
+
+test_that("make mask without fire data",{
+  library(terra)
+  empty_rast <- rast(nrows =3, ncols = 3)
+  fcl1 <- empty_rast; values(fcl1) <- c(99,3,5,9,1,5,0,0,0)
+  fcl2 <- empty_rast; values(fcl2) <- c(2,0,0,0,0,0,0,0,0)
+  fcl3 <- empty_rast; values(fcl3) <- c(2,0,96,0,0,0,0,0,0)
+  fcl4 <- empty_rast; values(fcl4) <- c(2,0,0,0,0,0,0,0,97)
+  fcl5 <- empty_rast; values(fcl5) <- c(98,0,0,99,0,0,0,0,0)
+  fcl6 <- empty_rast; values(fcl6) <- c(2,0,0,0,0,0,99,0,0)
+  fcl <- c(fcl1,fcl2,fcl3,fcl4,fcl5,fcl6)
+  jd1 <- empty_rast; values(jd1) <- c(75,76,77,79,71,78,0,0,0)#mar
+  jd2 <- empty_rast; values(jd2) <- c(102,0,0,0,0,0,0,0,0)#apr
+  jd3 <- empty_rast; values(jd3) <- c(132,0,136,0,0,0,0,0,0)#may
+  jd4 <- empty_rast; values(jd4) <- c(162,0,0,0,0,0,0,0,167)#jun
+  jd5 <- empty_rast; values(jd5) <- c(208,0,0,210,0,0,0,0,0)#jul
+  jd6 <- empty_rast; values(jd6) <- c(232,0,0,0,0,0,239,0,0)#aug
+  fjd <- c(jd1,jd2,jd3,jd4,jd5,jd6)
+  # empty_rast2 <- rast(nrows = 5, ncols = 5)#, xmin = -99, xmax = 99, ymin = -33, ymax = 33
+  han <- empty_rast; values(han) <- c(99,86,87,82,88,96,94,92,93)
+  extfolder <- normalizePath('./data')
+  fdts <- as.Date(c('2001-03-01','2001-04-01','2001-05-01','2001-06-01','2001-07-01','2001-08-01'))
+  msk <- empty_rast; values(msk) <- c(1,1,0,1,1,1,1,1,1)
+  tempRes <- 'monthly'
+  starttime <- c(2001,1,1)
+  endtime <- c(2001,12,1)
+  extfolder <- normalizePath('./data')
+  out <- prepFire(fcl, fjd, fdts, han, msk, tempRes, Tconf = 85, starttime, endtime, extfolder)
+  outm <- out[,]
+
+  empty_rast2 <- rast(nrows = 3, ncols = 3, xmin = -180, xmax = 180, ymin = -90, ymax = 27)#, xmin = -99, xmax = 99, ymin = -33, ymax = 33
+  han <- empty_rast2; values(han) <- c(99,86,87,82,88,96,94,92,93)
+  msk <- empty_rast2; values(msk) <- c(1,1,0,1,1,1,1,1,1)
+  out2 <- prepFire(fcl, fjd, fdts, han, msk, tempRes, Tconf = 85, starttime, endtime, extfolder)
+  out2m <- out2[,]
+
+  expect_equal(as.numeric(outm[1,]),c(NaN,NaN,1,0,0,0,1,0,NaN, NaN, NaN, NaN))
+  expect_equal(as.numeric(outm[1,]),c(NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN, NaN, NaN, NaN))
+  expect_equal(as.numeric(out2m[1,]),c(NaN,NaN,0,0,0,0,1,0,NaN, NaN, NaN, NaN))
+})
