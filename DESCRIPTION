@@ -21,7 +21,10 @@ Imports: raster,
          readtext,
          zoo,
          bfast,
-         reticulate
+         reticulate,
+         lubridate,
+         zoo, 
+         terra
 Suggests: testthat,
           knitr,
           rmarkdown,
