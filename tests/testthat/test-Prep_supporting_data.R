@@ -38,6 +38,7 @@ test_that("Prepare fire time series", {
   fjd <- c(jd1,jd2,jd3,jd4,jd5,jd6,jd7,jd8,jd9,jd10,jd11,jd12)
   dts <- seq(as.Date(paste0(2001,'-01-01')), as.Date(paste0(2001,'-12-31')), by = "1 month")
 
+  if(!dir.exists('./data')){dir.create('./data')}
   extfolder <- normalizePath('./data')
   # to monthly observations
   firemo <- createFireStack(m, fcl, fjd, dts, resol= 'monthly', thres=95, extfolder)
@@ -119,6 +120,7 @@ test_that("make mask without fire data",{
                                        86,87,82,88,96,
                                        94,92,93,99,86,
                                        87,82,88,96,94)
+  if(!dir.exists('./data')){dir.create('./data')}
   extfolder <- normalizePath('./data')
   lcDates <- as.Date(c('2000-01-01','2001-01-01'))
 
@@ -156,6 +158,7 @@ test_that("prepare fire data",{
   # empty_rast2 <- rast(nrows = 5, ncols = 5)#, xmin = -99, xmax = 99, ymin = -33, ymax = 33
 
   han <- empty_rast; values(han) <- c(99,86,87,82,88,96,94,92,93)
+  if(!dir.exists('./data')){dir.create('./data')}
   extfolder <- normalizePath('./data')
   fdts <- as.Date(c('2001-03-01','2001-04-01','2001-05-01','2001-06-01','2001-07-01','2001-08-01'))
   msk <- empty_rast; values(msk) <- c(1,1,0,1,1,1,1,1,1)
@@ -203,7 +206,7 @@ test_that("prepare land cover data",{
            lc2a,lc2b,lc2a,lc2b,lc2a,lc2b,lc2a,lc2b,lc2a,lc2b,
            lc2a,lc2b,lc2a,lc2b,lc2a,lc2a,lc2b,lc2a,lc2b,lc2a,
            lc2b,lc2a,lc2b,lc2a,lc2b)
-
+  if(!dir.exists('./data')){dir.create('./data')}
   datafolder <- normalizePath('./data')
   ext <- c(-30,10,-30,10)
   lc_rst <- list(lc1,lc2)
@@ -241,6 +244,7 @@ test_that("prepare tree cover data",{
   han2 <- empty_rast2; values(han2) <- 11:19
   hanmsk2 <- empty_rast2; values(hanmsk2) <- c(1,1,0,1,1,1,0,1,1)
 
+  if(!dir.exists('./data')){dir.create('./data')}
   datafolder <- normalizePath('./data')
   ext <- c(-60,10,-30,30)
   hanfiles <- list(han1,han2)
