@@ -230,5 +230,25 @@ test_that("prepare land cover data",{
   expect_equal(as.numeric(out1[[1]][,]),c(22,23,32,33))
   expect_equal(as.numeric(out1[[2]][,]),c(22,23,32,18))
   expect_equal(dim(out1)[3],2)
-
   })
+
+test_that("prepare tree cover data",{
+  empty_rast <- rast(nrows = 3, ncols = 3, nlyrs=1, xmin = -30, xmax = 30, ymin = -30, ymax = 30)#, xmin = -99, xmax = 99, ymin = -33, ymax = 33
+  han1 <- empty_rast; values(han1) <- 1:9
+  hanmsk1 <- empty_rast; values(hanmsk1) <- c(1,1,1,1,1,1,0,1,1)
+
+  empty_rast2 <- rast(nrows = 3, ncols = 3, nlyrs=1, xmin = -90, xmax = -30, ymin = -30, ymax = 30)#, xmin = -99, xmax = 99, ymin = -33, ymax = 33
+  han2 <- empty_rast2; values(han2) <- 11:19
+  hanmsk2 <- empty_rast2; values(hanmsk2) <- c(1,1,0,1,1,1,0,1,1)
+
+  datafolder <- normalizePath('./data')
+  ext <- c(-60,10,-30,30)
+  hanfiles <- list(han1,han2)
+  hanmaskfiles <- list(hanmsk1,hanmsk2)
+
+  out <- prepTreecover(datafolder, ext, fname = 'treecover.tif', hanfiles, hanmaskfiles)
+  expect_equal(as.numeric(out[,]),c(NaN,1,2,16,4,5,19,NaN,8))
+  }
+)
+
+
