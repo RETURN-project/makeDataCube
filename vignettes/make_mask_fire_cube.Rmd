@@ -110,7 +110,13 @@ for(ti in 1:length(elist)){
   # Download tree cover data
   tcfls <- dllTreecover(tcfolder, exti, tclogfile)
   # Crop the tree cover data to exent of interest and mask nodata values
-  prepTreecover(tcfolder, extfolder, exti, fname = 'treecover.tif', tcfls$hanfiles, tcfls$hanmaskfiles)
+  hanfiles <- list()
+  hanmaskfiles <- list()
+  for(i in 1:length(tcfls$hanfiles)){
+    hanfiles[[i]] <- terra::rast(file.path(ifolder, tcfls$hanfiles[i]))
+    hanmaskfiles[[i]] <- terra::rast(file.path(ifolder, tcfls$hanmaskfiles[i]))
+  }
+  prepTreecover(tcfolder, extfolder, exti, fname = 'treecover.tif', hanfiles, hanmaskfiles)
   
   # ----------------------
   ## Generate mask without fire information
