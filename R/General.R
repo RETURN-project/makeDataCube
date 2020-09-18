@@ -154,7 +154,7 @@ ext_overlap <- function(pol,rst){
 #'
 max_narm = function(x,...){
   if(sum(is.na(x))==length(x)){
-    return(rep(NA,length(x)))
+    return(NA)
   }else{
     return(max(x,na.rm=TRUE))
   }}
