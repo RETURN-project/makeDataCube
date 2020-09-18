@@ -7,6 +7,11 @@ after_success:
   - Rscript -e 'library(covr); codecov()'
 addons:
   apt:
+    sources:
+      - sourceline: 'ppa:ubuntugis/ubuntugis-unstable'
     packages:
       - libudunits2-dev
       - libpoppler-cpp-dev
+      - libproj-dev
+      - libgeos-dev
+      - libgdal-dev
