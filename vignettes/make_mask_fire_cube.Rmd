@@ -33,8 +33,8 @@ Other pixels are set to 0.
 Rtmpfolder <- normalizePath(file.path('..', 'data'))# folder where all temporary R files should be stored Rtmpfolder <- '/project/return/Data/tempR'
 forcefolder <- normalizePath(file.path('..', 'data'))#'/home/wanda/Documents/data/force_small'#file.path('..', 'data')#forcefolder <- '/home/wanda/Documents/data/force' forcefolder <- '/project/return/Data/force'
 ext <- c(-43.38238361637443,-43.27938679020256,-4.555765244985907,-4.451717415449725)#extent, vector with xmin, xmax, ymin, ymax in degrees
-starttime <- c(1998,01,01)#start date: year, month, day
-endtime <- c(2018,12,31)#end date: year, month, day
+startyear <- 1998 #start year
+endyear <- 2018 #end year
 
 # settings for the mask
 Ttree <- 60# threshold for the tree cover percentage (in year 2000)
@@ -44,6 +44,11 @@ tempRes <- 'monthly'# desired temporal resolution of the fire data
 resMask <- 30 # desired resolution of the raster in the cube (nearest neighbor resampling)
 resFire <- 30 # desired resolution of the raster in the cube (nearest neighbor resampling)
 cubefolder <- 's-america'# folder where data cube is stored
+```
+
+```{r time, include=F}
+starttime <- c(startyear,01,01)#start date: year, month, day
+endtime <- c(endyear,12,31)#end date: year, month, day
 ```
 
 ## Generate the directory structure
@@ -87,12 +92,18 @@ for(ti in 1:length(elist)){
   
   # ----------------------
   ## Prepare land cover data
-  # First MapBiomas land cover data are downloaded if they are not available yet. Then the land cover data are cropped to the extent of the study area, and the study period of interest. Currently, MapBiomas data are only available for the years 1985 - 2018.
+  # First MapBiomas land cover data are downloaded if they are not available yet. Then the land cover data are cropped to the extent of the study area, and the study period of interest. Currently, MapBiomas data are only available for the years 1985 - 2019.
   
   # Download MapBiomas land cover data
   dllLandcover(lcfolder, lclogfile)
   # Crop the land cover data to extent and time period of interest 
-  prepLandcover(lcfolder, extfolder, exti, fname = 'landcover.tif', as.Date(paste0(starttime[1],'-',starttime[2],'-',starttime[3])), as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3])))
+  lc_rst <- list()
+  lcregions <- c('AMAZONIA', 'PANTANAL', 'CAATINGA', 'MATAATLANTICA', 'CERRADO', 'PAMPA')
+  for(i in 1:length(lcregions)){
+    lcfiles <- paste0(lcregions[i], '-', 1985:2019, '.tif')
+    lc_rst[[i]] <- terra::rast(file.path(ifolder, lcfiles)) # open land cover data file
+  }
+  prepLandcover(lc_rst, extfolder, exti, fname = 'landcover.tif', as.Date(paste0(starttime[1],'-',starttime[2],'-',starttime[3])), as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3])))
   
   # ----------------------
   ## Prepare tree cover data

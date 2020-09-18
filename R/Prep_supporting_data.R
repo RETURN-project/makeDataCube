@@ -17,29 +17,50 @@
 #' @import RCurl
 #'
 dllLandcover <- function(ofolder, logfile){
-  lcfiles <- c('COLECAO_4_1_CONSOLIDACAO_amazonia.tif', 'COLECAO_4_1_CONSOLIDACAO_caatinga.tif', 'COLECAO_4_1_CONSOLIDACAO_cerrado.tif', 'COLECAO_4_1_CONSOLIDACAO_mataatlantica.tif', 'COLECAO_4_1_CONSOLIDACAO_pampa.tif', 'COLECAO_4_1_CONSOLIDACAO_pantanal.tif')
-  lcurl <- c('https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/amazonia.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/caatinga.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/cerrado.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/mataatlantica.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/pampa.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/pantanal.tif')
+  lcregions <- c('AMAZONIA', 'PANTANAL', 'CAATINGA', 'MATAATLANTICA', 'CERRADO', 'PAMPA')
+  baseurl <- 'https://storage.googleapis.com/mapbiomas-public/COLECAO/5/DOWNLOADS/COLECOES/ANUAL/'
+  lcfiles <- paste0(rep(lcregions, each = 35), '-', 1985:2019, '.tif')
+  lcurl <- paste0(baseurl, rep(lcregions, each = 35), '/', rep(lcregions, each = 35), '-', 1985:2019, '.tif')
+  # https://storage.cloud.google.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/amazonia.tif?authuser=1&organizationId=482907382829
+# download missing land cover files
+miss <- which(! lcfiles %in% list.files(ofolder))# files that are not available
 
-  # download missing land cover files
-  miss <- which(! lcfiles %in% list.files(ofolder))# files that are not available
-
-  if (length(miss)>0){
-    for(i in 1:length(miss)){
-        tryCatch(
-          {download.file(lcurl[miss[i]], file.path(ofolder, lcfiles[miss[i]]))},
-          error=function(cond) {
-            line <- sprintf("%s not downloaded at %s \n", lcfiles[miss[i]], ofolder)
-            write(line,file=logfile,append=TRUE)
-            message(line)
-          })
-    }
-    # sapply(1:length(miss), function(i) download.file(lcurl[miss[i]], file.path(ofolder, lcfiles[miss[i]])))
-  }}
+if (length(miss)>0){
+  for(i in 1:length(miss)){
+    tryCatch(
+      {download.file(lcurl[miss[i]], file.path(ofolder, lcfiles[miss[i]]))},
+      error=function(cond) {
+        line <- sprintf("%s not downloaded at %s \n", lcfiles[miss[i]], ofolder)
+        write(line,file=logfile,append=TRUE)
+        message(line)
+      })
+  }
+  # sapply(1:length(miss), function(i) download.file(lcurl[miss[i]], file.path(ofolder, lcfiles[miss[i]])))
+}}
+# dllLandcover <- function(ofolder, logfile){
+#   lcfiles <- c('COLECAO_4_1_CONSOLIDACAO_amazonia.tif', 'COLECAO_4_1_CONSOLIDACAO_caatinga.tif', 'COLECAO_4_1_CONSOLIDACAO_cerrado.tif', 'COLECAO_4_1_CONSOLIDACAO_mataatlantica.tif', 'COLECAO_4_1_CONSOLIDACAO_pampa.tif', 'COLECAO_4_1_CONSOLIDACAO_pantanal.tif')
+#   lcurl <- c('https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/amazonia.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/caatinga.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/cerrado.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/mataatlantica.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/pampa.tif', 'https://storage.googleapis.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/pantanal.tif')
+#
+#   # download missing land cover files
+#   miss <- which(! lcfiles %in% list.files(ofolder))# files that are not available
+#
+#   if (length(miss)>0){
+#     for(i in 1:length(miss)){
+#         tryCatch(
+#           {download.file(lcurl[miss[i]], file.path(ofolder, lcfiles[miss[i]]))},
+#           error=function(cond) {
+#             line <- sprintf("%s not downloaded at %s \n", lcfiles[miss[i]], ofolder)
+#             write(line,file=logfile,append=TRUE)
+#             message(line)
+#           })
+#     }
+#     # sapply(1:length(miss), function(i) download.file(lcurl[miss[i]], file.path(ofolder, lcfiles[miss[i]])))
+#   }}
 
 #' Prepare the MapBiomas land cover data:
 #' Crop the land cover data to the desired extent and extract the study period of interest
 #'
-#' @param ifolder Directory of the MapBiomas files
+#' @param lc_rst list of the MapBiomas SpatRasters
 #' @param datafolder Directory where the processed land cover data will be stored
 #' @param ext Geographic extent that should be processed
 #' @param fname Output file name
@@ -50,52 +71,63 @@ dllLandcover <- function(ofolder, logfile){
 #' @export
 #' @import raster
 #' @import terra
+#' @import rgeos
 #'
-prepLandcover <- function(ifolder, datafolder, ext, fname = 'landcover.tif', startyr, endyr){
-  lcfiles <- c('COLECAO_4_1_CONSOLIDACAO_amazonia.tif', 'COLECAO_4_1_CONSOLIDACAO_caatinga.tif', 'COLECAO_4_1_CONSOLIDACAO_cerrado.tif', 'COLECAO_4_1_CONSOLIDACAO_mataatlantica.tif', 'COLECAO_4_1_CONSOLIDACAO_pampa.tif', 'COLECAO_4_1_CONSOLIDACAO_pantanal.tif')
-  #
+prepLandcover <- function(lc_rst, datafolder, ext, fname = 'landcover.tif', startyr, endyr){
+  # check if the start and end time are correct
+  if(startyr < as.Date('1985-01-01') || endyr > as.Date('2019-01-01')){
+    stop('The selected time period does not match the land cover data. Please select dates between (and including) 1985-01-01 and 2019-01-01')
+  }
+  # generate a polygon with extent of interest
+  poly <- as(raster::extent(ext), "SpatialPolygons")
+  proj4string(poly) <- CRS("+proj=longlat +datum=WGS84")
+  # iterate over land cover rasters
   it <- 0
-  for(i in 1:length(lcfiles)){
-    rst <- terra::rast(file.path(ifolder, lcfiles[i])) # open land cover data file
-    lc1 <- terra::crop(rst[[1]], ext, snap = 'in', filename=file.path(datafolder, 'lcCrop1.tif'), overwrite=T)# cut the first image to the extent of interest
-    vals <- unique(lc1)# values of the raster
-    if(length(vals) > 1 | vals[1]!=0){# raster is not empty
+  for(i in 1:length(lc_rst)){
+    rst <- lc_rst[[i]] # open land cover data file
+    # check if spatial extents are overlapping
+    do_overlap <- ext_overlap(poly, rst)
+    if(do_overlap<4){# raster contains (at least partially) area of interest
       it <- it + 1
       lcc <- terra::crop(rst, ext, snap = 'in', filename=file.path(datafolder, 'lcCrop.tif'), overwrite=T)# cut the image to the extent of interest
+      if(do_overlap>1){# cropped raster does not necessary contain entire study area
+        lcc <- terra::expand(lcc,terra::ext(ext))
+      }
       if(it ==1){
         lc <- terra::classify(lcc,matrix(c(27, NA, 2,2), ncol=2, byrow=TRUE), include.lowest=TRUE, filename=file.path(datafolder, 'lcReclass.tif'), overwrite=T)# set missing values to NA
-      }else{# if study area covers more than one land cover raster, append rasters
+      }else{# if study area covers more than one land cover raster, merge rasters
         sti <- terra::classify(lcc,matrix(c(27, NA, 2,2), ncol=2, byrow=TRUE), include.lowest=TRUE, filename=file.path(datafolder, paste0('lcReclass_',i,'.tif')), overwrite=T)
-        lc <- raster::overlay(raster(file.path(datafolder, 'lcReclass.tif')),
-                              raster(file.path(datafolder, paste0('lcReclass_',i,'.tif'))),
-                              fun=max,
+        lcr <- raster::overlay(stack(file.path(datafolder, 'lcReclass.tif')),
+                              stack(file.path(datafolder, paste0('lcReclass_',i,'.tif'))),
+                              fun=max_narm,#pmax(...,na.rm=T),#function(x,y){pmax(x,y,na.rm=T)},#max_na
                               filename = file.path(datafolder, paste0('lcReclass.tif')),
                               overwrite=TRUE)# merge all raster stacks to one stack for the study region
-        lc <- terra::rast(raster(file.path(datafolder, 'lcReclass.tif')))
+        lc <- terra::rast(file.path(datafolder, 'lcReclass.tif'))
         # remove temporary files
-        rm(sti)
+        rm(sti,lcr)
       }
       # remove temporary files
       rm(lcc)
       unlink(file.path(datafolder, 'lcCrop.tif'))
     }
-    rm(rst, lc1, vals)
-    unlink(file.path(datafolder, 'lcCrop1.tif'))
+    rm(rst)
   }
-  dtslc <- as.Date(paste0(1985:2018, '-01-01'), format = '%Y-%m-%d')# dates of each layer
+  # dates of each layer
+  dtslc <- as.Date(paste0(1985:2019, '-01-01'), format = '%Y-%m-%d')
   names(lc) <- dtslc
+  # crop to study period of interest
   lcfin <- lc[[which((dtslc >= startyr) & (dtslc <= endyr))]]# remove observations outside the predefined observation period
   dtslc <- dtslc[which((dtslc >= startyr) & (dtslc <= endyr))]
   # save results
   save(dtslc, file = file.path(datafolder,'lcDates'))
   terra::writeRaster(lcfin, file.path(datafolder, fname), overwrite=TRUE)# save the raster as geoTIFF file
   # remove temporary files
-  unlink(file.path(datafolder, 'lcReclass.tif'))
-  for(i in 2:length(lcfiles)){
+  # unlink(file.path(datafolder, 'lcReclass.tif'))
+  for(i in 2:length(lc_rst)){
     unlink(file.path(datafolder, paste0('lcReclass_',i,'.tif')))
   }
+  return(lcfin)
 }
-
 
 #' Download tree cover
 #' This dataset is the result from time-series analysis of Landsat images in characterizing global forest extent and change from 2000 through 2018.
@@ -445,14 +477,21 @@ makeMaskNoFire <- function(lc, lcDates, han, extfolder, Tyr, Ttree){
   names(lc30) <- lcDates
 
   # select areas that consist of only natural land cover types
-  m <- c(0, 0, 1,
+  m <- c(NA, NA, 1,
+         NaN, NaN, 1,
+         0, 0, 1,
          1, 8, 0,
          9, 9, 1,
          10,13,0,
          14,22,1,
          23,23,0,
-         24,50,1)
+         24,28,1,
+         29,29,0,
+         30,31,1,
+         32,32,0,
+         33,50,1)
   rclmat <- matrix(m, ncol=3, byrow=TRUE)
+  rclmat[,1] <- rclmat[,1]-0.1;rclmat[,2]<-rclmat[,2]+0.1
   msklc <- terra::classify(lc30, rclmat, include.lowest=TRUE)
   msklc <- sum(msklc)
   msklc <- (msklc == 0)

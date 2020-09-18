@@ -17,7 +17,6 @@ loadRData <- function(fileName){
 #' @return generates a folder structure
 #' @export
 #'
-#' @examples
 setFolders <- function(forcefolder){
   if (!dir.exists(forcefolder)){
     stop('directory does not exist')
@@ -118,3 +117,44 @@ checkLSlog <- function(scenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissio
   write(line,file=Smissionlogfile,append=TRUE)
 }
 
+#' Check if a polygon and raster contain each other, intersect, or are not overlapping
+#'
+#' @param pol polygon
+#' @param rst SpatRaster object
+#'
+#' @return 1 if raster contains the polygon, 2 if polygon contains the raster or polygon, 3 if polygon and raster intersect,
+#' and 3 if there is no overlap
+#' @export
+#' @import rgeos
+#' @import rgdal
+#' @import terra
+#'
+ext_overlap <- function(pol,rst){
+  ext_lst <- as.list(ext(rst))#array of extent
+  ei <- as(extent(unlist(ext_lst)), "SpatialPolygons")# spatial polygon of extent
+  proj4string(ei) <- showP4(crs(rst))# assign crs to polygon
+  if (gContainsProperly(ei, pol)) {
+    return(1)# (" polygon fully within raster")
+  } else if(gContainsProperly(pol,ei)){
+    return(2)# raster fully within polygon
+    } else if (gIntersects(ei, pol)) {
+    return(3) #print ("intersects")
+  } else {
+    return(4) #print ("fully without")
+  }
+}
+
+#' Maximum value without NA value
+#'
+#' @param x vector of observations
+#' @param ... other options
+#'
+#' @return maximum value
+#' @export
+#'
+max_narm = function(x,...){
+  if(sum(is.na(x))==length(x)){
+    return(rep(NA,length(x)))
+  }else{
+    return(max(x,na.rm=TRUE))
+  }}

@@ -19,7 +19,6 @@
 #' @export
 #' @import reticulate
 #'
-#' @examples
 dllLS <- function(l1folder, queuefolder, queuefile, tmpfolder, logfile, ext, starttime, endtime, sensors, tiers, cld){
   # Sync the catalog
   system("pylandsat sync-database")#system("pylandsat sync-database -f")

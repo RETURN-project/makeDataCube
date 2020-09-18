@@ -5,17 +5,10 @@
 \title{Prepare the MapBiomas land cover data:
 Crop the land cover data to the desired extent and extract the study period of interest}
 \usage{
-prepLandcover(
-  ifolder,
-  datafolder,
-  ext,
-  fname = "landcover.tif",
-  startyr,
-  endyr
-)
+prepLandcover(lc_rst, datafolder, ext, fname = "landcover.tif", startyr, endyr)
 }
 \arguments{
-\item{ifolder}{Directory of the MapBiomas files}
+\item{lc_rst}{list of the MapBiomas SpatRasters}
 
 \item{datafolder}{Directory where the processed land cover data will be stored}
 
