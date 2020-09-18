@@ -5,27 +5,18 @@
 \title{Prepare tree cover dataset
 Crop the data to the extent of interest, mask out areas of no data and - in case the study area covers multiple rasters - merge rasters}
 \usage{
-prepTreecover(
-  ifolder,
-  datafolder,
-  ext,
-  fname = "treecover.tif",
-  hanfiles,
-  hanmaskfiles
-)
+prepTreecover(datafolder, ext, fname = "treecover.tif", hanfiles, hanmaskfiles)
 }
 \arguments{
-\item{ifolder}{folder where tree cover data and their corresponding masks are stored}
-
 \item{datafolder}{folder where the processed tree cover data should be stored}
 
 \item{ext}{geographic extent of interest}
 
 \item{fname}{name of the output file}
 
-\item{hanfiles}{names of the tree cover files}
+\item{hanfiles}{list of the tree cover files}
 
-\item{hanmaskfiles}{names of the tree cover mask files}
+\item{hanmaskfiles}{list of the tree cover mask files}
 }
 \value{
 writes processed raster to disk

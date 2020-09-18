@@ -24,7 +24,10 @@ Imports: raster,
          reticulate,
          lubridate,
          zoo, 
-         terra
+         terra,
+         rgdal, 
+         rgeos, 
+         sp
 Suggests: testthat,
           knitr,
           rmarkdown,
