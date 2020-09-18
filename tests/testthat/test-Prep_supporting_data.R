@@ -102,11 +102,23 @@ test_that("generate regular ts",{
 test_that("make mask without fire data",{
   library(terra)
   empty_rast <- rast(nrows =5, ncols = 5)
-  lc1 <- empty_rast; values(lc1) <- c(1,2,3,4,5,6,7,1,3,4,5,12,1,1,1,3,9,4,2,3,1,1,5,6,4)
-  lc2 <- empty_rast; values(lc2) <- c(1,2,3,4,5,6,7,1,3,4,5,12,1,9,1,3,9,4,2,3,1,1,5,6,4)
+  lc1 <- empty_rast; values(lc1) <- c(1,2,3,4,5,
+                                      6,7,1,3,4,
+                                      5,12,1,1,1,
+                                      3,9,4,2,3,
+                                      1,1,5,6,4)
+  lc2 <- empty_rast; values(lc2) <- c(1,29,NA,4,5,
+                                      6,7,1,3,4,
+                                      5,12,1,9,1,
+                                      3,9,4,2,3,
+                                      19,1,0,6,NaN)
   lc <- c(lc1,lc2)
   empty_rast2 <- rast(nrows = 5, ncols = 5)#, xmin = -99, xmax = 99, ymin = -33, ymax = 33
-  han <- empty_rast2; values(han) <- c(99,86,87,82,88,96,94,92,93,99,86,87,82,88,96,94,92,93,99,86,87,82,88,96,94)
+  han <- empty_rast2; values(han) <- c(99,86,87,82,88,
+                                       96,94,92,93,99,
+                                       86,87,82,88,96,
+                                       94,92,93,99,86,
+                                       87,82,88,96,94)
   extfolder <- normalizePath('./data')
   lcDates <- as.Date(c('2000-01-01','2001-01-01'))
 
@@ -116,7 +128,11 @@ test_that("make mask without fire data",{
   han <- empty_rast2; values(han) <- c(99,86,87,82,88,96,94,92,93)
   out2 <- makeMaskNoFire(lc, lcDates, han, extfolder, Tyr = 2000, Ttree = 85)
 
-  expect_equal(as.numeric(out[,]),c(1,1,1,0,1,0,0,1,1,1,1,0,0,0,1,1,0,1,1,1,1,0,1,0,1))
+  expect_equal(as.numeric(out[,]),c(1,1,0,0,1,
+                                    0,0,1,1,1,
+                                    1,0,0,0,1,
+                                    1,0,1,1,1,
+                                    0,0,0,0,0))
   expect_equal(as.numeric(out2[,]),c(0,1,1,0,1,0,0,1,1))
 })
 
@@ -169,3 +185,50 @@ test_that("prepare fire data",{
   expect_equal(as.numeric(out2m[1,]),c(NaN,NaN,0,0,0,0,1,0,NaN, NaN, NaN, NaN))
   expect_equal(as.numeric(out3m[1,]),c(0,0,0,1,0,NaN, NaN, NaN, NaN))
 })
+
+test_that("prepare land cover data",{
+  library(terra)
+  # entirely overlapping rasters
+  empty_rast <- rast(nrows = 3, ncols = 3, nlyrs=1, xmin = -30, xmax = 30, ymin = -30, ymax = 30)#, xmin = -99, xmax = 99, ymin = -33, ymax = 33
+  lc1a <- empty_rast; values(lc1a) <- 1:9
+  lc1b <- empty_rast; values(lc1b) <- 11:19
+  lc1 <- c(lc1a,lc1b,lc1a,lc1b,lc1a,lc1b,lc1a,lc1b,lc1a,lc1b,
+           lc1a,lc1b,lc1a,lc1b,lc1a,lc1b,lc1a,lc1b,lc1a,lc1b,
+           lc1a,lc1b,lc1a,lc1b,lc1a,lc1b,lc1a,lc1b,lc1a,lc1b,
+           lc1a,lc1b,lc1a,lc1b,lc1a)
+
+  lc2a <- empty_rast; values(lc2a) <- c(NA,20,21,NaN,22,23,30,32,33)
+  lc2b <- empty_rast; values(lc2b) <- c(0,20,21,NaN,22,23,3,32,33)
+  lc2 <- c(lc2a,lc2b,lc2a,lc2b,lc2a,lc2b,lc2a,lc2b,lc2a,lc2b,
+           lc2a,lc2b,lc2a,lc2b,lc2a,lc2b,lc2a,lc2b,lc2a,lc2b,
+           lc2a,lc2b,lc2a,lc2b,lc2a,lc2a,lc2b,lc2a,lc2b,lc2a,
+           lc2b,lc2a,lc2b,lc2a,lc2b)
+
+  datafolder <- normalizePath('./data')
+  ext <- c(-30,10,-30,10)
+  lc_rst <- list(lc1,lc2)
+  out1 <- prepLandcover(lc_rst, datafolder, ext, fname = 'landcover.tif',
+                        startyr = as.Date('1985-01-01'), endyr = as.Date('1986-01-01'))
+
+  expect_equal(as.numeric(out1[[1]][,]),c(4,22,30,32))
+  expect_equal(as.numeric(out1[[2]][,]),c(14,22,17,32))
+  expect_equal(dim(out1)[3],2)
+
+  # shifted rasters
+  empty_rast2 <- rast(nrows = 3, ncols = 3, nlyrs=1, xmin = -50, xmax = 10, ymin = -30, ymax = 30)#, xmin = -99, xmax = 99, ymin = -33, ymax = 33
+  lc2a <- empty_rast2; values(lc2a) <- c(NA,20,21,NaN,22,23,30,32,33)
+  lc2b <- empty_rast2; values(lc2b) <- c(0,20,21,NaN,22,23,3,32,3)
+  lc2 <- c(lc2a,lc2b,lc2a,lc2b,lc2a,lc2b,lc2a,lc2b,lc2a,lc2b,
+           lc2a,lc2b,lc2a,lc2b,lc2a,lc2b,lc2a,lc2b,lc2a,lc2b,
+           lc2a,lc2b,lc2a,lc2b,lc2a,lc2a,lc2b,lc2a,lc2b,lc2a,
+           lc2b,lc2a,lc2b,lc2a,lc2b)
+  datafolder <- normalizePath('./data')
+  ext <- c(-30,10,-30,10)
+  lc_rst <- list(lc1,lc2)
+  out1 <- prepLandcover(lc_rst, datafolder, ext, fname = 'landcover.tif',
+                        startyr = as.Date('1985-01-01'), endyr = as.Date('1986-01-01'))
+  expect_equal(as.numeric(out1[[1]][,]),c(22,23,32,33))
+  expect_equal(as.numeric(out1[[2]][,]),c(22,23,32,18))
+  expect_equal(dim(out1)[3],2)
+
+  })
