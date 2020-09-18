@@ -89,7 +89,7 @@ prepLandcover <- function(lc_rst, datafolder, ext, fname = 'landcover.tif', star
     do_overlap <- ext_overlap(poly, rst)
     if(do_overlap<4){# raster contains (at least partially) area of interest
       it <- it + 1
-      lcc <- terra::crop(rst, ext, snap = 'in', filename=file.path(datafolder, 'lcCrop.tif'), overwrite=T)# cut the image to the extent of interest
+      lcc <- terra::crop(rst, ext, snap = 'in')# cut the image to the extent of interest
       if(do_overlap>1){# cropped raster does not necessary contain entire study area
         lcc <- terra::expand(lcc,terra::ext(ext))
       }
@@ -108,7 +108,6 @@ prepLandcover <- function(lc_rst, datafolder, ext, fname = 'landcover.tif', star
       }
       # remove temporary files
       rm(lcc)
-      unlink(file.path(datafolder, 'lcCrop.tif'))
     }
     rm(rst)
   }
@@ -119,8 +118,6 @@ prepLandcover <- function(lc_rst, datafolder, ext, fname = 'landcover.tif', star
   lcfin <- lc[[which((dtslc >= startyr) & (dtslc <= endyr))]]# remove observations outside the predefined observation period
   dtslc <- dtslc[which((dtslc >= startyr) & (dtslc <= endyr))]
   # save results
-  save(dtslc, file = file.path(datafolder,'lcDates'))
-  terra::writeRaster(lcfin, file.path(datafolder, fname), overwrite=TRUE)# save the raster as geoTIFF file
   # remove temporary files
   # unlink(file.path(datafolder, 'lcReclass.tif'))
   for(i in 2:length(lc_rst)){
@@ -196,44 +193,45 @@ dllTreecover <- function(ofolder, ext, logfile){
 #' Prepare tree cover dataset
 #' Crop the data to the extent of interest, mask out areas of no data and - in case the study area covers multiple rasters - merge rasters
 #'
-#' @param ifolder folder where tree cover data and their corresponding masks are stored
 #' @param datafolder folder where the processed tree cover data should be stored
 #' @param ext geographic extent of interest
 #' @param fname name of the output file
-#' @param hanfiles names of the tree cover files
-#' @param hanmaskfiles names of the tree cover mask files
+#' @param hanfiles list of the tree cover files
+#' @param hanmaskfiles list of the tree cover mask files
 #'
 #' @return writes processed raster to disk
 #' @export
 #' @import raster
 #' @import terra
 #'
-prepTreecover <- function(ifolder, datafolder, ext, fname = 'treecover.tif', hanfiles, hanmaskfiles){
+prepTreecover <- function(datafolder, ext, fname = 'treecover.tif', hanfiles, hanmaskfiles){
   # iterate over the tree cover tiles
   for (i in 1:length(hanfiles)){
-    #load data
-    han <- terra::rast(file.path(ifolder, hanfiles[i]))
-    hanmsk <- terra::rast(file.path(ifolder, hanmaskfiles[i]))
+    #extract data
+    han <- hanfiles[[i]]
+    hanmsk <-  hanmaskfiles[[i]]
     # crop the extent of the rasters to the extent of interest
-    han <- terra::crop(han, ext, snap = 'in', filename = file.path(datafolder, 'hanCrop.tif'))
-    hanmsk <- terra::crop(hanmsk,ext, snap = 'in', filename = file.path(datafolder, 'hanmskCrop.tif'))
+    han <- terra::crop(han, ext, snap = 'in')
+    hanmsk <- terra::crop(hanmsk,ext, snap = 'in')
     # remove irrelevant observations
     han[hanmsk == 0] <- NA
+    writeRaster(han,file.path(datafolder,'han.tif'), overwrite=T)
+    # merge rasters
     if(i == 1){
-      han_cov <- han
+      writeRaster(han, file.path(datafolder,'hanMerge.tif'), overwrite=T)
     } else{
-      han_cov <- terra::merge(han_cov, han, filename = file.path(datafolder,paste0('hanMerge',i,'.tif')))# if the study area covers more than one tile, merge the tiles into one layer
-    }
+      raster::mosaic(raster(file.path(datafolder,'hanMerge.tif')),
+                                raster(file.path(datafolder,'han.tif')),
+                                fun = max_narm,
+                                filename = file.path(datafolder,'hanMerge.tif'),
+                                overwrite = T)# if the study area covers more than one tile, merge the tiles into one layer
+      }
     # remove temporary variables and files
     rm(han, hanmsk)
-    unlink(file.path(datafolder, 'hanCrop.tif'))
-    unlink(file.path(datafolder, 'hanmskCrop.tif'))
+    unlink(file.path(datafolder, 'han.tif'))
   }
-  # write result to file
-  terra::writeRaster(han_cov, file.path(datafolder, fname), format="GTiff", overwrite=TRUE)# save the raster as geoTIFF file
-  # remove temporary files
-  for(i in 2:length(hanfiles)){unlink(file.path(datafolder,paste0('hanMerge',i,'.tif')))}
-  removeTmpFiles(h=24)# remove temporary R files older than 24 hours
+  han_cov <- rast(file.path(datafolder,'hanMerge.tif'))
+  return(han_cov)
 }
 
 #' Download CCI fire data
@@ -374,25 +372,20 @@ prepFire <- function(fcl, fjd, fdts, han, msk, tempRes, Tconf, starttime, endtim
     msk <- terra::resample(msk, han, method ='near')
   }
   # prepare the dataset over the area of interest
-  fclc <- terra::crop(fcl, ext(han), snap = 'out', filename = file.path(extfolder, 'fireclCrop.tif'),
-                      overwrite = T)# crop stack to the area of interest
+  fclc <- terra::crop(fcl, ext(han), snap = 'out')# crop stack to the area of interest
   names(fclc) <- fdts
   fcl <- fclc[[which((fdts >= startyr) & (fdts <= endyr))]]# remove observations outside the predefined observation period
-  terra::writeRaster(fcl, file.path(extfolder, 'fcl.tif'), overwrite=TRUE)# save the raster as geoTIFF file
 
-  fjdc <- terra::crop(fjd, ext(han), snap = 'out',filename = file.path(extfolder, 'firejdCrop.tif'),
-                      overwrite = T)# crop stack to the area of interest
+  fjdc <- terra::crop(fjd, ext(han), snap = 'out')# crop stack to the area of interest
   names(fjdc) <- fdts
   fjd <- fjdc[[which((fdts >= startyr) & (fdts <= endyr))]]# remove observations outside the predefined observation period
   fdts <- fdts[which((fdts >= startyr) & (fdts <= endyr))]
-  terra::writeRaster(fjd, file.path(extfolder, 'fjd.tif'), overwrite=TRUE)# save the raster as geoTIFF file
-  save(fdts, file = file.path(extfolder,'fireDates'))
 
 # resample fire data to same grid
-fcl30 <- terra::resample(fcl, han, method ='near', filename = file.path(extfolder, 'fcl30.tif'), overwrite = T)
+fcl30 <- terra::resample(fcl, han, method ='near')
 names(fcl30) <- fdts
 
-fjd30  <- terra::resample(fjd, han, method ='ngb', filename = file.path(extfolder, 'fjd30.tif'), overwrite = T)
+fjd30  <- terra::resample(fjd, han, method ='ngb')
 names(fjd30) <- fdts
 # generate an image stack containing regular fire time series at the predefined temporal resolution with value 1 if a fire occured and 0 if no fire occured
 tsFire <- createFireStack(msk, fcl30, fjd30, fdts, resol= tempRes, thres=Tconf, extfolder)
@@ -406,12 +399,6 @@ names(tsFire) <- dtsfr
 
 # remove temp files
 rm(fcl30, fclc, fjd30, fjdc, fcl, fjd)
-unlink(file.path(extfolder, 'fcl30.tif'))
-unlink(file.path(extfolder, 'fjd30.tif'))
-unlink(file.path(extfolder, 'fcl.tif'))
-unlink(file.path(extfolder, 'fjd.tif'))
-unlink(file.path(extfolder, 'fireclCrop.tif'))
-unlink(file.path(extfolder, 'firejdCrop.tif'))
 
 # extend the fire data time span to the study period
 rstNA <- han
@@ -473,7 +460,7 @@ makeMaskNoFire <- function(lc, lcDates, han, extfolder, Tyr, Ttree){
     stop("the number of dates does not match the number of land cover layers")
   }
   # resample and project all rasters to the same grid
-  lc30 <- terra::resample(lc, han, method ='ngb', filename = file.path(extfolder, 'lc30.tif'), overwrite = T)
+  lc30 <- terra::resample(lc, han, method ='ngb')
   names(lc30) <- lcDates
 
   # select areas that consist of only natural land cover types
@@ -503,7 +490,6 @@ makeMaskNoFire <- function(lc, lcDates, han, extfolder, Tyr, Ttree){
   msk <- ((msklc == 1) & (mskfor == 1) & (mskcov == 1))*1
   rm(mskcov, mskfor, msklc)
   rm(lc30)
-  unlink(file.path(extfolder, 'lc30.tif'))
   return(msk)
 }
 
@@ -578,8 +564,7 @@ createFireStack <- function(msk, fcl, fjd, dts, resol, thres, extfolder){
   tsFire <- terra::app(c(msk,fcl, fjd),
                        function(x){
                          toFireTS(x, dts = dts, resol = resol, thres = thres, olen = len)},
-                       filename = file.path(extfolder, 'tsFire.tif'),
-                       overwrite=T,nodes=1)
+                       nodes=1)
   return(tsFire)
 }
 
