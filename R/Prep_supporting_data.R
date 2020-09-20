@@ -500,6 +500,7 @@ makeMaskNoFire <- function(lc, lcDates, han, extfolder, Tyr, Ttree){
 #' @param dts dates associated with the stack
 #' @param resol the desired temporal resolution of the output data
 #' @param thres threshold on the fire confidence layer, only fires having a confidence higher than the threshold are included
+#' @param olen length of the output series
 #'
 #' @return a stack with with a predefined temporal resolution and containing the value 0 when no fire is present and 1 if a fire is present
 #' @export
