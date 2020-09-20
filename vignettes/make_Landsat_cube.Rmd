@@ -9,8 +9,9 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
-```{r setup, include=FALSE, eval=F}
-knitr::opts_chunk$set(echo = TRUE, eval = T)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      eval = FALSE)
 library(reticulate)
 library(makeDataCube)
 library(tidyverse)
