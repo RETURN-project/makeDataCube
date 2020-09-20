@@ -2,7 +2,11 @@
 title: "Generate Landsat data cube"
 author: "Wanda De Keersmaecker"
 date: "6/29/2020"
-output: html_document
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Generate Landsat data cube}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
 ---
 
 ```{r setup, include=FALSE, eval=F}

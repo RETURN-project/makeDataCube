@@ -2,7 +2,11 @@
 title: "Generate a mask file and add it to the data cube"
 author: "Wanda De Keersmaecker"
 date: "7/7/2020"
-output: html_document
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Generate a mask file and add it to the data cube}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
 ---
 
 ```{r setup, include=FALSE}
