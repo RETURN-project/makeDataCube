@@ -23,7 +23,7 @@ dllLS <- function(l1folder, queuefolder, queuefile, tmpfolder, logfile, ext, sta
   # Sync the catalog
   system("pylandsat sync-database")#system("pylandsat sync-database -f")
   # Download tiles that are not in the queue yet
-  source_python('../python/dllLandsat.py')
+  source_python(system.file("python", "dllLandsat.py", package = "makeDataCube"))
   scenes <- dllLandsat(queuefolder, queuefile, tmpfolder, logfile, ext, starttime, endtime, sensors, tiers, cld)
 
   # compress data to .tar.gz file

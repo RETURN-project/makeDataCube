@@ -14,6 +14,8 @@ toFireTS(x, dts, resol, thres, olen)
 \item{resol}{the desired temporal resolution of the output data}
 
 \item{thres}{threshold on the fire confidence layer, only fires having a confidence higher than the threshold are included}
+
+\item{olen}{length of the output series}
 }
 \value{
 a stack with with a predefined temporal resolution and containing the value 0 when no fire is present and 1 if a fire is present

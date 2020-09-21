@@ -81,7 +81,7 @@ S2auxfolder <- fldrs['S2auxfolder']
 ```{r parameters}
 # more information about the parameter settings can be found in https://davidfrantz.github.io/tutorials/force-ard/l2-ard/
 # or https://force-eo.readthedocs.io/en/latest/components/lower-level/level2/param.html
-source_python('../python/makeParFile.py')
+source_python(system.file("python", "makeParFile.py", package = "makeDataCube"))
 
 makeParFile(paramfolder, file.path(paramfolder, paramfile), FILE_QUEUE = file.path(queuefolder, queuefile), DIR_LEVEL2 = l2folder, DIR_LOG = logfolder, DIR_TEMP = tmpfolder, FILE_DEM = file.path(demfolder,'srtm.vrt'), ORIGIN_LON = '-90', ORIGIN_LAT = '60', RESAMPLING = 'NN', DIR_WVPLUT = wvpfolder, RES_MERGE = 'REGRESSION',  NPROC = '1', NTHREAD = '1', DELAY = '10', OUTPUT_DST = 'TRUE',  OUTPUT_VZN = 'TRUE', OUTPUT_HOT = 'TRUE', OUTPUT_OVV = 'TRUE', DEM_NODATA= '-32768',TILE_SIZE = '3000',BLOCK_SIZE = '300')
 ```
