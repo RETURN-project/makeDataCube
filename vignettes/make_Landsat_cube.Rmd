@@ -18,11 +18,15 @@ library(tidyverse)
 library(sf)
 library(unixtools)
 # Find Python in this machine
+```
+
+```{r python, include=FALSE}
 ## Default installation folder for Python with Anaconda, including the user name
-py_location <-file.path("/home", Sys.getenv("USER"), "/bin/python3.5")#"/usr/bin/python3.6"#file.path("/home", Sys.getenv("USER"), "anaconda3/bin/python")
+py_location <-file.path("/home", Sys.getenv("USER"), "/bin/python3.6")#"/usr/bin/python3.6"#file.path("/home", Sys.getenv("USER"), "anaconda3/bin/python")
 use_python(py_location, required = TRUE)
 py_config()
 ```
+
 # General
 This document generates a data cube of level-2 Landsat and Sentinel-2 data over a user-defined area and study period, using only Landsat data below a user-defined cloud coverage threshold. The Landsat Level-1 scenes are downloaded from the public dataset hosted on Google Cloud, while Sentinel-2 Level-1 scenes should be available locally. These scenes are processed to Level-2 and a data cube is generated using FORCE software.
 
