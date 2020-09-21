@@ -28,7 +28,7 @@ dllDEM <- function(ext, dl_dir= Sys.getenv("HOME"), logfile){
   # check if the files are not present in the target dir
   fls <- list.files(path = dl_dir, pattern ='*.hgt')# all files that are already downloaded
   fls <- gsub(".hgt", ".SRTMGL1.hgt", fls)
-  todll <- setdiff(todll, fls)# files that meet criteria annd are not downloaded yet
+  todll <- setdiff(todll, fls)# files that meet criteria and are not downloaded yet
   if(length(todll)>0){
     urls <- paste0('http://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11/',todll,'.zip')#urls that meet  the criteria
     # download
