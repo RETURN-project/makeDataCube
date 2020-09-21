@@ -5,8 +5,6 @@ r_packages:
   - covr
 after_success:
   - Rscript -e 'library(covr); codecov()'
-install:
-  - sudo apt-get install -y python2.7 python3.6
 addons:
   apt:
     sources:
@@ -17,3 +15,5 @@ addons:
       - libproj-dev
       - libgeos-dev
       - libgdal-dev
+      - python2.7
+      - python3.6
