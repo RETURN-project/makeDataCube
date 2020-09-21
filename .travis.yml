@@ -15,5 +15,6 @@ addons:
       - libproj-dev
       - libgeos-dev
       - libgdal-dev
-      - python2.7
-      - python3.6
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install python3.6
