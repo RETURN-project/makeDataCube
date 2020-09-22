@@ -252,7 +252,30 @@ test_that("prepare tree cover data",{
 
   out <- prepTreecover(datafolder, ext, fname = 'treecover.tif', hanfiles, hanmaskfiles)
   expect_equal(as.numeric(out[,]),c(NaN,1,2,16,4,5,19,NaN,8))
-  }
-)
+  })
 
+test_that("Download land cover", {
+  ofolder <- tempdir()
+  logfile <- tempfile()
+  dllLandcover(ofolder, logfile)
+
+  expect_equal(file.exists(file.path(ofolder,'AMAZONIA-1985.tif')),TRUE)
+  expect_equal(file.exists(file.path(ofolder,'PAMPA-2019.tif')),TRUE)
+  unlink(ofolder, recursive = T)
+  unlink(logfile)
+})
+
+test_that("Download tree cover", {
+  ofolder <- tempdir()
+  logfile <- tempfile()
+  ext <- c(-45,-35,-5,5)
+  dllTreecover(ofolder, ext, logfile)
+
+  expect_equal(file.exists(file.path(ofolder,'Hansen_GFC-2018-v1.6_treecover2000_00N_050W.tif')),TRUE)
+  expect_equal(file.exists(file.path(ofolder,'Hansen_GFC-2018-v1.6_treecover2000_00N_040W.tif')),TRUE)
+  expect_equal(file.exists(file.path(ofolder,'Hansen_GFC-2018-v1.6_treecover2000_10N_050W.tif')),TRUE)
+  expect_equal(file.exists(file.path(ofolder,'Hansen_GFC-2018-v1.6_treecover2000_10N_040W.tif')),TRUE)
+  unlink(ofolder, recursive = T)
+  unlink(logfile)
+})
 
