@@ -24,8 +24,7 @@ def dllLandsat(queuefolder, queuefile, tmpfolder, logfile, ext, starttime, endti
         geom=pol,
         sensors=sensors,
         tiers=tiers,
-        maxcloud=cld, 
-        output = os.path.join(tmpfolder, 'index.csv')
+        maxcloud=cld
     )
     
     # check which scenes are not downloaded yet
