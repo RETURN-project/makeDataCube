@@ -88,85 +88,86 @@ paramfile <- fldrs['paramfile']# name parameter file
 ## iterate over the tiles and prepare mask and fire data
 ```{r mask}
 for(gi in 1:length(cubefolder)){
-  # generate a shapefile of the grid
+  # generate a list of tiles to process
   elist <- getGrid(l2folder, cubefolder[gi], ext)
-  for(ti in 1:length(elist)){
-    exti <- elist[[ti]]
-    # generate folder for temporary data of study area of interest
-    extfolder <- file.path(forcefolder, 'temp', paste0('Area', exti[1],'_', exti[2],'_', exti[3],'_', exti[4]))
-    if(!dir.exists(extfolder)){dir.create(extfolder)}
-    
-    # ----------------------
-    ## Prepare land cover data
-    # First MapBiomas land cover data are downloaded if they are not available yet. Then the land cover data are cropped to the extent of the study area, and the study period of interest. Currently, MapBiomas data are only available for the years 1985 - 2019.
-    
-    # Download MapBiomas land cover data
-    dllLandcover(lcfolder, lclogfile)
-    # Crop the land cover data to extent and time period of interest 
-    lc_rst <- list()
-    lcregions <- c('AMAZONIA', 'PANTANAL', 'CAATINGA', 'MATAATLANTICA', 'CERRADO', 'PAMPA')
-    for(i in 1:length(lcregions)){
-      lcfiles <- paste0(lcregions[i], '-', 1985:2019, '.tif')
-      lc_rst[[i]] <- terra::rast(file.path(ifolder, lcfiles)) # open land cover data file
+  if (length(elist)>0){
+    for(ti in 1:length(elist)){
+      exti <- elist[[ti]]
+      # generate folder for temporary data of study area of interest
+      extfolder <- file.path(forcefolder, 'temp', paste0('Area', exti[1],'_', exti[2],'_', exti[3],'_', exti[4]))
+      if(!dir.exists(extfolder)){dir.create(extfolder)}
+      
+      # ----------------------
+      ## Prepare land cover data
+      # First MapBiomas land cover data are downloaded if they are not available yet. Then the land cover data are cropped to the extent of the study area, and the study period of interest. Currently, MapBiomas data are only available for the years 1985 - 2019.
+      
+      # Download MapBiomas land cover data
+      dllLandcover(lcfolder, lclogfile)
+      # Crop the land cover data to extent and time period of interest 
+      lc_rst <- list()
+      lcregions <- c('AMAZONIA', 'PANTANAL', 'CAATINGA', 'MATAATLANTICA', 'CERRADO', 'PAMPA')
+      for(i in 1:length(lcregions)){
+        lcfiles <- paste0(lcregions[i], '-', 1985:2019, '.tif')
+        lc_rst[[i]] <- terra::rast(file.path(ifolder, lcfiles)) # open land cover data file
+      }
+      prepLandcover(lc_rst, extfolder, exti, fname = 'landcover.tif', as.Date(paste0(starttime[1],'-',starttime[2],'-',starttime[3])), as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3])))
+      
+      # ----------------------
+      ## Prepare tree cover data
+      # Download tree cover data
+      tcfls <- dllTreecover(tcfolder, exti, tclogfile)
+      # Crop the tree cover data to exent of interest and mask nodata values
+      hanfiles <- list()
+      hanmaskfiles <- list()
+      for(i in 1:length(tcfls$hanfiles)){
+        hanfiles[[i]] <- terra::rast(file.path(ifolder, tcfls$hanfiles[i]))
+        hanmaskfiles[[i]] <- terra::rast(file.path(ifolder, tcfls$hanmaskfiles[i]))
+      }
+      prepTreecover(tcfolder, extfolder, exti, fname = 'treecover.tif', hanfiles, hanmaskfiles)
+      
+      # ----------------------
+      ## Generate mask without fire information
+      han <- terra::rast(file.path(extfolder,'treecover.tif'))
+      lc <- terra::rast(file.path(extfolder,'landcover.tif'))
+      lcDates <- as.Date(loadRData(file.path(extfolder,'lcDates')))
+      
+      msk <- makeMaskNoFire(lc, lcDates, han, extfolder)
+      rm(lc)
+      
+      # ----------------------
+      ## Prepare fire data
+      # Download fire data
+      firefls <- dllFire(firefolder, firelogfile)
+      # Crop the fire data to exent and time period of interest, resample and generate a binary time series (1 = fire, 0 = no fire) at the temporal resolution of interest
+      fcl <- terra:rast(file.path(firefolder,firefls$fireclfiles))
+      fjd <- terra::rast(file.path(firefolder,firefls$firejdfiles))
+      fdts <- as.Date(firefls$fireclfiles, format = "%Y%m%d-ESACCI-L3S_FIRE-BA-MODIS-AREA_2-fv5.1-CL.tif")
+      tsFire2 <- prepFire(fcl, fjd, fdts, han, msk, tempRes, Tconf, starttime, endtime, extfolder)
+      # Export the fire data to the temporary folder
+      nms <-str_replace_all(names(tsFire2),'-','_')
+      terra::writeRaster(tsFire2, file.path(extfolder, paste0('fire_',nms,'.tif')), bylayer=TRUE, overwrite=TRUE)
+      
+      # ----------------------
+      ## update mask with locations that experienced fire
+      msk <- terra::app(tsFire2, sum, na.rm=T, filename = file.path(extfolder, 'fresum.tif'), overwrite=T)
+      msk <- (msk > 0) # areas that have experienced a fire get the value 1, other areas the value 0
+      # Export the mask layer tot the temporary folder
+      terra::writeRaster(msk, file.path(extfolder, 'mask.tif'), overwrite=TRUE)
+      
+      # ----------------------
+      ## Add mask and fire data to data cube
+      system(paste0("force-cube ",file.path(extfolder, 'mask.tif')," ", file.path(l2folder, cubefolder)," near ", resMask), intern = TRUE, ignore.stderr = TRUE)
+      
+      for(i in 1:dim(tsFire2)[3]){
+        system(paste0("force-cube ",file.path(extfolder,  paste0('fire_',nms[i],'.tif'))," ", file.path(l2folder, cubefolder)," near ", resFire), intern = TRUE, ignore.stderr = TRUE)
+      }
+      
+      # remove temporary folder and its contents
+      unlink(extfolder, recursive=TRUE)
+      
     }
-    prepLandcover(lc_rst, extfolder, exti, fname = 'landcover.tif', as.Date(paste0(starttime[1],'-',starttime[2],'-',starttime[3])), as.Date(paste0(endtime[1],'-',endtime[2],'-',endtime[3])))
-    
-    # ----------------------
-    ## Prepare tree cover data
-    # Download tree cover data
-    tcfls <- dllTreecover(tcfolder, exti, tclogfile)
-    # Crop the tree cover data to exent of interest and mask nodata values
-    hanfiles <- list()
-    hanmaskfiles <- list()
-    for(i in 1:length(tcfls$hanfiles)){
-      hanfiles[[i]] <- terra::rast(file.path(ifolder, tcfls$hanfiles[i]))
-      hanmaskfiles[[i]] <- terra::rast(file.path(ifolder, tcfls$hanmaskfiles[i]))
-    }
-    prepTreecover(tcfolder, extfolder, exti, fname = 'treecover.tif', hanfiles, hanmaskfiles)
-    
-    # ----------------------
-    ## Generate mask without fire information
-    han <- terra::rast(file.path(extfolder,'treecover.tif'))
-    lc <- terra::rast(file.path(extfolder,'landcover.tif'))
-    lcDates <- as.Date(loadRData(file.path(extfolder,'lcDates')))
-    
-    msk <- makeMaskNoFire(lc, lcDates, han, extfolder)
-    rm(lc)
-    
-    # ----------------------
-    ## Prepare fire data
-    # Download fire data
-    firefls <- dllFire(firefolder, firelogfile)
-    # Crop the fire data to exent and time period of interest, resample and generate a binary time series (1 = fire, 0 = no fire) at the temporal resolution of interest
-    fcl <- terra:rast(file.path(firefolder,firefls$fireclfiles))
-    fjd <- terra::rast(file.path(firefolder,firefls$firejdfiles))
-    fdts <- as.Date(firefls$fireclfiles, format = "%Y%m%d-ESACCI-L3S_FIRE-BA-MODIS-AREA_2-fv5.1-CL.tif")
-    tsFire2 <- prepFire(fcl, fjd, fdts, han, msk, tempRes, Tconf, starttime, endtime, extfolder)
-    # Export the fire data to the temporary folder
-    nms <-str_replace_all(names(tsFire2),'-','_')
-    terra::writeRaster(tsFire2, file.path(extfolder, paste0('fire_',nms,'.tif')), bylayer=TRUE, overwrite=TRUE)
-    
-    # ----------------------
-    ## update mask with locations that experienced fire
-    msk <- terra::app(tsFire2, sum, na.rm=T, filename = file.path(extfolder, 'fresum.tif'), overwrite=T)
-    msk <- (msk > 0) # areas that have experienced a fire get the value 1, other areas the value 0
-    # Export the mask layer tot the temporary folder
-    terra::writeRaster(msk, file.path(extfolder, 'mask.tif'), overwrite=TRUE)
-    
-    # ----------------------
-    ## Add mask and fire data to data cube
-    system(paste0("force-cube ",file.path(extfolder, 'mask.tif')," ", file.path(l2folder, cubefolder)," near ", resMask), intern = TRUE, ignore.stderr = TRUE)
-    
-    for(i in 1:dim(tsFire2)[3]){
-      system(paste0("force-cube ",file.path(extfolder,  paste0('fire_',nms[i],'.tif'))," ", file.path(l2folder, cubefolder)," near ", resFire), intern = TRUE, ignore.stderr = TRUE)
-    }
-    
-    # remove temporary folder and its contents
-    unlink(extfolder, recursive=TRUE)
-    
+    # remove folder with shapefile of tiles
+    unlink(file.path(l2folder, cubefolder, 'shp'), recursive=TRUE)
   }
-  # remove folder with shapefile of tiles
-  unlink(file.path(l2folder, cubefolder, 'shp'), recursive=TRUE)
-  
 }
 ```
