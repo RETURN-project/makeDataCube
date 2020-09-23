@@ -431,7 +431,9 @@ getGrid <- function(cubefolder, ext){
   # transform crs to crs of interest
   p_wgs <- spTransform(p, CRS("+proj=longlat +datum=WGS84"))
   # extent of each polygon/tile
-  elist <- lapply(1:length(p_wgs), function(i) extent(p_wgs[i,]))
+  elist <- lapply(1:length(p_wgs), function(i) extent(p_wgs[i,]))# get extent of each tile
+  names(elist) <- p_wgs$Tile_ID# associate each extent with the tile ID
+  unlink(file.path(cubefolder, 'shp'), recursive = T)# remove shapefile
   return(elist)
 }
 #' Make a mask without fire information
