@@ -416,7 +416,6 @@ return(tsFire2)
 
 #' Extract the extent of each grid tile that covers an area of interest
 #'
-#' @param l2folder directory of the level2 data cube
 #' @param cubefolder folder inside the level2 directory where the data cube is stored
 #' @param ext extent of the area of interest
 #'
@@ -425,10 +424,10 @@ return(tsFire2)
 #' @import sp
 #' @export
 #'
-getGrid <- function(l2folder, cubefolder, ext){
-  system(paste0("force-tabulate-grid ", file.path(l2folder, cubefolder), " ", ext[3]," ", ext[4]," ", ext[1]," ", ext[2], " shp"), intern = TRUE, ignore.stderr = TRUE)
+getGrid <- function(cubefolder, ext){
+  system(paste0("force-tabulate-grid ", file.path(cubefolder), " ", ext[3]," ", ext[4]," ", ext[1]," ", ext[2], " shp"), intern = TRUE, ignore.stderr = TRUE)
   # load shapefile
-  p <- shapefile(file.path(l2folder, cubefolder, 'shp',"grid.shp"))
+  p <- shapefile(file.path(cubefolder, 'shp',"grid.shp"))
   # transform crs to crs of interest
   p_wgs <- spTransform(p, CRS("+proj=longlat +datum=WGS84"))
   # extent of each polygon/tile

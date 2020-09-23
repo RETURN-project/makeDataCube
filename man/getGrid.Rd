@@ -4,11 +4,9 @@
 \alias{getGrid}
 \title{Extract the extent of each grid tile that covers an area of interest}
 \usage{
-getGrid(l2folder, cubefolder, ext)
+getGrid(cubefolder, ext)
 }
 \arguments{
-\item{l2folder}{directory of the level2 data cube}
-
 \item{cubefolder}{folder inside the level2 directory where the data cube is stored}
 
 \item{ext}{extent of the area of interest}

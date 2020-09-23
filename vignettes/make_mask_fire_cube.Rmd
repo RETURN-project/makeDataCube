@@ -48,7 +48,6 @@ Tyr <- 2000 # year for which land cover should be forest; typically beginning of
 tempRes <- 'monthly'# desired temporal resolution of the fire data
 resMask <- 30 # desired resolution of the raster in the cube (nearest neighbor resampling)
 resFire <- 30 # desired resolution of the raster in the cube (nearest neighbor resampling)
-cubefolder <- c('s-america', 'n-america')# folders where data cube is stored
 ```
 
 ```{r time, include=F}
@@ -87,9 +86,13 @@ paramfile <- fldrs['paramfile']# name parameter file
 
 ## iterate over the tiles and prepare mask and fire data
 ```{r mask}
-for(gi in 1:length(cubefolder)){
+# for which continents do we have data available?
+continents <- file.path(fldrs[['l2folder']],c('n-america', 's-america', 'europe', 'asia', 'africa', 'oceania', 'antartica'))
+continents <- continents[continents %in% list.dirs(fldrs[['l2folder']], recursive = F)]
+
+for(gi in 1:length(continents)){
   # generate a list of tiles to process
-  elist <- getGrid(l2folder, cubefolder[gi], ext)
+  elist <- getGrid(continents[gi], ext)
   if (length(elist)>0){
     for(ti in 1:length(elist)){
       exti <- elist[[ti]]
@@ -156,10 +159,10 @@ for(gi in 1:length(cubefolder)){
       
       # ----------------------
       ## Add mask and fire data to data cube
-      system(paste0("force-cube ",file.path(extfolder, 'mask.tif')," ", file.path(l2folder, cubefolder)," near ", resMask), intern = TRUE, ignore.stderr = TRUE)
+      system(paste0("force-cube ",file.path(extfolder, 'mask.tif')," ", file.path(continents[gi])," near ", resMask), intern = TRUE, ignore.stderr = TRUE)
       
       for(i in 1:dim(tsFire2)[3]){
-        system(paste0("force-cube ",file.path(extfolder,  paste0('fire_',nms[i],'.tif'))," ", file.path(l2folder, cubefolder)," near ", resFire), intern = TRUE, ignore.stderr = TRUE)
+        system(paste0("force-cube ",file.path(extfolder,  paste0('fire_',nms[i],'.tif'))," ", file.path(continents[gi])," near ", resFire), intern = TRUE, ignore.stderr = TRUE)
       }
       
       # remove temporary folder and its contents
@@ -167,7 +170,7 @@ for(gi in 1:length(cubefolder)){
       
     }
     # remove folder with shapefile of tiles
-    unlink(file.path(l2folder, cubefolder, 'shp'), recursive=TRUE)
+    unlink(file.path(continents[gi], 'shp'), recursive=TRUE)
   }
 }
 ```
