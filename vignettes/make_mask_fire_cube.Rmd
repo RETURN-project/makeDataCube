@@ -173,8 +173,6 @@ for(gi in 1:length(continents)){
         # remove temporary folder and its contents
         unlink(extfolder, recursive=TRUE)
       }
-      
-      
     }
   }
 }
