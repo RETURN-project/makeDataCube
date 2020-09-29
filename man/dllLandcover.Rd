@@ -2,15 +2,7 @@
 % Please edit documentation in R/Prep_supporting_data.R
 \name{dllLandcover}
 \alias{dllLandcover}
-\title{Download MapBiomas land cover data
-Description:
-GeoTIFF file of yearly land cover and land use maps that are derived from Landsat mosaics. Each band of the geoTIFF file refers to a particular year. The data have a spatial resolution of 30m and its time span ranges between 1985 and 2018.
-Each pixel of the raster band contains a value that refers to a land cover type. A description of each land cover class can be found in '[en] Legend description collection 4.0.pdf' and the corresponding pixel IDs in 'MAPBIOMAS_Legenda_Cores__1_.xlsx'.
-Name: COLECAO_4_1_CONSOLIDACAO_amazonia_crop.tif
-Downloaded from: https://mapbiomas.org/colecoes-mapbiomas?cama_set_language=en
-The data can also be visualised here: https://plataforma.mapbiomas.org/map#coverage
-To be cited as: "Project MapBiomas - Collection [version] of Brazilian Land Cover & Use Map Series, accessed on [date] through the link: [LINK]"
-"MapBiomas Project - is a multi-institutional initiative to generate annual land cover and use maps using automatic classification processes applied to satellite images. The complete description of the project can be found at http://mapbiomas.org".}
+\title{Download MapBiomas land cover data}
 \usage{
 dllLandcover(ofolder, logfile)
 }
@@ -23,12 +15,9 @@ dllLandcover(ofolder, logfile)
 stores file to disk
 }
 \description{
-Download MapBiomas land cover data
-Description:
-GeoTIFF file of yearly land cover and land use maps that are derived from Landsat mosaics. Each band of the geoTIFF file refers to a particular year. The data have a spatial resolution of 30m and its time span ranges between 1985 and 2018.
-Each pixel of the raster band contains a value that refers to a land cover type. A description of each land cover class can be found in '[en] Legend description collection 4.0.pdf' and the corresponding pixel IDs in 'MAPBIOMAS_Legenda_Cores__1_.xlsx'.
-Name: COLECAO_4_1_CONSOLIDACAO_amazonia_crop.tif
-Downloaded from: https://mapbiomas.org/colecoes-mapbiomas?cama_set_language=en
+This function downloads GeoTIFF files of yearly land cover and land use maps that are derived from Landsat mosaics (project MapBiomas). Each band of the geoTIFF file refers to a particular year. The data have a spatial resolution of 30m and its time span ranges between 1985 and 2019.
+Each pixel of the raster band contains a value that refers to a land cover type. A description of each land cover class can be found in https://mapbiomas.org/en/codigos-de-legenda?cama_set_language=en.
+Downloaded from: https://storage.googleapis.com/mapbiomas-public/COLECAO/5/DOWNLOADS/COLECOES/ANUAL/
 The data can also be visualised here: https://plataforma.mapbiomas.org/map#coverage
 To be cited as: "Project MapBiomas - Collection [version] of Brazilian Land Cover & Use Map Series, accessed on [date] through the link: [LINK]"
 "MapBiomas Project - is a multi-institutional initiative to generate annual land cover and use maps using automatic classification processes applied to satellite images. The complete description of the project can be found at http://mapbiomas.org".

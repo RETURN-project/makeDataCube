@@ -2,29 +2,28 @@
 % Please edit documentation in R/Prep_supporting_data.R
 \name{dllTreecover}
 \alias{dllTreecover}
-\title{Download tree cover
-This dataset is the result from time-series analysis of Landsat images in characterizing global forest extent and change from 2000 through 2018.
-The data consists of a geoTIFF layer with tree canopy cover for year 2000 (treecover2000), defined as canopy closure for all vegetation taller than 5m in height. This is encoded as a percentage per output grid cell, in the range 0–100.
-Additionally a data mask (datamask) layer is provided. This layer contains three values representing areas of no data (0), mapped land surface (1), and permanent water bodies (2).
-Hansen_GFC-2018-v1.6_datamask_crop.tif: data mask
-Hansen_GFC-2018-v1.6_treecover2000_crop.tif: tree cover layer for the year 2000}
+\title{Download tree cover data}
 \usage{
 dllTreecover(ofolder, ext, logfile)
 }
 \arguments{
 \item{ofolder}{Full path to store the dataset}
 
-\item{ext}{Geographic extent that should be processed}
+\item{ext}{Geographic extent that should be downloaded, should be a vector with (xmin, xmax, ymin, ymax)}
 
-\item{logfile}{logfile}
+\item{logfile}{Full path to the logfile}
 }
 \value{
 stores file to disk
 }
 \description{
-Downloaded from: https://earthenginepartners.appspot.com/science-2013-global-forest/download_v1.6.html
+This dataset is the result from time-series analysis of Landsat images in characterizing global forest extent and change from 2000 through 2018.
+The data consists of a geoTIFF layer with tree canopy cover for year 2000 (treecover2000), defined as canopy closure for all vegetation taller than 5m in height. This is encoded as a percentage per output grid cell, in the range 0–100.
+Additionally a data mask (datamask) layer is provided. This layer contains three values representing areas of no data (0), mapped land surface (1), and permanent water bodies (2).
 }
 \details{
+Downloaded from: https://earthenginepartners.appspot.com/science-2013-global-forest/download_v1.6.html
+
 Use the following credit when these data are displayed:
 Source: Hansen/UMD/Google/USGS/NASA
 

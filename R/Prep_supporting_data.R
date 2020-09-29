@@ -1,10 +1,9 @@
 
 #' Download MapBiomas land cover data
-#'Description:
-#'GeoTIFF file of yearly land cover and land use maps that are derived from Landsat mosaics. Each band of the geoTIFF file refers to a particular year. The data have a spatial resolution of 30m and its time span ranges between 1985 and 2018.
-#'Each pixel of the raster band contains a value that refers to a land cover type. A description of each land cover class can be found in '[en] Legend description collection 4.0.pdf' and the corresponding pixel IDs in 'MAPBIOMAS_Legenda_Cores__1_.xlsx'.
-#'Name: COLECAO_4_1_CONSOLIDACAO_amazonia_crop.tif
-#'Downloaded from: https://mapbiomas.org/colecoes-mapbiomas?cama_set_language=en
+#'
+#'This function downloads GeoTIFF files of yearly land cover and land use maps that are derived from Landsat mosaics (project MapBiomas). Each band of the geoTIFF file refers to a particular year. The data have a spatial resolution of 30m and its time span ranges between 1985 and 2019.
+#'Each pixel of the raster band contains a value that refers to a land cover type. A description of each land cover class can be found in https://mapbiomas.org/en/codigos-de-legenda?cama_set_language=en.
+#'Downloaded from: https://storage.googleapis.com/mapbiomas-public/COLECAO/5/DOWNLOADS/COLECOES/ANUAL/
 #'The data can also be visualised here: https://plataforma.mapbiomas.org/map#coverage
 #'To be cited as: "Project MapBiomas - Collection [version] of Brazilian Land Cover & Use Map Series, accessed on [date] through the link: [LINK]"
 #'"MapBiomas Project - is a multi-institutional initiative to generate annual land cover and use maps using automatic classification processes applied to satellite images. The complete description of the project can be found at http://mapbiomas.org".
@@ -17,19 +16,23 @@
 #' @import RCurl
 #'
 dllLandcover <- function(ofolder, logfile){
+  # regions for which land cover data is available
   lcregions <- c('AMAZONIA', 'PANTANAL', 'CAATINGA', 'MATAATLANTICA', 'CERRADO', 'PAMPA')
+  # base url for download
   baseurl <- 'https://storage.googleapis.com/mapbiomas-public/COLECAO/5/DOWNLOADS/COLECOES/ANUAL/'
+  # available land cover files
   lcfiles <- paste0(rep(lcregions, each = 35), '-', 1985:2019, '.tif')
+  # urls associated with each land cover file
   lcurl <- paste0(baseurl, rep(lcregions, each = 35), '/', rep(lcregions, each = 35), '-', 1985:2019, '.tif')
   # https://storage.cloud.google.com/mapbiomas-public/COLECAO/4_1/CONSOLIDACAO/amazonia.tif?authuser=1&organizationId=482907382829
 # download missing land cover files
-miss <- which(! lcfiles %in% list.files(ofolder))# files that are not available
+miss <- which(! lcfiles %in% list.files(ofolder))# files that are not downloaded yet
 
 if (length(miss)>0){
-  for(i in 1:length(miss)){
+  for(i in 1:length(miss)){#iterate over the files that should be downloaded
     tryCatch(
-      {download.file(lcurl[miss[i]], file.path(ofolder, lcfiles[miss[i]]))},
-      error=function(cond) {
+      {download.file(lcurl[miss[i]], file.path(ofolder, lcfiles[miss[i]]))},# try to download file
+      error=function(cond) {# if download fails, write an error message to the logfile
         line <- sprintf("%s not downloaded at %s \n", lcfiles[miss[i]], ofolder)
         write(line,file=logfile,append=TRUE)
         message(line)
@@ -57,12 +60,13 @@ if (length(miss)>0){
 #     # sapply(1:length(miss), function(i) download.file(lcurl[miss[i]], file.path(ofolder, lcfiles[miss[i]])))
 #   }}
 
-#' Prepare the MapBiomas land cover data:
+#' Prepare the MapBiomas land cover data
+#'
 #' Crop the land cover data to the desired extent and extract the study period of interest
 #'
 #' @param lc_rst list of the MapBiomas SpatRasters
 #' @param datafolder Directory where the processed land cover data will be stored
-#' @param ext Geographic extent that should be processed
+#' @param ext Geographic extent that should be processed, should be a vector with (xmin, xmax, ymin, ymax)
 #' @param fname Output file name
 #' @param startyr start date of study period
 #' @param endyr end date of study period
@@ -126,12 +130,11 @@ prepLandcover <- function(lc_rst, datafolder, ext, fname = 'landcover.tif', star
   return(lcfin)
 }
 
-#' Download tree cover
+#' Download tree cover data
+#'
 #' This dataset is the result from time-series analysis of Landsat images in characterizing global forest extent and change from 2000 through 2018.
 #' The data consists of a geoTIFF layer with tree canopy cover for year 2000 (treecover2000), defined as canopy closure for all vegetation taller than 5m in height. This is encoded as a percentage per output grid cell, in the range 0–100.
 #' Additionally a data mask (datamask) layer is provided. This layer contains three values representing areas of no data (0), mapped land surface (1), and permanent water bodies (2).
-#' Hansen_GFC-2018-v1.6_datamask_crop.tif: data mask
-#' Hansen_GFC-2018-v1.6_treecover2000_crop.tif: tree cover layer for the year 2000
 #'
 #' Downloaded from: https://earthenginepartners.appspot.com/science-2013-global-forest/download_v1.6.html
 #'
@@ -144,13 +147,14 @@ prepLandcover <- function(lc_rst, datafolder, ext, fname = 'landcover.tif', star
 #' Hansen, M. C., Potapov, P. V., Moore, R., Hancher, M., Turubanova, S. A., Tyukavina, A., ... & Kommareddy, A. (2013). High-resolution global maps of 21st-century forest cover change. science, 342(6160), 850-853.
 #'
 #' @param ofolder Full path to store the dataset
-#' @param ext Geographic extent that should be processed
-#' @param logfile logfile
+#' @param ext Geographic extent that should be downloaded, should be a vector with (xmin, xmax, ymin, ymax)
+#' @param logfile Full path to the logfile
 #'
 #' @return stores file to disk
 #' @export
 #'
 dllTreecover <- function(ofolder, ext, logfile){
+  # get the extent of the tree cover tiles of interest using the extent of the area of interest
   hanext <- c(floor(min(ext[1:2])/10)*10, ceiling(min(ext[1:2])/10)*10, floor(min(ext[3:4])/10)*10, ceiling(min(ext[3:4])/10)*10)# total extent of the area of the hansen tiles of interest, each tile has an extent of 10 x 10 degrees
   hanfiles <- c()
   hanmaskfiles <- c()
@@ -158,7 +162,7 @@ dllTreecover <- function(ofolder, ext, logfile){
   # iterate over the tiles of interest
   for(i in seq(hanext[1],hanext[2]-1,by = 10)){
     for(ii in seq(hanext[4],hanext[3]+1,by = -10)){
-      ULlat <- paste0(sprintf('%02d',abs(ii)), switch(1+(ii<0), "N", "S"))# get the upper left lattitude
+      ULlat <- paste0(sprintf('%02d',abs(ii)), switch(1+(ii<0), "N", "S"))# get the upper left latitude
       ULlon <- paste0('0',sprintf('%02d',abs(i)), switch(1+(i<0), "E", "W"))# get the upper left longitude
 
       # name of tile of interest

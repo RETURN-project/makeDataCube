@@ -2,8 +2,7 @@
 % Please edit documentation in R/Prep_supporting_data.R
 \name{prepLandcover}
 \alias{prepLandcover}
-\title{Prepare the MapBiomas land cover data:
-Crop the land cover data to the desired extent and extract the study period of interest}
+\title{Prepare the MapBiomas land cover data}
 \usage{
 prepLandcover(lc_rst, datafolder, ext, fname = "landcover.tif", startyr, endyr)
 }
@@ -12,7 +11,7 @@ prepLandcover(lc_rst, datafolder, ext, fname = "landcover.tif", startyr, endyr)
 
 \item{datafolder}{Directory where the processed land cover data will be stored}
 
-\item{ext}{Geographic extent that should be processed}
+\item{ext}{Geographic extent that should be processed, should be a vector with (xmin, xmax, ymin, ymax)}
 
 \item{fname}{Output file name}
 
@@ -24,6 +23,5 @@ prepLandcover(lc_rst, datafolder, ext, fname = "landcover.tif", startyr, endyr)
 saves land cover raster
 }
 \description{
-Prepare the MapBiomas land cover data:
 Crop the land cover data to the desired extent and extract the study period of interest
 }
