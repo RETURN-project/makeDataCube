@@ -38,14 +38,23 @@ This document generates a data cube of level-2 Landsat and Sentinel-2 data over 
 
 # Inputs
 ```{r inputs}
-forcefolder <- normalizePath(file.path('..', 'data'))#'/home/wanda/Documents/data/force_small' #file.path('..', 'data')#forcefolder <- '/home/wanda/Documents/data/force'
-S2folder <- normalizePath(file.path('..', 'data'))# folder where Level-1 Sentinel-2 data are stored
-Rtmpfolder <- normalizePath(file.path('..', 'data'))# folder where all temporary R files should be stored
-ext <- c(-43.38238361637443,-43.27938679020256,-4.555765244985907,-4.451717415449725)#extent, vector with xmin, xmax, ymin, ymax in degrees
-cld <- 50 # maximum cloud cover
-starttime <- c(2000,11,01)#start date: year, month, day
-endtime <- c(2001,5,28)#end date: year, month, day
-tiers <- 'T1'#Tier level
+# the folder where the datacube (and auxilliary data) will be stored
+forcefolder <- normalizePath(file.path('..', 'data'))#forcefolder <- '/home/wanda/Documents/data/force'
+# a directory where Sentinel-2 level 1C data are stored
+S2folder <- normalizePath(file.path('..', 'data'))
+# a directory where all temporary R files should be stored
+Rtmpfolder <- normalizePath(file.path('..', 'data'))
+#extent of the area of interest, vector with xmin, xmax, ymin, ymax in degrees
+ext <- c(-43.38238361637443,-43.27938679020256,-4.555765244985907,-4.451717415449725)
+# maximum cloud cover of the Landsat images (images with higher cloud cover will not be downloaded)
+cld <- 50 
+# start date of the study period: year, month, day
+starttime <- c(2000,11,01)
+# end date of the study period: year, month, day
+endtime <- c(2001,5,28)
+#Tier level of Landsat data (gives information about the quality of the data)
+tiers <- 'T1'
+# Landsat sensors of interest
 sensors <- c('LC08', 'LE07', 'LT05', 'LT04')#sensors, 'LM05', 'LM04'
 ```
 
