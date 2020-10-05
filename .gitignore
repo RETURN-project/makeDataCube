@@ -4,3 +4,6 @@
 .Ruserdata
 *.prm
 *.prm.bak
+*.rda
+/data/
+/tests/testthat/data/
