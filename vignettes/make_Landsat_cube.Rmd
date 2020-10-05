@@ -17,12 +17,13 @@ library(makeDataCube)
 library(tidyverse)
 library(sf)
 library(unixtools)
-# Find Python in this machine
 ```
 
 ```{r python, include=FALSE}
+# Find Python in this machine (location may vary accross users)
 ## Default installation folder for Python with Anaconda, including the user name
-py_location <-file.path("/home", Sys.getenv("USER"), "/bin/python3.6")#"/usr/bin/python3.6"#file.path("/home", Sys.getenv("USER"), "anaconda3/bin/python")
+
+py_location <- "anaconda3/bin/python" #file.path("/home", Sys.getenv("USER"), "/bin/python3.6")#"/usr/bin/python3.6"#file.path("/home", Sys.getenv("USER"), "anaconda3/bin/python")
 use_python(py_location, required = TRUE)
 py_config()
 ```
@@ -31,10 +32,11 @@ py_config()
 This document generates a data cube of level-2 Landsat and Sentinel-2 data over a user-defined area and study period, using only Landsat data below a user-defined cloud coverage threshold. The Landsat Level-1 scenes are downloaded from the public dataset hosted on Google Cloud, while Sentinel-2 Level-1 scenes should be available locally. These scenes are processed to Level-2 and a data cube is generated using FORCE software.
 
 ## Requirements
-- Python 3 should be installed and the pylandsat (https://pypi.org/project/pylandsat/) and shapely modules should be available to download data. pylandsat can be installed via 'pip install pylandsat'.
-- In addition, FORCE should be installed. FORCE allows to generate a data cube of level-2 (or higher) Landsat and Sentinel-2 imagery from level-1 inputs. Please visit https://github.com/davidfrantz/force for more information and download instructions. 
-- Next, the user should have a NASA Earthdata account to download DEM data. The Login Username and Password are stored in a netrc file in the home dir. If no netrc file is found, you will be asked to provide your Username and Password and a netrc file will automatically be created (and stored for a next session). If you don't have an account yet, you can create one at: urs.earthdata.nasa.gov. 
-- Finally, you need authentification to download data from the LAADS DAAC (WVP data). To that end, you need an create a .laads file is in your home directory with a an App Key. The App Key can be requested from NASA Earthdata (https://ladsweb.modaps.eosdis.nasa.gov/tools-and-services/data-download-scripts/#requesting). This key should be put in a file .laads in your home directory.
+- [**Python 3**](https://www.python.org/downloads/) should be installed.
+  - The [**pylandsat**](https://pypi.org/project/pylandsat/) and [**shapely**](https://pypi.org/project/Shapely/) modules should be available to download data. Both can be installed installed via `pip install pylandsat` and `pip install shaoely`.
+- In addition, [**FORCE**](https://github.com/davidfrantz/force) should be installed. **FORCE** allows to generate a data cube of level-2 (or higher) Landsat and Sentinel-2 imagery from level-1 inputs. Please visit the [project's website](https://github.com/davidfrantz/force) for more information and download instructions. 
+- The user should have a **NASA Earthdata account** to download DEM data. The _Login_, _Username_ and _Password_ are stored in a _netrc_ file in the home directory. If no _netrc_ file is found, you will be asked to provide your _Username_ and _Password_ and a _netrc_ file will automatically be created (and stored for a next session). If you don't have an account yet, you can create one [here](https://urs.earthdata.nasa.gov).
+- Finally, you need authentication to download data from the LAADS DAAC (WVP data). To that end, you need an create a _.laads_ file is in your home directory with a an **App Key**. The **App Key** can be requested from [NASA Earthdata](https://ladsweb.modaps.eosdis.nasa.gov/tools-and-services/data-download-scripts/#requesting). This key should be stored in a file_ .laads_ in your home directory.
 
 # Inputs
 ```{r inputs}
