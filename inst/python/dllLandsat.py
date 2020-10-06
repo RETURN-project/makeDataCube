@@ -33,12 +33,12 @@ def dllLandsat(queuefolder, queuefile, tmpfolder, logfile, ext, starttime, endti
     lines = re.findall(r'(\/.*?\.[\w:]+)', queue_file.read())
     queue = [os.path.splitext(os.path.basename(x))[0] for x in lines]# list of scenes that are already in the queue
 
-    dllList = [s for s in scenesid if all(xs not in s for xs in queue)] # items that match the query but are not in     queue
+    dllList = [s for s in scenesid if all(xs not in s for xs in queue)] # items that match the query but are not already in queue
 
     # Download scenes
     # dllFiles = [Product(x).download(out_dir= tmpfolder) for x in dllList]#Downloaded files
     dllFiles = [checkdll(x, tmpfolder, logfile) for x in dllList]#Downloaded files
-    return scenesid
+    return dllList, scenesid # If called from R, dllList <- output[[1]], scenesid <- output[[2]]
 
 def checkdll(x, out_dir, logfile):
     from pylandsat import Product

@@ -100,6 +100,8 @@ makeParFile(paramfolder, file.path(paramfolder, paramfile), FILE_QUEUE = file.pa
 # Search Landsat scenes, download and add to queue
 ```{r Landsat}
 LSscenes <- dllLS(l1folder, queuefolder, queuefile, tmpfolder, landsatlogfile, ext, starttime, endtime, sensors, tiers, cld)
+dllList <- LSscenes[[1]] # The scenes that have actually been downloaded in this execution
+scenes <- LSscenes[[2]] # The total list of scenes to be processed
 ```
 
 # Add Sentinel-2 data to queue
@@ -128,6 +130,6 @@ dllWVP(wvpfolder, logfile = wvplogfile)
 - generate vrt
 - summarize log files of all scenes
 ```{r process}
-Landsat2L2(paramfolder, paramfile, l2folder, LSscenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
+Landsat2L2(paramfolder, paramfile, l2folder, dllList, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
 ```
 
