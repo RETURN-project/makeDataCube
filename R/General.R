@@ -18,9 +18,10 @@ loadRData <- function(fileName){
 #' @export
 #'
 setFolders <- function(forcefolder){
-  if (!dir.exists(forcefolder)){
-    stop('directory does not exist')
-  }
+  # Proceed only if the main folder exists
+  if (!dir.exists(forcefolder)) { stop('Directory does not exist') }
+
+  # Create the tree identifiers
   tmpfolder <- file.path(forcefolder, 'temp')
   l1folder <- file.path(forcefolder, 'level1')
   l2folder <- file.path(forcefolder, 'level2')
@@ -47,40 +48,51 @@ setFolders <- function(forcefolder){
   Smissionlogfile <- file.path(logfolder, 'Smission.txt')
   Sotherlogfile <- file.path(logfolder, 'Sother.txt')
 
-  if(!dir.exists(forcefolder)){dir.create(forcefolder)}
-  if(!dir.exists(tmpfolder)){dir.create(tmpfolder)}
-  if(!dir.exists(l1folder)){dir.create(l1folder)}
-  if(!dir.exists(file.path(l1folder,'landsat'))){dir.create(file.path(l1folder,'landsat'))}
-  if(!dir.exists(file.path(l1folder,'sentinel'))){dir.create(file.path(l1folder,'sentinel'))}
-  if(!dir.exists(l2folder)){dir.create(l2folder)}
-  if(!dir.exists(queuefolder)){dir.create(queuefolder)}
-  if(!dir.exists(demfolder)){dir.create(demfolder, recursive = TRUE)}
-  if(!dir.exists(wvpfolder)){dir.create(wvpfolder, recursive = TRUE)}
-  if(!dir.exists(logfolder)){dir.create(logfolder)}
-  if(!dir.exists(S2auxfolder)){dir.create(S2auxfolder)}
+  # Create the tree
+  # Auxiliary functions: creates the path and files only if they don't exist already
+  # It is actually very similar to dir.create(path, showWarnings = FALSE)
+  dir.create.safe <- function(path, recursive = FALSE) {
+    if(!dir.exists(path)) { dir.create(path, recursive = recursive) }
+  }
 
-  if(!file.exists(demlogfile)){file.create(demlogfile)}# logfile for DEM
-  if(!file.exists(wvplogfile)){file.create(wvplogfile)}# logfile for WVP
-  if(!file.exists(landsatlogfile)){file.create(landsatlogfile)}# logfile for DEM
-  if(!file.exists(lclogfile)){file.create(lclogfile)}# logfile for DEM
-  if(!file.exists(firelogfile)){file.create(firelogfile)}# logfile for DEM
-  if(!file.exists(tclogfile)){file.create(tclogfile)}# logfile for DEMS
-  if(!file.exists(Sskiplogfile)){file.create(Sskiplogfile)}# logfile for skipped scenes
-  if(!file.exists(Ssuccesslogfile)){file.create(Ssuccesslogfile)}# logfile for successful scenes
-  if(!file.exists(Smissionlogfile)){file.create(Smissionlogfile)}# logfile for scenes with an unknown mission
-  if(!file.exists(Sotherlogfile)){file.create(Sotherlogfile)}# logfile for scenes with an unrecoginized processing status
-  if(!file.exists(file.path(queuefolder,queuefile))){file.create(file.path(queuefolder,queuefile))}# generate a queue file
-  if(!dir.exists(paramfolder)){dir.create(paramfolder)}
-  if(!dir.exists(lcfolder)){dir.create(lcfolder)}
-  if(!dir.exists(tcfolder)){dir.create(tcfolder)}
-  if(!dir.exists(firefolder)){dir.create(firefolder)}
+  file.create.safe <- function(path) {
+    if(!file.exists(path)) { file.create(path) }
+  }
 
+  dir.create.safe(tmpfolder)
+  dir.create.safe(l1folder)
+  dir.create.safe(file.path(l1folder, 'landsat'))
+  dir.create.safe(file.path(l1folder, 'sentinel'))
+  dir.create.safe(l2folder)
+  dir.create.safe(queuefolder)
+  dir.create.safe(demfolder, recursive = TRUE)
+  dir.create.safe(wvpfolder, recursive = TRUE)
+  dir.create.safe(logfolder)
+  dir.create.safe(S2auxfolder)
+
+  file.create.safe(demlogfile) # logfile for DEM
+  file.create.safe(wvplogfile) # logfile for WVP
+  file.create.safe(landsatlogfile) # logfile for DEM
+  file.create.safe(lclogfile)# logfile for DEM
+  file.create.safe(firelogfile) # logfile for DEM
+  file.create.safe(tclogfile)# logfile for DEMS
+  file.create.safe(Sskiplogfile) # logfile for skipped scenes
+  file.create.safe(Ssuccesslogfile)# logfile for successful scenes
+  file.create.safe(Smissionlogfile) # logfile for scenes with an unknown mission
+  file.create.safe(Sotherlogfile) # logfile for scenes with an unrecoginized processing status
+  file.create.safe(file.path(queuefolder, queuefile))# generate a queue file
+
+  dir.create.safe(paramfolder)
+  dir.create.safe(lcfolder)
+  dir.create.safe(tcfolder)
+  dir.create.safe(firefolder)
+
+  # Output information
   out <- c(tmpfolder, l1folder, l2folder, queuefolder, queuefile, demfolder, wvpfolder, logfolder, paramfolder, paramfile,
          lcfolder, tcfolder, firefolder, S2auxfolder, demlogfile, wvplogfile, landsatlogfile, lclogfile, firelogfile, tclogfile, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
   names(out) <- c('tmpfolder', 'l1folder', 'l2folder', 'queuefolder', 'queuefile', 'demfolder', 'wvpfolder', 'logfolder', 'paramfolder', 'paramfile',
                   'lcfolder', 'tcfolder', 'firefolder', 'S2auxfolder', 'demlogfile', 'wvplogfile', 'landsatlogfile', 'lclogfile', 'firelogfile', 'tclogfile','Sskiplogfile', 'Ssuccesslogfile', 'Smissionlogfile', 'Sotherlogfile')
   return(out)
-
 }
 
 #' Screenes the FORCE log file and add scenes to logfiles dependent on their processing category. Four categories are defined:
