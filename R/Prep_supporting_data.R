@@ -488,7 +488,7 @@ makeMaskNoFire <- function(lc, lcDates, han, extfolder, Tyr, Ttree){
   msklc <- sum(msklc)
   msklc <- (msklc == 0)
   # select areas that were forested in a user-defined year
-  mskfor <- (lc30[[paste0('X',Tyr,'-01-01')]] <6)
+  mskfor <- (lc30[[paste0(Tyr,'-01-01')]] <6)
   # select areas with tree cover percentage larger than user-defined threshold in 2000
   mskcov <- (han > Ttree)
   # mask without fire information
@@ -569,8 +569,7 @@ createFireStack <- function(msk, fcl, fjd, dts, resol, thres, extfolder){
   # iterate over pixels and generate the stack
   tsFire <- terra::app(c(msk,fcl, fjd),
                        function(x){
-                         toFireTS(x, dts = dts, resol = resol, thres = thres, olen = len)},
-                       nodes=1)
+                         toFireTS(x, dts = dts, resol = resol, thres = thres, olen = len)})#,nodes=1
   return(tsFire)
 }
 
