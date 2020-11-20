@@ -130,6 +130,6 @@ dllWVP(wvpfolder, logfile = wvplogfile)
 - generate vrt
 - summarize log files of all scenes
 ```{r process}
-Landsat2L2(paramfolder, paramfile, l2folder, dllList, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
+Landsat2L2(paramfolder, paramfile, l2folder, scenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
 ```
 
