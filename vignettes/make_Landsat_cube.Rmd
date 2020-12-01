@@ -36,9 +36,10 @@ This document generates a data cube of level-2 Landsat and Sentinel-2 data over 
   - The [**pylandsat**](https://pypi.org/project/pylandsat/) and [**shapely**](https://pypi.org/project/Shapely/) modules should be available to download data. Both can be installed installed via `pip install pylandsat` and `pip install shaoely`.
 - In addition, [**FORCE**](https://github.com/davidfrantz/force) should be installed. **FORCE** allows to generate a data cube of level-2 (or higher) Landsat and Sentinel-2 imagery from level-1 inputs. Please visit the [project's website](https://github.com/davidfrantz/force) for more information and download instructions. 
 - The user should have a **NASA Earthdata account** to download DEM data. The _Login_, _Username_ and _Password_ are stored in a _netrc_ file in the home directory. If no _netrc_ file is found, you will be asked to provide your _Username_ and _Password_ and a _netrc_ file will automatically be created (and stored for a next session). If you don't have an account yet, you can create one [here](https://urs.earthdata.nasa.gov).
-- Finally, you need authentication to download data from the LAADS DAAC (WVP data). To that end, you need an create a _.laads_ file is in your home directory with a an **App Key**. The **App Key** can be requested from [NASA Earthdata](https://ladsweb.modaps.eosdis.nasa.gov/tools-and-services/data-download-scripts/#requesting). This key should be stored in a file_ .laads_ in your home directory.
+- Finally, you need authentication to download data from the LAADS DAAC (WVP data). To that end, you need an create a _.laads_ file is in your home directory with a an **App Key**. The **App Key** can be requested from [NASA Earthdata](https://ladsweb.modaps.eosdis.nasa.gov/tools-and-services/data-download-scripts/#requesting). This key should be stored in a file _.laads_ in your home directory.
 
-# Inputs
+## Inputs
+
 ```{r inputs}
 # the folder where the datacube (and auxilliary data) will be stored
 forcefolder <- normalizePath(file.path('..', 'data'))#forcefolder <- '/home/wanda/Documents/data/force'
@@ -60,7 +61,8 @@ tiers <- 'T1'
 sensors <- c('LC08', 'LE07', 'LT05', 'LT04')#sensors, 'LM05', 'LM04'
 ```
 
-# Generate the directory structure
+## Generate the directory structure
+
 ```{r folders}
 # set the folder to store temporary data
 unixtools::set.tempdir(Rtmpfolder)
@@ -88,7 +90,8 @@ Sotherlogfile <- fldrs['Sotherlogfile']
 S2auxfolder <- fldrs['S2auxfolder']
 ```
 
-# Generate a parameter file
+## Generate a parameter file
+
 ```{r parameters}
 # more information about the parameter settings can be found in https://davidfrantz.github.io/tutorials/force-ard/l2-ard/
 # or https://force-eo.readthedocs.io/en/latest/components/lower-level/level2/param.html
@@ -97,38 +100,47 @@ source_python(system.file("python", "makeParFile.py", package = "makeDataCube"))
 makeParFile(paramfolder, file.path(paramfolder, paramfile), FILE_QUEUE = file.path(queuefolder, queuefile), DIR_LEVEL2 = l2folder, DIR_LOG = logfolder, DIR_TEMP = tmpfolder, FILE_DEM = file.path(demfolder,'srtm.vrt'), ORIGIN_LON = '-90', ORIGIN_LAT = '60', RESAMPLING = 'NN', DIR_WVPLUT = wvpfolder, RES_MERGE = 'REGRESSION',  NPROC = '1', NTHREAD = '1', DELAY = '10', OUTPUT_DST = 'TRUE',  OUTPUT_VZN = 'TRUE', OUTPUT_HOT = 'TRUE', OUTPUT_OVV = 'TRUE', DEM_NODATA= '-32768',TILE_SIZE = '3000',BLOCK_SIZE = '300')
 ```
  
-# Search Landsat scenes, download and add to queue
+## Search Landsat scenes, download and add to queue
+
 ```{r Landsat}
 LSscenes <- dllLS(l1folder, queuefolder, queuefile, tmpfolder, landsatlogfile, ext, starttime, endtime, sensors, tiers, cld)
 dllList <- LSscenes[[1]] # The scenes that have actually been downloaded in this execution
 scenes <- LSscenes[[2]] # The total list of scenes to be processed
 ```
 
-# Add Sentinel-2 data to queue
+## Add Sentinel-2 data to queue
+
 ```{r Sentinel}
 addSen2queue(S2auxfolder, ext, S2folder, starttime, endtime, queuefolder, queuefile, l1folder)
 ```
 
-# Download the DEM and generate a VRT
+## Download the Digital Elevation Map (DEM)
+
 ```{r DEM}
 # download DEM over study area
 flsDEM <- dllDEM(ext, dl_dir= demfolder, logfile = demlogfile)
 
+```
+
+## Generate a Gdal Virtual Format (VRT)
+
+```{r VRT}
 # generate a vrt
 system(paste0("find ",demfolder," -name '*.hgt' > ",file.path(demfolder,'srtm.txt')), intern = TRUE, ignore.stderr = TRUE)
 system(paste0("gdalbuildvrt -input_file_list ",file.path(demfolder,'srtm.txt')," ",file.path(demfolder,'srtm.vrt')))
 ```
 
-# Download the WVP data
+## Download the Water Vapor Database (WVP) data
 ```{r WVP}
 dllWVP(wvpfolder, logfile = wvplogfile)
 ```
 
-# Process the level 1 data to level 2 and generate a vrt
+## Process the level 1 data to level 2 and generate a VRT
 
-- process data to level 2
-- generate vrt
-- summarize log files of all scenes
+- Process data to level 2
+- Generate VRT
+- Summarize log files of all scenes
+
 ```{r process}
 Landsat2L2(paramfolder, paramfile, l2folder, scenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
 ```
