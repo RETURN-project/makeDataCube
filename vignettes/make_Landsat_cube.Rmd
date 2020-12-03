@@ -79,7 +79,6 @@ demfolder <- fldrs['demfolder']
 wvpfolder <- fldrs['wvpfolder']
 logfolder <- fldrs['logfolder']
 paramfolder <- fldrs['paramfolder']
-paramfile <- 'l2param.prm'
 demlogfile <- fldrs['demlogfile']
 wvplogfile <- fldrs['wvplogfile']
 landsatlogfile <- fldrs['landsatlogfile']
@@ -97,7 +96,9 @@ S2auxfolder <- fldrs['S2auxfolder']
 # or https://force-eo.readthedocs.io/en/latest/components/lower-level/level2/param.html
 source_python(system.file("python", "makeParFile.py", package = "makeDataCube"))
 
-makeParFile(paramfolder, file.path(paramfolder, paramfile), FILE_QUEUE = file.path(queuefolder, queuefile), DIR_LEVEL2 = l2folder, DIR_LOG = logfolder, DIR_TEMP = tmpfolder, FILE_DEM = file.path(demfolder,'srtm.vrt'), ORIGIN_LON = '-90', ORIGIN_LAT = '60', RESAMPLING = 'NN', DIR_WVPLUT = wvpfolder, RES_MERGE = 'REGRESSION',  NPROC = '1', NTHREAD = '1', DELAY = '10', OUTPUT_DST = 'TRUE',  OUTPUT_VZN = 'TRUE', OUTPUT_HOT = 'TRUE', OUTPUT_OVV = 'TRUE', DEM_NODATA= '-32768',TILE_SIZE = '3000',BLOCK_SIZE = '300')
+paramfile <- 'l2param.prm'
+demfile <- 'srtm.vrt'
+makeParFile(paramfolder, file.path(paramfolder, paramfile), FILE_QUEUE = file.path(queuefolder, queuefile), DIR_LEVEL2 = l2folder, DIR_LOG = logfolder, DIR_TEMP = tmpfolder, FILE_DEM = file.path(demfolder, demfile), ORIGIN_LON = '-90', ORIGIN_LAT = '60', RESAMPLING = 'NN', DIR_WVPLUT = wvpfolder, RES_MERGE = 'REGRESSION',  NPROC = '1', NTHREAD = '1', DELAY = '10', OUTPUT_DST = 'TRUE',  OUTPUT_VZN = 'TRUE', OUTPUT_HOT = 'TRUE', OUTPUT_OVV = 'TRUE', DEM_NODATA= '-32768',TILE_SIZE = '3000',BLOCK_SIZE = '300')
 ```
  
 ## Search Landsat scenes, download and add to queue
