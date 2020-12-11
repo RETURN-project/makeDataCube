@@ -115,5 +115,5 @@ rule clean:
     shell:
         '''
         # Remove folder tree
-        rm -rf data/
+        rm -rf data/*
         '''
