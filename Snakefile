@@ -42,7 +42,7 @@ rule all:
         'data/misc/dem/.gitkeep',
         'data/misc/fire/.gitkeep',
         'data/misc/lc/.gitkeep',
-        'data/misc/S2/.gitkeep',
+        'data/misc/S2/S2grid.kml',
         'data/misc/tc/.gitkeep',
         'data/misc/wvp/.gitkeep',
         'data/param/.gitkeep',
@@ -91,7 +91,7 @@ rule tree:
         '''
 
 # Create the parameter file
-rule parfile:
+rule parameters:
     input:
         paramFolder = 'data/param/.gitkeep',
         queueFile = 'data/level1/queue.txt',
@@ -128,6 +128,18 @@ rule parfile:
                     DEM_NODATA = '-32768',
                     TILE_SIZE = '3000',
                     BLOCK_SIZE = '300')
+                    
+rule Sentinel:
+    input:
+        dataFolder='data/.gitkeep',
+        miscFolder='data/misc/S2/.gitkeep',
+        queueFile='data/level1/queue.txt'
+    output:
+        'data/misc/S2/S2grid.kml'
+    shell:
+        '''
+        Rscript sentinel_script.R {input.miscFolder} {ext} {input.dataFolder} {starttime} {endtime} {input.queueFile}
+        '''
 
 # ==================== Independent rules ====================
 # Clean the folder
