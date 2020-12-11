@@ -9,3 +9,4 @@
 /tests/testthat/data/
 .snakemake
 __pycache__
+.ipynb_checkpoints
