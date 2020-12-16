@@ -20,11 +20,21 @@ library(unixtools)
 ```
 
 ```{r python, include=FALSE}
-# Find Python in this machine (location may vary accross users)
-## Default installation folder for Python with Anaconda, including the user name
+# Find Python in this machine (location may vary across users)
 
-py_location <- "anaconda3/bin/python" #file.path("/home", Sys.getenv("USER"), "/bin/python3.6")#"/usr/bin/python3.6"#file.path("/home", Sys.getenv("USER"), "anaconda3/bin/python")
-use_python(py_location, required = TRUE)
+import("pylandsat") # Tip: this loads the (first) Python environment containing pylandsat (installed via `pip install pylandsat`). 
+
+# If a specific environment is required, use: 
+#
+# `use_python(<python path>, required = TRUE)` # Where <python path> could be, for instance, "anaconda3/bin/python"
+# or
+# `use_condaenv(<environment name>)`
+# or
+# `use_virtualenv(<environment name>)`
+# instead of `import`.
+#
+# Note: changing Python version requires restarting RStudio.
+
 py_config()
 ```
 
