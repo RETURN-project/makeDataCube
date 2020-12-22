@@ -170,3 +170,64 @@ max_narm = function(x,...){
   }else{
     return(max(x,na.rm=TRUE))
   }}
+
+#' Download Landsat and/or Sentinel-2 data using FORCE
+#'
+#' @param ext extent of the area of interest, vector with xmin, xmax, ymin, ymax in degrees
+#' @param queuefile full path to the FORCE queue file
+#' @param l1folder full path to the FORCE level 1 folder
+#' @param metafolder full path to the FORCE metadata folder
+#' @param tmpfolder full path to a temporary folder
+#' @param cld minimum and maximum cloud cover, e.g. c(0,50)
+#' @param starttime start date, given as a vector of year, month, and day
+#' @param endtime end date, given as a vector of year, month, and day
+#' @param tiers tier of interest (only relevant for Landsat)
+#' @param sensors vector of sensors, e.g. c('LC08', 'LE07', 'LT05', 'LT04', 'S2A', 'S2B')
+#'
+#' @return downloads files
+#' @export
+#'
+getScenes <- function(ext, queuefile, l1folder, metafolder, tmpfolder, cld = c(0,100), starttime = c(1960,01,01), endtime = c(), tiers = 'T1', sensors = c('LC08', 'LE07', 'LT05', 'LT04', 'S2A', 'S2B','S2A', 'S2B')){
+  # generate shapefile with area of interest
+  tmpfile <- tempfile(pattern = "file", tmpdir = tmpfolder, fileext = ".shp")# generate a file name for the temporary shapefile
+  toShp(ext, tmpfile)# create a shapefile
+
+  # if endtime is empty, use current date
+  if(length(endtime) == 0){
+    yy <- as.numeric(format(Sys.Date(),"%Y"))
+    mm <- as.numeric(format(Sys.Date(),"%m"))
+    dd <- as.numeric(format(Sys.Date(),"%d"))
+    endtime <- c(yy, mm, dd)
+  }
+
+  # generate string of sensors
+  sensorStr <- paste0(sensors, collapse = ',')
+
+  # update the metadata files
+  system(paste0("force-level1-csd -u ", metafolder), intern = TRUE, ignore.stderr = TRUE)
+
+  # Download data of interest
+  system(paste0("force-level1-csd -c ", cld[1], ",", cld [2], " -d ", starttime[1], sprintf('%02d',starttime[2]), sprintf('%02d',starttime[3]),",", endtime[1], sprintf('%02d',endtime[2]), sprintf('%02d',endtime[3]), " -s ",  sensorStr, " ", metafolder, " ", l1folder, " ", queuefile, " ", tmpfile), intern = TRUE, ignore.stderr = TRUE)
+
+  # remove temporary shapefile
+  file.remove(tmpfile)
+
+}
+
+#' Generate shapefile over AOI
+#'
+#' @param ext extent of the area of interest, vector with xmin, xmax, ymin, ymax in degrees
+#' @param ofile full path to the output file name, file should have an '.shp' extension
+#'
+#' @return generates a shapefile
+#' @export
+#' @import sp
+#' @import rgdal
+#'
+toShp <- function(ext, ofile){
+  pts <- rbind(c(ext[1],ext[4]), c(ext[2], ext[4]), c(ext[2], ext[3]), c(ext[1], ext[3]), c(ext[1],ext[4]))
+  sp = SpatialPolygons( list(  Polygons(list(Polygon(pts)), 1)))
+  proj4string(sp) = CRS("+init=epsg:4326")
+  spdf = SpatialPolygonsDataFrame(sp,data.frame(f=99.9))
+  writeOGR(spdf, dsn = ofile, layer = oname, driver = "ESRI Shapefile")#file.path(ofolder, paste0(oname, '.shp'))
+}

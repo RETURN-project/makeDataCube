@@ -41,26 +41,20 @@ dllLS <- function(l1folder, queuefolder, queuefile, tmpfolder, logfile, ext, sta
   return(scenes)
 }
 
-#' Process Landsat level 1 data to level 2, generate a vrt and summarize the log files
+#' Process Landsat level 1 data to level 2, generate a vrt
 #'
 #' @param paramfolder path to the directory with the parameter file
 #' @param paramfile name of the parameter file
 #' @param l2folder path to the level 2 folder
-#' @param LSscenes names of the processed Landsat scenes
-#' @param logfolder full path to the folder where the logfiles are located
-#' @param Sskiplogfile full path to the log file for skipped scenes
-#' @param Ssuccesslogfile full path to the log file for successful scenes
-#' @param Smissionlogfile full path to the log file for scenes with unknown mission
-#' @param Sotherlogfile full path to the log file for other scenes
 #'
 #' @return processes level 1 landsat scenes
 #' @export
-Landsat2L2 <- function(paramfolder, paramfile, l2folder, LSscenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile){
+process2L2 <- function(paramfolder, paramfile, l2folder){
   # process data
   system(paste0("force-level2 ", file.path(paramfolder,paramfile)), intern = TRUE, ignore.stderr = TRUE)
   # generate vrt
   system(paste0("force-mosaic ",l2folder), intern = TRUE, ignore.stderr = TRUE)
   # summarize log files of all scenes
-  LSscenes <- paste0(LSscenes, '.tar.gz.log')
-  checkLSlog(LSscenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
+  # LSscenes <- paste0(LSscenes, '.tar.gz.log')
+  # checkLSlog(LSscenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
 }
