@@ -128,7 +128,7 @@ rule parameters:
                     DEM_NODATA = '-32768',
                     TILE_SIZE = '3000',
                     BLOCK_SIZE = '300')
-                    
+
 rule Sentinel:
     input:
         dataFolder='data/.gitkeep',
@@ -136,10 +136,12 @@ rule Sentinel:
         queueFile='data/level1/queue.txt'
     output:
         'data/misc/S2/S2grid.kml'
-    shell:
-        '''
-        Rscript sentinel_script.R {input.miscFolder} {ext} {input.dataFolder} {starttime} {endtime} {input.queueFile} #TODO: scriptify
-        '''
+    params:
+        ext=ext,
+        starttime=starttime,
+        endtime=endtime
+    script:
+        'sentinel_script.R'
 
 # ==================== Independent rules ====================
 # Clean the folder

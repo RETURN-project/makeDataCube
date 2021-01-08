@@ -1,19 +1,28 @@
-#!/usr/bin/env Rscript
+# ====================== Parse inputs ======================
+## Read input and parameters from snakemake file
+input <- snakemake@input
+pars <- snakemake@params
 
-# Parse args
-args <- commandArgs(trailingOnly = TRUE)
+## Auxiliary functions
+# These operations happen several times. It is more practical to encapsulate them as functions
+parsepath <- function(str) dirname(normalizePath(str)) # Parses strings representing a path
+parsenumtuple <- function(str) as.numeric(unlist(strsplit(str, ","))) # Parses string representing a tuple of numbers
 
-S2auxfolder <- dirname(normalizePath(args[1]))
-ext <- as.numeric(unlist(strsplit(args[2], ",")))
-S2folder <- dirname(normalizePath(args[3]))
-starttime <- as.numeric(unlist(strsplit(args[4], ",")))
-endtime <- as.numeric(unlist(strsplit(args[5], ",")))
-queuefile <- normalizePath(args[6])
+## Transform input to its proper R form
+S2auxfolder <- parsepath(input$miscFolder)
+ext <- parsenumtuple(pars$ext)
+S2folder <- parsepath(input$dataFolder)
+starttime <- parsenumtuple(pars$starttime)
+endtime <- parsenumtuple(pars$endtime)
+queuefile <- normalizePath(input$queueFile)
 
 queuefolder <- dirname(queuefile) #TODO: redundant with queuefile
 l1folder <- queuefolder
 
-# Run the script
+# ====================== Run the script ======================
+## Load required libraries
 library(makeDataCube)
 library(tidyverse)
-addSen2queue(S2auxfolder, ext, S2folder, starttime, endtime, queuefolder, 'queue.txt', l1folder) #TODO: ask Wanda about queue.txt
+
+## Execute
+addSen2queue(S2auxfolder, ext, S2folder, starttime, endtime, queuefolder, 'queue.txt', l1folder)
