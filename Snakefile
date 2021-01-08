@@ -24,9 +24,9 @@ sensors = ('LC08', 'LE07', 'LT05', 'LT04') #sensors, 'LM05', 'LM04'
 # ==================== Snakemake rules ====================
 rule all:
     input:
-        'data/.gitkeep',
-        'data/level1/queue.txt',
-        'data/level1/landsat/.gitkeep',
+        'data/.gitkeep', #TODO: use `directories()`
+        'data/level1/queue.txt', # TODO: use a dictionary
+        'data/level1/landsat/.gitkeep', 
         'data/level1/sentinel/.gitkeep',
         'data/level2/.gitkeep',
         'data/log/DEM.txt',
@@ -93,7 +93,7 @@ rule tree:
 # Create the parameter file
 rule parameters:
     input:
-        paramFolder = 'data/param/.gitkeep',
+        paramFolder = 'data/param/.gitkeep', # TODO: use rules.tree.output
         queueFile = 'data/level1/queue.txt',
         l2Folder = 'data/level2/.gitkeep',
         logFolder = 'data/log/DEM.txt',
@@ -138,7 +138,7 @@ rule Sentinel:
         'data/misc/S2/S2grid.kml'
     shell:
         '''
-        Rscript sentinel_script.R {input.miscFolder} {ext} {input.dataFolder} {starttime} {endtime} {input.queueFile}
+        Rscript sentinel_script.R {input.miscFolder} {ext} {input.dataFolder} {starttime} {endtime} {input.queueFile} #TODO: scriptify
         '''
 
 # ==================== Independent rules ====================
