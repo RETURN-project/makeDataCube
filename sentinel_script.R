@@ -3,21 +3,10 @@
 input <- snakemake@input
 pars <- snakemake@params
 
-## Auxiliary functions
-# These operations happen several times. It is more practical to encapsulate them as functions
-parsepath <- function(str) dirname(normalizePath(str)) # Parses strings representing a path
-parsenumtuple <- function(str) as.numeric(unlist(strsplit(str, ","))) # Parses string representing a tuple of numbers
-
-## Transform input to its proper R form
-S2auxfolder <- parsepath(input$miscFolder)
-ext <- parsenumtuple(pars$ext)
-S2folder <- parsepath(input$dataFolder)
-starttime <- parsenumtuple(pars$starttime)
-endtime <- parsenumtuple(pars$endtime)
-queuefile <- normalizePath(input$queueFile)
-
-queuefolder <- dirname(queuefile) #TODO: redundant with queuefile
-l1folder <- queuefolder
+## Auxiliary parser
+# Parsing is needed because some inputs are given in inconvenient formats
+# These operations happen several times. It is practical to encapsulate them as functions
+parsefilepath <- function(filepath) dirname(normalizePath(filepath)) # Parses strings representing a path
 
 # ====================== Run the script ======================
 ## Load required libraries
@@ -25,4 +14,11 @@ library(makeDataCube)
 library(tidyverse)
 
 ## Execute
-addSen2queue(S2auxfolder, ext, S2folder, starttime, endtime, queuefolder, 'queue.txt', l1folder)
+addSen2queue(S2auxfolder = parsefilepath(input$miscFolder), 
+             ext = pars$ext,
+             S2folder = parsefilepath(input$dataFolder), 
+             starttime = pars$starttime, 
+             endtime = pars$endtime, 
+             queuefolder = parsefilepath(input$queueFile),
+             'queue.txt', 
+             l1folder = parsefilepath(input$queueFile))

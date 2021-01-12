@@ -4,16 +4,16 @@ from auxs import makeParFile
 # ==================== Inputs ====================
 
 # Extent of the area of interest, vector with xmin, xmax, ymin, ymax in degrees
-ext = "-43.38238361637443,-43.27938679020256,-4.555765244985907,-4.451717415449725"
+ext = [-43.38238361637443, -43.27938679020256, -4.555765244985907, -4.451717415449725]
 
 # Maximum cloud cover of the Landsat images (images with higher cloud cover will not be downloaded)
 cld = 50 
 
 # Start date of the study period: year, month, day
-starttime = "2000,11,1"
+starttime = [2000, 11, 1]
 
 # End date of the study period: year, month, day
-endtime = "2001,5,28"
+endtime = [2001, 5, 28]
 
 # Tier level of Landsat data (gives information about the quality of the data)
 tiers = 'T1'
