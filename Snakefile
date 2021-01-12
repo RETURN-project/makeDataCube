@@ -51,7 +51,9 @@ rule all:
         'data/misc/dem/S04W043.hgt', # TODO: use wildcard here
         'data/misc/dem/S04W044.hgt', # TODO: use wildcard here
         'data/misc/dem/S05W043.hgt', # TODO: use wildcard here
-        'data/misc/dem/S05W044.hgt' # TODO: use wildcard here
+        'data/misc/dem/S05W044.hgt', # TODO: use wildcard here
+        'data/misc/dem/srtm.txt',
+        'data/misc/dem/srtm.vrt'
     shell:
         '''
         echo "Finished"
@@ -160,6 +162,22 @@ rule DEM:
         ext = ext
     script:
         'DEM_script.R'
+
+rule VRT:
+    input:
+        'data/misc/dem/S04W043.hgt', # Although this input not explicitly used, the files have to be there for this chunk to work # TODO: wildcards here
+        demFolder = 'data/misc/dem/.gitkeep'
+    output:
+        srtmTxtFile = 'data/misc/dem/srtm.txt', # TODO: read path from demFolder?
+        srtmVrtFile = 'data/misc/dem/srtm.vrt' # TODO: read path from demFolder?
+    shell:
+        '''
+        # Create the srtm file (a list of hgt files)
+        find $(dirname {input.demFolder}) -name '*.hgt' > {output.srtmTxtFile}
+
+        # Build the VRT file
+        gdalbuildvrt -input_file_list {output.srtmTxtFile} {output.srtmVrtFile}
+        '''
 
 # ==================== Independent rules ====================
 # Clean the folder
