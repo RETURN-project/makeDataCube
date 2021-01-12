@@ -115,6 +115,10 @@ source_python(system.file("python", "makeParFile.py", package = "makeDataCube"))
 paramfile <- 'l2param.prm'
 demfile <- 'srtm.vrt'
 makeParFile(paramfolder, file.path(paramfolder, paramfile), FILE_QUEUE = file.path(queuefolder, queuefile), DIR_LEVEL2 = l2folder, DIR_LOG = logfolder, DIR_TEMP = tmpfolder, FILE_DEM = file.path(demfolder, demfile), ORIGIN_LON = '-90', ORIGIN_LAT = '60', RESAMPLING = 'NN', DIR_WVPLUT = wvpfolder, RES_MERGE = 'REGRESSION',  NPROC = '1', NTHREAD = '1', DELAY = '10', OUTPUT_DST = 'TRUE',  OUTPUT_VZN = 'TRUE', OUTPUT_HOT = 'TRUE', OUTPUT_OVV = 'TRUE', DEM_NODATA= '-32768',TILE_SIZE = '3000',BLOCK_SIZE = '300')
+
+# Expected outputs:
+# {paramfolder}/l2param.prm (typically data/param/l2param.prm) # Parameter file
+# {paramfolder}/l2param.prm.bak (typically data/param/l2param.prm.bak) # Parameter file backup
 ```
  
 ## Search Landsat scenes, download and add to queue
