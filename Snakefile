@@ -53,7 +53,8 @@ rule all:
         'data/misc/dem/S05W043.hgt', # TODO: use wildcard here
         'data/misc/dem/S05W044.hgt', # TODO: use wildcard here
         'data/misc/dem/srtm.txt',
-        'data/misc/dem/srtm.vrt'
+        'data/misc/dem/srtm.vrt',
+        'misc/wvp/wrs-2-land.coo'
     shell:
         '''
         echo "Finished"
@@ -178,6 +179,15 @@ rule VRT:
         # Build the VRT file
         gdalbuildvrt -input_file_list {output.srtmTxtFile} {output.srtmVrtFile}
         '''
+
+rule WVP:
+    input:
+        wvpFolder = 'data/misc/wvp/.gitkeep',
+        wvplogFile = 'data/log/WVP.txt'
+    output:
+        'misc/wvp/wrs-2-land.coo' #TODO: account for the several WVP_0000_01_00.txt
+    script:
+        'WVP_script.R'
 
 # ==================== Independent rules ====================
 # Clean the folder

@@ -1,7 +1,6 @@
 # ====================== Parse inputs ======================
 ## Read input and parameters from snakemake file
 input <- snakemake@input
-pars <- snakemake@params
 
 ## Auxiliary parser
 # Parsing is needed because some inputs are given in inconvenient formats
@@ -13,6 +12,6 @@ parsefilepath <- function(filepath) dirname(normalizePath(filepath)) # Parses st
 library(makeDataCube)
 
 ## Execute
-flsDEM <- dllDEM(ext = pars$ext,
-                 dl_dir = parsefilepath(input$demFolder),
-                 logfile = parsefilepath(input$demlogfile))
+dllWVP(wvpfolder = parsefilepath(input$wvpFolder),
+       logfile = input$wvplogFile)
+
