@@ -24,8 +24,8 @@ sensors = ('LC08', 'LE07', 'LT05', 'LT04') #sensors, 'LM05', 'LM04'
 # ==================== Snakemake rules ====================
 rule all:
     input:
-        'data/.gitkeep', #TODO: use `directories()`
-        'data/level1/queue.txt', # TODO: use a dictionary
+        'data/.gitkeep', # TODO: use a dictionary
+        'data/level1/queue.txt',
         'data/level1/landsat/.gitkeep', 
         'data/level1/sentinel/.gitkeep',
         'data/level2/.gitkeep',
@@ -47,7 +47,11 @@ rule all:
         'data/misc/wvp/.gitkeep',
         'data/param/.gitkeep',
         'data/temp/.gitkeep',
-        'data/param/l2param.prm'
+        'data/param/l2param.prm',
+        'data/misc/dem/S04W043.hgt', # TODO: use wildcard here
+        'data/misc/dem/S04W044.hgt', # TODO: use wildcard here
+        'data/misc/dem/S05W043.hgt', # TODO: use wildcard here
+        'data/misc/dem/S05W044.hgt' # TODO: use wildcard here
     shell:
         '''
         echo "Finished"
@@ -131,17 +135,31 @@ rule parameters:
 
 rule Sentinel:
     input:
-        dataFolder='data/.gitkeep',
-        miscFolder='data/misc/S2/.gitkeep',
-        queueFile='data/level1/queue.txt'
+        dataFolder = 'data/.gitkeep',
+        miscFolder = 'data/misc/S2/.gitkeep',
+        queueFile = 'data/level1/queue.txt'
     output:
-        'data/misc/S2/S2grid.kml'
+        'data/misc/S2/S2grid.kml' #TODO: what about `level1/sentinel/T23MPQ and T23MPR`?
     params:
-        ext=ext,
-        starttime=starttime,
-        endtime=endtime
+        ext = ext,
+        starttime = starttime,
+        endtime = endtime
     script:
         'sentinel_script.R'
+
+rule DEM:
+    input:
+        demFolder = 'data/misc/dem/.gitkeep',
+        demlogfile = 'data/log/DEM.txt'
+    output:
+        'data/misc/dem/S04W043.hgt', # TODO: use wildcard here
+        'data/misc/dem/S04W044.hgt',
+        'data/misc/dem/S05W043.hgt',
+        'data/misc/dem/S05W044.hgt'
+    params:
+        ext = ext
+    script:
+        'DEM_script.R'
 
 # ==================== Independent rules ====================
 # Clean the folder
