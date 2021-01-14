@@ -151,7 +151,7 @@ system(paste0("gdalbuildvrt -input_file_list ",file.path(demfolder,'srtm.txt'),"
 
 ## Download the Water Vapor Database (WVP) data
 ```{r WVP}
-dllWVP(wvpfolder, logfile = wvplogfile, endtime)
+dllWVP(wvpfolder, logfile = wvplogfile)
 ```
 
 ## Process the level 1 data to level 2 and generate a VRT

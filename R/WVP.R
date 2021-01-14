@@ -3,11 +3,10 @@
 #'
 #' @param wvpfolder folder where the data should be stored
 #' @param logfile log file to keep track of the failed downloads
-#' @param endtime the latest date for which WVP data should be downloaded (vector with year, month, date)
 #'
 #' @return stores data in output folder
 #' @export
-dllWVP <- function(wvpfolder, logfile, endtime){
+dllWVP <- function(wvpfolder, logfile){
   # Check if water vapor data are available
   wvpfiles <- list.files(wvpfolder, pattern = '^WVP_[1:2].*\\.txt$' )
   if (length(wvpfiles) < 6675){
