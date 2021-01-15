@@ -162,7 +162,7 @@ rule DEM:
     params:
         ext = ext
     script:
-        'DEM_script.R'
+        'DEM_script.R' #TODO: this script can probably be parallelized
 
 rule VRT:
     input:
@@ -182,8 +182,11 @@ rule VRT:
 
 rule WVP:
     input:
+        srtmVrtFile = 'data/misc/dem/srtm.vrt', # Force rule to happen after VRT
         wvpFolder = 'data/misc/wvp/.gitkeep',
         wvplogFile = 'data/log/WVP.txt'
+    params:
+        endtime = endtime
     output:
         'misc/wvp/wrs-2-land.coo' #TODO: account for the several WVP_0000_01_00.txt
     script:

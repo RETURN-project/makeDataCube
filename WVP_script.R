@@ -1,6 +1,7 @@
 # ====================== Parse inputs ======================
 ## Read input and parameters from snakemake file
 input <- snakemake@input
+pars <- snakemake@params
 
 ## Auxiliary parser
 # Parsing is needed because some inputs are given in inconvenient formats
@@ -13,5 +14,6 @@ library(makeDataCube)
 
 ## Execute
 dllWVP(wvpfolder = parsefilepath(input$wvpFolder),
-       logfile = input$wvplogFile)
+       logfile = input$wvplogFile,
+       endtime = pars$endtime)
 
