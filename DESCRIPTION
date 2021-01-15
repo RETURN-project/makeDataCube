@@ -26,7 +26,8 @@ Imports: raster,
          terra,
          rgdal, 
          rgeos, 
-         sp
+         sp,
+         curl
 Suggests: testthat,
           knitr,
           rmarkdown,
