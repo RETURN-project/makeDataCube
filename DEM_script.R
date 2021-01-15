@@ -1,12 +1,10 @@
-# ====================== Parse inputs ======================
+# ================= Before running the script =================
 ## Read input and parameters from snakemake file
 input <- snakemake@input
 pars <- snakemake@params
 
-## Auxiliary parser
-# Parsing is needed because some inputs are given in inconvenient formats
-# These operations happen several times. It is practical to encapsulate them as functions
-parsefilepath <- function(filepath) dirname(normalizePath(filepath)) # Parses strings representing a path
+## Source auxiliary functions
+source('auxs.R')
 
 # ====================== Run the script ======================
 ## Load required libraries
@@ -14,5 +12,5 @@ library(makeDataCube)
 
 ## Execute
 flsDEM <- dllDEM(ext = pars$ext,
-                 dl_dir = parsefilepath(input$demFolder),
-                 logfile = parsefilepath(input$demlogfile))
+                 dl_dir = parsefilefolder(input$demFolder),
+                 logfile = parsefilefolder(input$demlogfile))

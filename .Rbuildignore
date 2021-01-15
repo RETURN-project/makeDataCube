@@ -1,4 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^auxs.py$
+^auxs.R$
+_script.R$
+.gitkeep$
 ^Snakefile$
