@@ -54,7 +54,7 @@ rule all:
         'data/misc/dem/S05W044.hgt', # TODO: use wildcard here
         'data/misc/dem/srtm.txt',
         'data/misc/dem/srtm.vrt',
-        'misc/wvp/wrs-2-land.coo'
+        'data/misc/wvp/WVP_2018-07-31.txt'
     shell:
         '''
         echo "Finished"
@@ -188,7 +188,7 @@ rule WVP:
     params:
         endtime = endtime
     output:
-        'misc/wvp/wrs-2-land.coo' #TODO: account for the several WVP_0000_01_00.txt
+        'data/misc/wvp/WVP_2018-07-31.txt' #TODO: account for the several WVP_0000_01_00.txt, #TODO: account for optional'misc/wvp/wrs-2-land.coo'
     script:
         'WVP_script.R'
 
