@@ -162,7 +162,7 @@ system(paste0("gdalbuildvrt -input_file_list ", file.path(demfolder,'srtm.txt'),
 
 ## Download the Water Vapor Database (WVP) data
 ```{r WVP}
-dllWVP(wvpfolder, logfile = wvplogfile)
+dllWVP(wvpfolder, logfile = wvplogfile, endtime = endtime)
 
 # Expected outputs:
 # {wvpfolder}/wrs-2-land.coo (typically: misc/wvp/wrs-2-land.coo)
