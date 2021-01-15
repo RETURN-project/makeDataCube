@@ -4,16 +4,23 @@
 #' @param wvpfolder folder where the data should be stored
 #' @param logfile log file to keep track of the failed downloads
 #' @param endtime the latest date for which WVP data should be downloaded (vector with year, month, date)
-#' @param removeTar (optional, default = FALSE) if TRUE, the tar.gz file is deleted after download and unpacking
+#' @param removeTar (optional, default = TRUE) if FALSE, the tar.gz file is kept after download and unpacking
 #'
 #' @return stores data in output folder
 #' @export
 #' @import curl
-dllWVP <- function(wvpfolder, logfile, endtime, removeTar = FALSE){
-  # Check if compressed file has been already downloaded
+dllWVP <- function(wvpfolder, logfile, endtime, removeTar = TRUE) {
+  # Check if the compressed file has been already downloaded
   wvpCompressed <- file.path(wvpfolder, 'wvp-global.tar.gz')
-  isDownloaded <- file.exists(wvpCompressed)
-  if(!isDownloaded) { # If not, download it
+  isDownloaded <- file.exists(wvpCompressed) # Is the .tar.gz still available locally?
+
+  # Check if the files have been unpacked in a previous session
+  wvpfiles <- list.files(wvpfolder, pattern = '^WVP_[1:2].*\\.txt$' )
+  isUnpacked <- (length(wvpfiles) >= 6675)
+
+  if(isDownloaded | isUnpacked) {
+    # Do nothing. The files are already here.
+  } else { # If not, download them
     tryCatch({
       curl_download(url = 'http://hs.pangaea.de/sat/MODIS/Frantz-Stellmes_2018/wvp-global.tar.gz',
                     destfile = wvpCompressed,
@@ -28,10 +35,8 @@ dllWVP <- function(wvpfolder, logfile, endtime, removeTar = FALSE){
       )
   }
 
-  # Check if file has already been unpacked
-  wvpfiles <- list.files(wvpfolder, pattern = '^WVP_[1:2].*\\.txt$' )
-  isUnpacked <- (length(wvpfiles) >= 6675)
-  if(!isUnpacked) { # If not, unpack it
+  # Unpack if neccessary
+  if(!isUnpacked) {
     # Extract the files
     system(paste0("tar -xvzf ", wvpCompressed, " -C ", wvpfolder), intern = TRUE, ignore.stderr = TRUE)
     # Move all files into the main wvp directory
@@ -41,7 +46,7 @@ dllWVP <- function(wvpfolder, logfile, endtime, removeTar = FALSE){
   }
 
   # Remove the downloaded file if required
-  if(removeTar) system(paste0("rm ", wvpCompressed), intern = TRUE, ignore.stderr = TRUE)
+  if(removeTar && isDownloaded) system(paste0("rm ", wvpCompressed), intern = TRUE, ignore.stderr = TRUE)
 
   # Update available water vapor data
   # This list may have changed after unpacking
