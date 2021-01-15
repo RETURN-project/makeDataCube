@@ -7,13 +7,14 @@
 #'
 #' @return stores data in output folder
 #' @export
+#' @import curl
 dllWVP <- function(wvpfolder, logfile, endtime){
   # Check if water vapor data are available
   wvpfiles <- list.files(wvpfolder, pattern = '^WVP_[1:2].*\\.txt$' )
   if (length(wvpfiles) < 6675){
     # If not, download precompiled WVP data
     tryCatch(
-      {download.file('http://hs.pangaea.de/sat/MODIS/Frantz-Stellmes_2018/wvp-global.tar.gz', file.path(wvpfolder, 'wvp-global.tar.gz'))},
+      {curl_download(url='http://hs.pangaea.de/sat/MODIS/Frantz-Stellmes_2018/wvp-global.tar.gz', destfile=file.path(wvpfolder, 'wvp-global.tar.gz'),quiet = T, handle = new_handle())},
       error=function(cond) {
         line <- sprintf("%s not downloaded at %s", 'wvp-global.tar.gz\n', wvpfolder)
         write(line,file=logfile,append=TRUE)
