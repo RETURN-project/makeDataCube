@@ -139,19 +139,32 @@ getScenes(ext, queuefile, l1folder, metafolder, tmpfolder, cld = cld, starttime 
 # download DEM over study area
 flsDEM <- dllDEM(ext, dl_dir= demfolder, logfile = demlogfile)
 
+# Expected outputs:
+# A collection of files like
+# {demfolder}/S04W043.hgt (typically: misc/dem/[lat][lon].hgt)
 ```
 
 ## Generate a Gdal Virtual Format (VRT)
 
 ```{r VRT}
 # generate a vrt
-system(paste0("find ",demfolder," -name '*.hgt' > ",file.path(demfolder,'srtm.txt')), intern = TRUE, ignore.stderr = TRUE)
-system(paste0("gdalbuildvrt -input_file_list ",file.path(demfolder,'srtm.txt')," ",file.path(demfolder,'srtm.vrt')))
+# Note that it requires the {demfolder}/*.hgt files generated in the DEM chunk
+system(paste0("find ", demfolder, " -name '*.hgt' > ", file.path(demfolder,'srtm.txt')), intern = TRUE, ignore.stderr = TRUE)
+system(paste0("gdalbuildvrt -input_file_list ", file.path(demfolder,'srtm.txt'), " ", file.path(demfolder, 'srtm.vrt')))
+
+# Expected outputs:
+# {demfolder}/srtm.txt (typically: misc/dem/srtm.txt)
+# {demfolder}/srtm.vrt (typically: misc/dem/srtm.vrt)
 ```
 
 ## Download the Water Vapor Database (WVP) data
 ```{r WVP}
-dllWVP(wvpfolder, logfile = wvplogfile)
+dllWVP(wvpfolder, logfile = wvplogfile, endtime = endtime)
+
+# Expected outputs:
+# {wvpfolder}/wrs-2-land.coo (typically: misc/wvp/wrs-2-land.coo)
+# A large collection of files like:
+# {wvpfolder}/WVP_0000-01-00.txt
 ```
 
 ## Process the level 1 data to level 2 and generate a VRT

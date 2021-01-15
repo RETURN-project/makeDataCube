@@ -4,12 +4,14 @@
 \alias{dllWVP}
 \title{Download Water Vapor Pressure data}
 \usage{
-dllWVP(wvpfolder, logfile)
+dllWVP(wvpfolder, logfile, endtime)
 }
 \arguments{
 \item{wvpfolder}{folder where the data should be stored}
 
 \item{logfile}{log file to keep track of the failed downloads}
+
+\item{endtime}{the latest date for which WVP data should be downloaded (vector with year, month, date)}
 }
 \value{
 stores data in output folder
