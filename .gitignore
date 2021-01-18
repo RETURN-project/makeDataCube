@@ -7,3 +7,5 @@
 *.rda
 /data/
 /tests/testthat/data/
+.snakemake/
+__pycache__/
