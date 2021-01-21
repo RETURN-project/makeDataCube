@@ -80,3 +80,11 @@ test_that("Generate FORCE folder structure", {
 test_that("Maximum value with NA",{
   expect_equal(max_narm(c(1,5,NA, NaN)), 5)
 })
+
+test_that("System call with formatted string", {
+  # This snippet ensures that the file is always deleted, even if the test fails
+  on.exit(file.remove('deleteme.txt'))
+
+  systemf('touch %s', 'deleteme.txt') # Create a file with systemf, ...
+  expect_true(file.exists('deleteme.txt')) # ... check that it was indeed created
+})

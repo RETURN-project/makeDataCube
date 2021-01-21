@@ -231,3 +231,31 @@ toShp <- function(ext, ofile){
   spdf = SpatialPolygonsDataFrame(sp,data.frame(f=99.9))
   writeOGR(spdf, dsn = ofile, layer = oname, driver = "ESRI Shapefile")#file.path(ofolder, paste0(oname, '.shp'))
 }
+
+#' Execute formatted string in system
+#'
+#' This is just a wrapper of the system function. It comfortably allows for
+#' using C-style formatting in the commands, making the calls more readable.
+#'
+#' @param string Command pattern. Use %s for string slots
+#' @param ... Substrings to fill each instance of %s
+#' @param intern (Default = TRUE) If FALSE, captures the output as an R vector
+#' @param ignore.stdout (Default = TRUE) Ignore stdout and stderr
+#'
+#' @return With default values, returns void. The command executes in the background
+#' @export
+#'
+#' @references \url{https://github.com/RETURN-project/makeDataCube/issues/28}
+#'
+#' @examples
+#' \dontrun{
+#' systemf("tar -xvzf %s -C %s", wvpCompressed, wvpfolder)
+#' }
+systemf <- function(string, ..., intern = TRUE, ignore.stdout = TRUE) {
+
+  command <- sprintf(string, ...) # Build the command string ...
+
+  system(command, # ... and execute it ...
+         intern = intern, # ... with desired verbosity
+         ignore.stdout = ignore.stdout)
+}
