@@ -129,7 +129,7 @@ getScenes(ext, queuefile, l1folder, metafolder, tmpfolder, cld = cld, starttime 
   
 ```
 
-<!-- <!-- # Add Sentinel-2 data to queue --> -->
+<!-- # Add Sentinel-2 data to queue  -->
 <!-- ```{r Sentinel} -->
 <!-- # addSen2queue(S2auxfolder, ext, S2folder, starttime, endtime, queuefolder, queuefile, l1folder) -->
 <!-- ``` -->
