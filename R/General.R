@@ -229,7 +229,7 @@ toShp <- function(ext, ofile){
   sp = SpatialPolygons( list(  Polygons(list(Polygon(pts)), 1)))
   proj4string(sp) = CRS("+init=epsg:4326")
   spdf = SpatialPolygonsDataFrame(sp,data.frame(f=99.9))
-  writeOGR(spdf, dsn = ofile, layer = oname, driver = "ESRI Shapefile")#file.path(ofolder, paste0(oname, '.shp'))
+  writeOGR(spdf, dsn = ofile, layer = ofile, driver = "ESRI Shapefile")#file.path(ofolder, paste0(oname, '.shp'))
 }
 
 #' Execute formatted string in system
