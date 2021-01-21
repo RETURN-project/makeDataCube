@@ -36,6 +36,7 @@ setFolders <- function(forcefolder){
   tcfolder <- file.path(forcefolder, 'misc','tc')# raw tree cover data
   firefolder <- file.path(forcefolder, 'misc','fire')# raw fire data
   S2auxfolder <- file.path(forcefolder, 'misc', 'S2')# auxiliary S2 data (eg tile grid)
+  metafolder  <- file.path(forcefolder, 'misc', 'meta')# auxiliary S2 data (eg tile grid)
 
   demlogfile <- file.path(logfolder,'DEM.txt')
   wvplogfile <- file.path(logfolder,'WVP.txt')
@@ -69,6 +70,7 @@ setFolders <- function(forcefolder){
   dir.create.safe(wvpfolder, recursive = TRUE)
   dir.create.safe(logfolder)
   dir.create.safe(S2auxfolder)
+  dir.create.safe(metafolder)
 
   file.create.safe(demlogfile) # logfile for DEM
   file.create.safe(wvplogfile) # logfile for WVP
@@ -89,9 +91,9 @@ setFolders <- function(forcefolder){
 
   # Output information
   out <- c(tmpfolder, l1folder, l2folder, queuefolder, queuefile, demfolder, wvpfolder, logfolder, paramfolder, paramfile,
-         lcfolder, tcfolder, firefolder, S2auxfolder, demlogfile, wvplogfile, landsatlogfile, lclogfile, firelogfile, tclogfile, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
+         lcfolder, tcfolder, firefolder, S2auxfolder, metafolder, demlogfile, wvplogfile, landsatlogfile, lclogfile, firelogfile, tclogfile, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
   names(out) <- c('tmpfolder', 'l1folder', 'l2folder', 'queuefolder', 'queuefile', 'demfolder', 'wvpfolder', 'logfolder', 'paramfolder', 'paramfile',
-                  'lcfolder', 'tcfolder', 'firefolder', 'S2auxfolder', 'demlogfile', 'wvplogfile', 'landsatlogfile', 'lclogfile', 'firelogfile', 'tclogfile','Sskiplogfile', 'Ssuccesslogfile', 'Smissionlogfile', 'Sotherlogfile')
+                  'lcfolder', 'tcfolder', 'firefolder', 'S2auxfolder', 'metafolder', 'demlogfile', 'wvplogfile', 'landsatlogfile', 'lclogfile', 'firelogfile', 'tclogfile','Sskiplogfile', 'Ssuccesslogfile', 'Smissionlogfile', 'Sotherlogfile')
   return(out)
 }
 
