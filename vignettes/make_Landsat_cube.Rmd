@@ -125,8 +125,13 @@ makeParFile(paramfolder, file.path(paramfolder, paramfile), FILE_QUEUE = file.pa
 ## Search Landsat scenes, download and add to queue
 
 ```{r Landsat}
-getScenes(ext, queuefile, l1folder, metafolder, tmpfolder, cld = cld, starttime = starttime, endtime = endtime, tiers = tiers, sensors = sensors)
-  
+queuepath <- file.path(queuefolder, queuefile)
+getScenes(ext, queuepath, l1folder, metafolder, tmpfolder, cld = cld, starttime = starttime, endtime = endtime, tiers = tiers, sensors = sensors)
+# TODO: expected outputs
+# temp/file399f3b942666.dbf
+# temp/file399f3b942666.prj
+# temp/file399f3b942666.shx
+# queue.txt will be updated
 ```
 
 <!-- # Add Sentinel-2 data to queue  -->
@@ -164,6 +169,7 @@ dllWVP(wvpfolder, logfile = wvplogfile, endtime = endtime)
 
 # Expected outputs:
 # {wvpfolder}/wrs-2-land.coo (typically: misc/wvp/wrs-2-land.coo)
+# {wvpfolder}/wvp-global.tar.gz
 # A large collection of files like:
 # {wvpfolder}/WVP_0000-01-00.txt
 ```

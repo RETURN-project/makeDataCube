@@ -176,7 +176,7 @@ max_narm = function(x,...){
 #' Download Landsat and/or Sentinel-2 data using FORCE
 #'
 #' @param ext extent of the area of interest, vector with xmin, xmax, ymin, ymax in degrees
-#' @param queuefile full path to the FORCE queue file
+#' @param queuepath full path to the FORCE queue file
 #' @param l1folder full path to the FORCE level 1 folder
 #' @param metafolder full path to the FORCE metadata folder
 #' @param tmpfolder full path to a temporary folder
@@ -189,7 +189,7 @@ max_narm = function(x,...){
 #' @return downloads files
 #' @export
 #'
-getScenes <- function(ext, queuefile, l1folder, metafolder, tmpfolder, cld = c(0,100), starttime = c(1960,01,01), endtime = c(), tiers = 'T1', sensors = c('LC08', 'LE07', 'LT05', 'LT04', 'S2A', 'S2B','S2A', 'S2B')){
+getScenes <- function(ext, queuepath, l1folder, metafolder, tmpfolder, cld = c(0,100), starttime = c(1960,01,01), endtime = c(), tiers = 'T1', sensors = c('LC08', 'LE07', 'LT05', 'LT04', 'S2A', 'S2B','S2A', 'S2B')){
   # generate shapefile with area of interest
   tmpfile <- tempfile(pattern = "file", tmpdir = tmpfolder, fileext = ".shp")# generate a file name for the temporary shapefile
   toShp(ext, tmpfile)# create a shapefile
@@ -209,7 +209,7 @@ getScenes <- function(ext, queuefile, l1folder, metafolder, tmpfolder, cld = c(0
   system(paste0("force-level1-csd -u ", metafolder), intern = TRUE, ignore.stderr = TRUE)
 
   # Download data of interest
-  system(paste0("force-level1-csd -c ", cld[1], ",", cld [2], " -d ", starttime[1], sprintf('%02d',starttime[2]), sprintf('%02d',starttime[3]),",", endtime[1], sprintf('%02d',endtime[2]), sprintf('%02d',endtime[3]), " -s ",  sensorStr, " ", metafolder, " ", l1folder, " ", queuefile, " ", tmpfile), intern = TRUE, ignore.stderr = TRUE)
+  system(paste0("force-level1-csd -c ", cld[1], ",", cld [2], " -d ", starttime[1], sprintf('%02d',starttime[2]), sprintf('%02d',starttime[3]),",", endtime[1], sprintf('%02d',endtime[2]), sprintf('%02d',endtime[3]), " -s ",  sensorStr, " ", metafolder, " ", l1folder, " ", queuepath, " ", tmpfile), intern = TRUE, ignore.stderr = TRUE)
 
   # remove temporary shapefile
   file.remove(tmpfile)
@@ -260,4 +260,6 @@ systemf <- function(string, ..., intern = TRUE, ignore.stdout = TRUE) {
   system(command, # ... and execute it ...
          intern = intern, # ... with desired verbosity
          ignore.stdout = ignore.stdout)
+
+  # Output status with: status <- system(command, intern=FALSE)
 }
