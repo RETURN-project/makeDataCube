@@ -155,9 +155,11 @@ flsDEM <- dllDEM(ext, dl_dir= demfolder, logfile = demlogfile)
 ```{r VRT}
 # generate a vrt
 # Note that it requires the {demfolder}/*.hgt files generated in the DEM chunk
-# systemf("find %s -name -name '*.hgt' > %s", demfolder, file.path(demfolder,'srtm.txt'))
-log1starg(system)(paste0("find ", demfolder, " -name '*.hgt' > ", file.path(demfolder,'srtm.txt')), intern = TRUE, ignore.stderr = TRUE)
-log1starg(system)(paste0("gdalbuildvrt -input_file_list ", file.path(demfolder,'srtm.txt'), " ", file.path(demfolder, 'srtm.vrt')))
+systemf("find %s -name '*.hgt' > %s", 
+        demfolder, file.path(demfolder, 'srtm.txt'))
+
+systemf("gdalbuildvrt -input_file_list %s %s", 
+        file.path(demfolder, 'srtm.txt'), file.path(demfolder, 'srtm.vrt'))
 
 # Expected outputs:
 # {demfolder}/srtm.txt (typically: misc/dem/srtm.txt)
