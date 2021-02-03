@@ -6,7 +6,7 @@
 \usage{
 getScenes(
   ext,
-  queuefile,
+  queuepath,
   l1folder,
   metafolder,
   tmpfolder,
@@ -20,7 +20,7 @@ getScenes(
 \arguments{
 \item{ext}{extent of the area of interest, vector with xmin, xmax, ymin, ymax in degrees}
 
-\item{queuefile}{full path to the FORCE queue file}
+\item{queuepath}{full path to the FORCE queue file}
 
 \item{l1folder}{full path to the FORCE level 1 folder}
 
