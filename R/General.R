@@ -202,14 +202,19 @@ getScenes <- function(ext, queuepath, l1folder, metafolder, tmpfolder, cld = c(0
     endtime <- c(yy, mm, dd)
   }
 
-  # generate string of sensors
-  sensorStr <- paste0(sensors, collapse = ',')
+  # Generate strings of parameters
+  cldStr <- paste(cld, collapse = ',') # Cloud coverage
+  starttimeStr <- paste(sprintf('%02d', starttime), collapse = '') # Start ...
+  endtimeStr <- paste(sprintf('%02d', endtime), collapse = '') # ... and ending ...
+  timesStr <- paste(starttimeStr, endtimeStr, sep = ',') # ... times
+  sensorStr <- paste(sensors, collapse = ',') # Sensors
 
   # update the metadata files
-  log1starg(system)(paste0("force-level1-csd -u ", metafolder), intern = TRUE, ignore.stderr = TRUE)
+  systemf("force-level1-csd -u %s", metafolder)
 
   # Download data of interest
-  log1starg(system)(paste0("force-level1-csd -c ", cld[1], ",", cld [2], " -d ", starttime[1], sprintf('%02d',starttime[2]), sprintf('%02d',starttime[3]),",", endtime[1], sprintf('%02d',endtime[2]), sprintf('%02d',endtime[3]), " -s ",  sensorStr, " ", metafolder, " ", l1folder, " ", queuepath, " ", tmpfile), intern = TRUE, ignore.stderr = TRUE)
+  systemf("force-level1-csd -c %s -d %s -s %s %s %s %s %s",
+          cldStr, timesStr, sensorStr, metafolder, l1folder, queuepath, tmpfile)
 
   # remove temporary shapefile
   file.remove(tmpfile)
@@ -256,6 +261,8 @@ toShp <- function(ext, ofile){
 systemf <- function(string, ..., intern = TRUE, ignore.stdout = TRUE) {
 
   command <- sprintf(string, ...) # Build the command string ...
+
+  write(command, 'logcommands.txt', append = TRUE)
 
   system(command, # ... and execute it ...
          intern = intern, # ... with desired verbosity
