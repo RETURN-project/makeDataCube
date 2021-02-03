@@ -34,8 +34,8 @@ dllDEM <- function(ext, dl_dir= Sys.getenv("HOME"), logfile){
     # download
     dllLPDAAC(dl_dir, urls, logfile)
     # unzip the downloaded files and remove them
-    system(paste0("unzip '",file.path(dl_dir,"*.zip'"), " -d ", dl_dir), intern = TRUE, ignore.stderr = TRUE)
-    system(paste0("rm ",file.path(dl_dir,"*.zip")), intern = TRUE, ignore.stderr = TRUE)
+    log1starg(system)(paste0("unzip '",file.path(dl_dir,"*.zip'"), " -d ", dl_dir), intern = TRUE, ignore.stderr = TRUE)
+    log1starg(system)(paste0("rm ",file.path(dl_dir,"*.zip")), intern = TRUE, ignore.stderr = TRUE)
 
   }
    # return a list of downloaded files

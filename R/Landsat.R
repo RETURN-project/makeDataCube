@@ -21,7 +21,7 @@
 #'
 dllLS <- function(l1folder, queuefolder, queuefile, tmpfolder, logfile, ext, starttime, endtime, sensors, tiers, cld){
   # Sync the catalog
-  system("pylandsat sync-database")#system("pylandsat sync-database -f")
+  log1starg(system)("pylandsat sync-database")#system("pylandsat sync-database -f")
   # Download tiles that are not in the queue yet
   source_python(system.file("python", "dllLandsat.py", package = "makeDataCube"))
   dllInfo <- dllLandsat(queuefolder, queuefile, tmpfolder, logfile, ext, starttime, endtime, sensors, tiers, cld)
@@ -29,16 +29,16 @@ dllLS <- function(l1folder, queuefolder, queuefile, tmpfolder, logfile, ext, sta
 
   # compress data to .tar.gz file
   for(i in 1:length(scenes)){
-    system(paste0("tar -zcvf ",file.path(tmpfolder,paste0(scenes[i],'.tar.gz'))," -C ",file.path(tmpfolder,scenes[i]), " ."), intern = TRUE, ignore.stderr = TRUE)
+    log1starg(system)(paste0("tar -zcvf ",file.path(tmpfolder,paste0(scenes[i],'.tar.gz'))," -C ",file.path(tmpfolder,scenes[i]), " ."), intern = TRUE, ignore.stderr = TRUE)
   }
 
   # add scenes to queue
-  system(paste0("force-level1-landsat ",tmpfolder," ",file.path(l1folder,'landsat')," ",file.path(queuefolder,'queue.txt')," mv"), intern = TRUE, ignore.stderr = TRUE)
+  log1starg(system)(paste0("force-level1-landsat ",tmpfolder," ",file.path(l1folder,'landsat')," ",file.path(queuefolder,'queue.txt')," mv"), intern = TRUE, ignore.stderr = TRUE)
 
   # remove temporary files and folders
-  system(paste0("rm ",file.path(tmpfolder,"*.tar.gz")), intern = TRUE, ignore.stderr = TRUE)
-  system(paste0("rm -rd ",file.path(tmpfolder,"L*")), intern = TRUE, ignore.stderr = TRUE)
-  system(paste0("rm -rd ",file.path(tmpfolder,"index.csv")), intern = TRUE, ignore.stderr = TRUE)
+  log1starg(system)(paste0("rm ",file.path(tmpfolder,"*.tar.gz")), intern = TRUE, ignore.stderr = TRUE)
+  log1starg(system)(paste0("rm -rd ",file.path(tmpfolder,"L*")), intern = TRUE, ignore.stderr = TRUE)
+  log1starg(system)(paste0("rm -rd ",file.path(tmpfolder,"index.csv")), intern = TRUE, ignore.stderr = TRUE)
   return(scenes)
 }
 
@@ -52,9 +52,9 @@ dllLS <- function(l1folder, queuefolder, queuefile, tmpfolder, logfile, ext, sta
 #' @export
 process2L2 <- function(paramfolder, paramfile, l2folder){
   # process data
-  system(paste0("force-level2 ", file.path(paramfolder,paramfile)), intern = TRUE, ignore.stderr = TRUE)
+  log1starg(system)(paste0("force-level2 ", file.path(paramfolder,paramfile)), intern = TRUE, ignore.stderr = TRUE)
   # generate vrt
-  system(paste0("force-mosaic ",l2folder), intern = TRUE, ignore.stderr = TRUE)
+  log1starg(system)(paste0("force-mosaic ",l2folder), intern = TRUE, ignore.stderr = TRUE)
   # summarize log files of all scenes
   # LSscenes <- paste0(LSscenes, '.tar.gz.log')
   # checkLSlog(LSscenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)

@@ -206,10 +206,10 @@ getScenes <- function(ext, queuepath, l1folder, metafolder, tmpfolder, cld = c(0
   sensorStr <- paste0(sensors, collapse = ',')
 
   # update the metadata files
-  system(paste0("force-level1-csd -u ", metafolder), intern = TRUE, ignore.stderr = TRUE)
+  log1starg(system)(paste0("force-level1-csd -u ", metafolder), intern = TRUE, ignore.stderr = TRUE)
 
   # Download data of interest
-  system(paste0("force-level1-csd -c ", cld[1], ",", cld [2], " -d ", starttime[1], sprintf('%02d',starttime[2]), sprintf('%02d',starttime[3]),",", endtime[1], sprintf('%02d',endtime[2]), sprintf('%02d',endtime[3]), " -s ",  sensorStr, " ", metafolder, " ", l1folder, " ", queuepath, " ", tmpfile), intern = TRUE, ignore.stderr = TRUE)
+  log1starg(system)(paste0("force-level1-csd -c ", cld[1], ",", cld [2], " -d ", starttime[1], sprintf('%02d',starttime[2]), sprintf('%02d',starttime[3]),",", endtime[1], sprintf('%02d',endtime[2]), sprintf('%02d',endtime[3]), " -s ",  sensorStr, " ", metafolder, " ", l1folder, " ", queuepath, " ", tmpfile), intern = TRUE, ignore.stderr = TRUE)
 
   # remove temporary shapefile
   file.remove(tmpfile)
