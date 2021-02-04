@@ -33,9 +33,11 @@ dllDEM <- function(ext, dl_dir= Sys.getenv("HOME"), logfile){
     urls <- paste0('http://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11/',todll,'.zip')#urls that meet  the criteria
     # download
     dllLPDAAC(dl_dir, urls, logfile)
-    # unzip the downloaded files and remove them
-    log1starg(system)(paste0("unzip '",file.path(dl_dir,"*.zip'"), " -d ", dl_dir), intern = TRUE, ignore.stderr = TRUE)
-    log1starg(system)(paste0("rm ",file.path(dl_dir,"*.zip")), intern = TRUE, ignore.stderr = TRUE)
+
+    # Unzip the downloaded files...
+    systemf("unzip '%s' -d %s", file.path(dl_dir, "*.zip"), dl_dir)
+    # ... and remove the zip files after unzipping
+    systemf("rm %s", file.path(dl_dir, "*.zip"))
 
   }
    # return a list of downloaded files
