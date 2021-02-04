@@ -52,9 +52,9 @@ dllLS <- function(l1folder, queuefolder, queuefile, tmpfolder, logfile, ext, sta
 #' @export
 process2L2 <- function(paramfolder, paramfile, l2folder){
   # process data
-  log1starg(system)(paste0("force-level2 ", file.path(paramfolder,paramfile)), intern = TRUE, ignore.stderr = TRUE)
+  systemf("force-level2 %s", file.path(paramfolder,paramfile))
   # generate vrt
-  log1starg(system)(paste0("force-mosaic ",l2folder), intern = TRUE, ignore.stderr = TRUE)
+  systemf("force-mosaic %s", l2folder)
   # summarize log files of all scenes
   # LSscenes <- paste0(LSscenes, '.tar.gz.log')
   # checkLSlog(LSscenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
