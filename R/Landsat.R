@@ -21,7 +21,7 @@
 #'
 dllLS <- function(l1folder, queuefolder, queuefile, tmpfolder, logfile, ext, starttime, endtime, sensors, tiers, cld){
   # Sync the catalog
-  log1starg(system)("pylandsat sync-database")#system("pylandsat sync-database -f")
+  system("pylandsat sync-database") # system("pylandsat sync-database -f")
   # Download tiles that are not in the queue yet
   source_python(system.file("python", "dllLandsat.py", package = "makeDataCube"))
   dllInfo <- dllLandsat(queuefolder, queuefile, tmpfolder, logfile, ext, starttime, endtime, sensors, tiers, cld)
@@ -29,16 +29,20 @@ dllLS <- function(l1folder, queuefolder, queuefile, tmpfolder, logfile, ext, sta
 
   # compress data to .tar.gz file
   for(i in 1:length(scenes)){
-    log1starg(system)(paste0("tar -zcvf ",file.path(tmpfolder,paste0(scenes[i],'.tar.gz'))," -C ",file.path(tmpfolder,scenes[i]), " ."), intern = TRUE, ignore.stderr = TRUE)
+    systemf("tar -zcvf %s -C %s .",
+            file.path(tmpfolder, paste0(scenes[i],'.tar.gz')),
+            file.path(tmpfolder, scenes[i]))
   }
 
   # add scenes to queue
-  log1starg(system)(paste0("force-level1-landsat ",tmpfolder," ",file.path(l1folder,'landsat')," ",file.path(queuefolder,'queue.txt')," mv"), intern = TRUE, ignore.stderr = TRUE)
+  systemf("force-level1-landsat %s %s %s mv",
+          tmpfolder, file.path(l1folder,'landsat'), file.path(queuefolder,'queue.txt'))
 
   # remove temporary files and folders
-  log1starg(system)(paste0("rm ",file.path(tmpfolder,"*.tar.gz")), intern = TRUE, ignore.stderr = TRUE)
-  log1starg(system)(paste0("rm -rd ",file.path(tmpfolder,"L*")), intern = TRUE, ignore.stderr = TRUE)
-  log1starg(system)(paste0("rm -rd ",file.path(tmpfolder,"index.csv")), intern = TRUE, ignore.stderr = TRUE)
+  systemf("rm %s", file.path(tmpfolder,"*.tar.gz"))
+  systemf("rm -rd %s", file.path(tmpfolder,"L*"))
+  systemf("rm -rd %s", file.path(tmpfolder,"index.csv"))
+
   return(scenes)
 }
 

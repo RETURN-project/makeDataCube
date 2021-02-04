@@ -429,7 +429,9 @@ return(tsFire2)
 #' @export
 #'
 getGrid <- function(cubefolder, ext){
-  log1starg(system)(paste0("force-tabulate-grid ", file.path(cubefolder), " ", ext[3]," ", ext[4]," ", ext[1]," ", ext[2], " shp"), intern = TRUE, ignore.stderr = TRUE)
+  ext_reorder <- c(ext[3], ext[4], ext[1], ext[2])
+  extStr <- paste0(ext_reorder, collapse = " ")
+  systemf("force-tabulate-grid %s %s shp", file.path(cubeFolder), extStr)
   # load shapefile
   p <- shapefile(file.path(cubefolder, 'shp',"grid.shp"))
   # transform crs to crs of interest
