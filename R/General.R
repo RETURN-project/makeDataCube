@@ -246,6 +246,7 @@ toShp <- function(ext, ofile){
 #'
 #' @param string Command pattern. Use %s for string slots
 #' @param ... Substrings to fill each instance of %s
+#' @param logfile (Default = NULL) Text file to log input and exit status. Useful for debugging
 #' @param intern (Default = FALSE) FALSE returns the exit status. TRUE the output
 #' @param ignore.stdout (Default = FALSE) Ignore stdout and stderr
 #'
@@ -258,16 +259,16 @@ toShp <- function(ext, ofile){
 #' \dontrun{
 #' systemf("tar -xvzf %s -C %s", wvpCompressed, wvpfolder)
 #' }
-systemf <- function(string, ..., intern = FALSE, ignore.stdout = FALSE) {
+systemf <- function(string, ..., logfile = NULL, intern = FALSE, ignore.stdout = FALSE) {
 
   command <- sprintf(string, ...) # Build the command string
 
-  write(command, 'logcommands.txt', append = TRUE) # Log the command
+  if(!is.null(logfile)) write(command, logfile, append = TRUE) # Log the command
 
   status <- system(command, # Execute the command string ...
                    intern = intern, # ... with desired parameters
                    ignore.stdout = ignore.stdout)
 
-  write(status, 'logcommands.txt', append = TRUE) # Log the exit status
+  if(!is.null(logfile)) write(status, logfile, append = TRUE) # Log the exit status
 
 }

@@ -4,12 +4,14 @@
 \alias{systemf}
 \title{Execute formatted string in system}
 \usage{
-systemf(string, ..., intern = FALSE, ignore.stdout = FALSE)
+systemf(string, ..., logfile = NULL, intern = FALSE, ignore.stdout = FALSE)
 }
 \arguments{
 \item{string}{Command pattern. Use %s for string slots}
 
 \item{...}{Substrings to fill each instance of %s}
+
+\item{logfile}{(Default = NULL) Text file to log input and exit status. Useful for debugging}
 
 \item{intern}{(Default = FALSE) FALSE returns the exit status. TRUE the output}
 
