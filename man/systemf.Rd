@@ -4,16 +4,16 @@
 \alias{systemf}
 \title{Execute formatted string in system}
 \usage{
-systemf(string, ..., intern = TRUE, ignore.stdout = TRUE)
+systemf(string, ..., intern = FALSE, ignore.stdout = FALSE)
 }
 \arguments{
 \item{string}{Command pattern. Use %s for string slots}
 
 \item{...}{Substrings to fill each instance of %s}
 
-\item{intern}{(Default = TRUE) If FALSE, captures the output as an R vector}
+\item{intern}{(Default = FALSE) FALSE returns the exit status. TRUE the output}
 
-\item{ignore.stdout}{(Default = TRUE) Ignore stdout and stderr}
+\item{ignore.stdout}{(Default = FALSE) Ignore stdout and stderr}
 }
 \value{
 With default values, returns void. The command executes in the background
