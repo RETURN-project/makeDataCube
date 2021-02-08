@@ -49,6 +49,9 @@ This document generates a data cube of level-2 Landsat and Sentinel-2 data over 
 - The user should have a **NASA Earthdata account** to download DEM data. The _Login_, _Username_ and _Password_ are stored in a _netrc_ file in the home directory. If no _netrc_ file is found, you will be asked to provide your _Username_ and _Password_ and a _netrc_ file will automatically be created (and stored for a next session). If you don't have an account yet, you can create one [here](https://urs.earthdata.nasa.gov).
 - Finally, you need authentication to download data from the LAADS DAAC (WVP data). To that end, you need an create a _.laads_ file is in your home directory with a an **App Key**. The **App Key** can be requested from [NASA Earthdata](https://ladsweb.modaps.eosdis.nasa.gov/tools-and-services/data-download-scripts/#requesting). This key should be stored in a file _.laads_ in your home directory.
 
+## Visual workflow
+![Workflow](../img/flow.png){width=100%}
+
 ## Inputs
 
 ```{r inputs}
