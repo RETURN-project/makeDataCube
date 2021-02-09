@@ -21,46 +21,45 @@
 #'
 dllLS <- function(l1folder, queuefolder, queuefile, tmpfolder, logfile, ext, starttime, endtime, sensors, tiers, cld){
   # Sync the catalog
-  system("pylandsat sync-database")#system("pylandsat sync-database -f")
+  system("pylandsat sync-database") # system("pylandsat sync-database -f")
   # Download tiles that are not in the queue yet
   source_python(system.file("python", "dllLandsat.py", package = "makeDataCube"))
-  scenes <- dllLandsat(queuefolder, queuefile, tmpfolder, logfile, ext, starttime, endtime, sensors, tiers, cld)
+  dllInfo <- dllLandsat(queuefolder, queuefile, tmpfolder, logfile, ext, starttime, endtime, sensors, tiers, cld)
+  scenes <- dllInfo[[1]]
 
   # compress data to .tar.gz file
   for(i in 1:length(scenes)){
-    system(paste0("tar -zcvf ",file.path(tmpfolder,paste0(scenes[i],'.tar.gz'))," -C",file.path(tmpfolder,scenes[i]), " ."), intern = TRUE, ignore.stderr = TRUE)
+    systemf("tar -zcvf %s -C %s .",
+            file.path(tmpfolder, paste0(scenes[i],'.tar.gz')),
+            file.path(tmpfolder, scenes[i]))
   }
 
   # add scenes to queue
-  system(paste0("force-level1-landsat ",tmpfolder," ",file.path(l1folder,'landsat')," ",file.path(queuefolder,'queue.txt')," mv"), intern = TRUE, ignore.stderr = TRUE)
+  systemf("force-level1-landsat %s %s %s mv",
+          tmpfolder, file.path(l1folder,'landsat'), file.path(queuefolder,'queue.txt'))
 
   # remove temporary files and folders
-  system(paste0("rm ",file.path(tmpfolder,"*.tar.gz")), intern = TRUE, ignore.stderr = TRUE)
-  system(paste0("rm -rd ",file.path(tmpfolder,"L*")), intern = TRUE, ignore.stderr = TRUE)
-  system(paste0("rm -rd ",file.path(tmpfolder,"index.csv")), intern = TRUE, ignore.stderr = TRUE)
+  systemf("rm %s", file.path(tmpfolder,"*.tar.gz"))
+  systemf("rm -rd %s", file.path(tmpfolder,"L*"))
+  systemf("rm -rd %s", file.path(tmpfolder,"index.csv"))
+
   return(scenes)
 }
 
-#' Process Landsat level 1 data to level 2, generate a vrt and summarize the log files
+#' Process Landsat level 1 data to level 2, generate a vrt
 #'
 #' @param paramfolder path to the directory with the parameter file
 #' @param paramfile name of the parameter file
 #' @param l2folder path to the level 2 folder
-#' @param LSscenes names of the processed Landsat scenes
-#' @param logfolder full path to the folder where the logfiles are located
-#' @param Sskiplogfile full path to the log file for skipped scenes
-#' @param Ssuccesslogfile full path to the log file for successful scenes
-#' @param Smissionlogfile full path to the log file for scenes with unknown mission
-#' @param Sotherlogfile full path to the log file for other scenes
 #'
 #' @return processes level 1 landsat scenes
 #' @export
-Landsat2L2 <- function(paramfolder, paramfile, l2folder, LSscenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile){
+process2L2 <- function(paramfolder, paramfile, l2folder){
   # process data
-  system(paste0("force-level2 ", file.path(paramfolder,paramfile)), intern = TRUE, ignore.stderr = TRUE)
+  systemf("force-level2 %s", file.path(paramfolder,paramfile))
   # generate vrt
-  system(paste0("force-mosaic ",l2folder), intern = TRUE, ignore.stderr = TRUE)
+  systemf("force-mosaic %s", l2folder)
   # summarize log files of all scenes
-  LSscenes <- paste0(LSscenes, '.tar.gz.log')
-  checkLSlog(LSscenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
+  # LSscenes <- paste0(LSscenes, '.tar.gz.log')
+  # checkLSlog(LSscenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
 }

@@ -36,6 +36,7 @@ setFolders <- function(forcefolder){
   tcfolder <- file.path(forcefolder, 'misc','tc')# raw tree cover data
   firefolder <- file.path(forcefolder, 'misc','fire')# raw fire data
   S2auxfolder <- file.path(forcefolder, 'misc', 'S2')# auxiliary S2 data (eg tile grid)
+  metafolder  <- file.path(forcefolder, 'misc', 'meta')# auxiliary S2 data (eg tile grid)
 
   demlogfile <- file.path(logfolder,'DEM.txt')
   wvplogfile <- file.path(logfolder,'WVP.txt')
@@ -69,6 +70,7 @@ setFolders <- function(forcefolder){
   dir.create.safe(wvpfolder, recursive = TRUE)
   dir.create.safe(logfolder)
   dir.create.safe(S2auxfolder)
+  dir.create.safe(metafolder)
 
   file.create.safe(demlogfile) # logfile for DEM
   file.create.safe(wvplogfile) # logfile for WVP
@@ -89,9 +91,9 @@ setFolders <- function(forcefolder){
 
   # Output information
   out <- c(tmpfolder, l1folder, l2folder, queuefolder, queuefile, demfolder, wvpfolder, logfolder, paramfolder, paramfile,
-         lcfolder, tcfolder, firefolder, S2auxfolder, demlogfile, wvplogfile, landsatlogfile, lclogfile, firelogfile, tclogfile, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
+         lcfolder, tcfolder, firefolder, S2auxfolder, metafolder, demlogfile, wvplogfile, landsatlogfile, lclogfile, firelogfile, tclogfile, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
   names(out) <- c('tmpfolder', 'l1folder', 'l2folder', 'queuefolder', 'queuefile', 'demfolder', 'wvpfolder', 'logfolder', 'paramfolder', 'paramfile',
-                  'lcfolder', 'tcfolder', 'firefolder', 'S2auxfolder', 'demlogfile', 'wvplogfile', 'landsatlogfile', 'lclogfile', 'firelogfile', 'tclogfile','Sskiplogfile', 'Ssuccesslogfile', 'Smissionlogfile', 'Sotherlogfile')
+                  'lcfolder', 'tcfolder', 'firefolder', 'S2auxfolder', 'metafolder', 'demlogfile', 'wvplogfile', 'landsatlogfile', 'lclogfile', 'firelogfile', 'tclogfile','Sskiplogfile', 'Ssuccesslogfile', 'Smissionlogfile', 'Sotherlogfile')
   return(out)
 }
 
@@ -170,3 +172,103 @@ max_narm = function(x,...){
   }else{
     return(max(x,na.rm=TRUE))
   }}
+
+#' Download Landsat and/or Sentinel-2 data using FORCE
+#'
+#' @param ext extent of the area of interest, vector with xmin, xmax, ymin, ymax in degrees
+#' @param queuepath full path to the FORCE queue file
+#' @param l1folder full path to the FORCE level 1 folder
+#' @param metafolder full path to the FORCE metadata folder
+#' @param tmpfolder full path to a temporary folder
+#' @param cld minimum and maximum cloud cover, e.g. c(0,50)
+#' @param starttime start date, given as a vector of year, month, and day
+#' @param endtime end date, given as a vector of year, month, and day
+#' @param tiers tier of interest (only relevant for Landsat)
+#' @param sensors vector of sensors, e.g. c('LC08', 'LE07', 'LT05', 'LT04', 'S2A', 'S2B')
+#'
+#' @return downloads files
+#' @export
+#'
+getScenes <- function(ext, queuepath, l1folder, metafolder, tmpfolder, cld = c(0,100), starttime = c(1960,01,01), endtime = c(), tiers = 'T1', sensors = c('LC08', 'LE07', 'LT05', 'LT04', 'S2A', 'S2B','S2A', 'S2B')){
+  # generate shapefile with area of interest
+  tmpfile <- tempfile(pattern = "file", tmpdir = tmpfolder, fileext = ".shp")# generate a file name for the temporary shapefile
+  toShp(ext, tmpfile)# create a shapefile
+
+  # if endtime is empty, use current date
+  if(length(endtime) == 0){
+    yy <- as.numeric(format(Sys.Date(),"%Y"))
+    mm <- as.numeric(format(Sys.Date(),"%m"))
+    dd <- as.numeric(format(Sys.Date(),"%d"))
+    endtime <- c(yy, mm, dd)
+  }
+
+  # Generate strings of parameters
+  cldStr <- paste(cld, collapse = ',') # Cloud coverage
+  starttimeStr <- paste(sprintf('%02d', starttime), collapse = '') # Start ...
+  endtimeStr <- paste(sprintf('%02d', endtime), collapse = '') # ... and ending ...
+  timesStr <- paste(starttimeStr, endtimeStr, sep = ',') # ... times
+  sensorStr <- paste(sensors, collapse = ',') # Sensors
+
+  # update the metadata files
+  systemf("force-level1-csd -u %s", metafolder)
+
+  # Download data of interest
+  systemf("force-level1-csd -c %s -d %s -s %s %s %s %s %s",
+          cldStr, timesStr, sensorStr, metafolder, l1folder, queuepath, tmpfile)
+
+  # remove temporary shapefile
+  file.remove(tmpfile)
+
+}
+
+#' Generate shapefile over AOI
+#'
+#' @param ext extent of the area of interest, vector with xmin, xmax, ymin, ymax in degrees
+#' @param ofile full path to the output file name, file should have an '.shp' extension
+#'
+#' @return generates a shapefile
+#' @export
+#' @import sp
+#' @import rgdal
+#'
+toShp <- function(ext, ofile){
+  pts <- rbind(c(ext[1],ext[4]), c(ext[2], ext[4]), c(ext[2], ext[3]), c(ext[1], ext[3]), c(ext[1],ext[4]))
+  sp = SpatialPolygons( list(  Polygons(list(Polygon(pts)), 1)))
+  proj4string(sp) = CRS("+init=epsg:4326")
+  spdf = SpatialPolygonsDataFrame(sp,data.frame(f=99.9))
+  writeOGR(spdf, dsn = ofile, layer = ofile, driver = "ESRI Shapefile")#file.path(ofolder, paste0(oname, '.shp'))
+}
+
+#' Execute formatted string in system
+#'
+#' This is just a wrapper of the system function. It comfortably allows for
+#' using C-style formatting in the commands, making the calls more readable.
+#'
+#' @param string Command pattern. Use %s for string slots
+#' @param ... Substrings to fill each instance of %s
+#' @param logfile (Default = NULL) Text file to log input and exit status. Useful for debugging
+#' @param intern (Default = FALSE) FALSE returns the exit status. TRUE the output
+#' @param ignore.stdout (Default = FALSE) Ignore stdout and stderr
+#'
+#' @return With default values, returns void. The command executes in the background
+#' @export
+#'
+#' @references \url{https://github.com/RETURN-project/makeDataCube/issues/28}
+#'
+#' @examples
+#' \dontrun{
+#' systemf("tar -xvzf %s -C %s", wvpCompressed, wvpfolder)
+#' }
+systemf <- function(string, ..., logfile = NULL, intern = FALSE, ignore.stdout = FALSE) {
+
+  command <- sprintf(string, ...) # Build the command string
+
+  if(!is.null(logfile)) write(command, logfile, append = TRUE) # Log the command
+
+  status <- system(command, # Execute the command string ...
+                   intern = intern, # ... with desired parameters
+                   ignore.stdout = ignore.stdout)
+
+  if(!is.null(logfile)) write(status, logfile, append = TRUE) # Log the exit status
+
+}

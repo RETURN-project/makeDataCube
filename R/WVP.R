@@ -38,15 +38,15 @@ dllWVP <- function(wvpfolder, logfile, endtime, removeTar = TRUE) {
   # Unpack if neccessary
   if(!isUnpacked) {
     # Extract the files
-    system(paste0("tar -xvzf ", wvpCompressed, " -C ", wvpfolder), intern = TRUE, ignore.stderr = TRUE)
+    systemf("tar -xvzf %s -C %s", wvpCompressed, wvpfolder)
     # Move all files into the main wvp directory
-    system(paste0("mv -v ", file.path(wvpfolder, 'global', '*'), " ", wvpfolder), intern = TRUE, ignore.stderr = TRUE)
+    systemf("mv -v %s %s", file.path(wvpfolder, 'global', '*'), wvpfolder)
     # Remove the empty folder
-    system(paste0("rm -rd ", file.path(wvpfolder, 'global')), intern = TRUE, ignore.stderr = TRUE)
+    systemf("rm -rd %s", file.path(wvpfolder, 'global'))
   }
 
   # Remove the downloaded file if required
-  if(removeTar && isDownloaded) system(paste0("rm ", wvpCompressed), intern = TRUE, ignore.stderr = TRUE)
+  if(removeTar && isDownloaded) systemf("rm %s", wvpCompressed)
 
   # Update available water vapor data
   # This list may have changed after unpacking
@@ -65,7 +65,12 @@ dllWVP <- function(wvpfolder, logfile, endtime, removeTar = TRUE) {
     if(!file.exists(file.path(Sys.getenv("HOME"),'.laads'))){print('No .laads file is found in the home directory. You need authentification to download data from the LAADS DAAC. This works by requesting an App Key from NASA Earthdata (https://ladsweb.modaps.eosdis.nasa.gov/tools-and-services/data-download-scripts/#requesting). You can make this key available to FORCE by putting the character string in a file .laads in your home directory.')}
     # update the dataset
     tryCatch({
-      system(paste0("force-lut-modis ",file.path(wvpfolder, 'wrs-2-land.coo')," ",wvpfolder," ",file.path(wvpfolder,'geo')," ",file.path(wvpfolder,'hdf')," ",format(max(wvpdts),"%Y")," ",format(max(wvpdts),"%m")," ",format(max(wvpdts),"%d")," ",format(endDate,"%Y")," ",format(endDate,"%m")," ",format(endDate,"%d")))
+      systemf("force-lut-modis %s %s %s %s %s %s %s %s %s %s",
+              file.path(wvpfolder, 'wrs-2-land.coo'), wvpfolder,
+              file.path(wvpfolder,'geo'), file.path(wvpfolder,'hdf'),
+              format(max(wvpdts),"%Y"), format(max(wvpdts),"%m"), # TODO: the formatting can be done directly in systemf
+              format(max(wvpdts),"%d"), format(endDate,"%Y"),
+              format(endDate,"%m"), format(endDate,"%d"))
       },
       error=function(cond) {
         line <- sprintf("%s not downloaded at %s \n", paste0("force-lut-modis ",file.path(wvpfolder, 'wrs-2-land.coo')," ",wvpfolder," ",file.path(wvpfolder,'geo')," ",file.path(wvpfolder,'hdf')," ",format(max(wvpdts),"%Y")," ",format(max(wvpdts),"%m")," ",format(max(wvpdts),"%d")," ",format(endDate,"%Y")," ",format(endDate,"%m")," ",format(endDate,"%d")), wvpfolder)
@@ -74,8 +79,7 @@ dllWVP <- function(wvpfolder, logfile, endtime, removeTar = TRUE) {
       })
 
     # Remove the redundant folders
-    system(paste0("rm -rd ",file.path(wvpfolder,'geo')), intern = TRUE, ignore.stderr = TRUE)
-    system(paste0("rm -rd ",file.path(wvpfolder,'hdf')), intern = TRUE, ignore.stderr = TRUE)
-
+    systemf("rm -rd %s", file.path(wvpfolder, 'geo'))
+    systemf("rm -rd %s", file.path(wvpfolder, 'hdf'))
   }
 }

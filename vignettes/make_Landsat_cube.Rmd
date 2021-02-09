@@ -43,32 +43,44 @@ This document generates a data cube of level-2 Landsat and Sentinel-2 data over 
 
 ## Requirements
 - [**Python 3**](https://www.python.org/downloads/) should be installed.
-  - The [**pylandsat**](https://pypi.org/project/pylandsat/) and [**shapely**](https://pypi.org/project/Shapely/) modules should be available to download data. Both can be installed installed via `pip install pylandsat` and `pip install shaoely`.
+  - The [**pylandsat**](https://pypi.org/project/pylandsat/) and [**shapely**](https://pypi.org/project/Shapely/) modules should be available to download data. Both can be installed installed via `pip install pylandsat` and `pip install shapely`.
 - In addition, [**FORCE**](https://github.com/davidfrantz/force) should be installed. **FORCE** allows to generate a data cube of level-2 (or higher) Landsat and Sentinel-2 imagery from level-1 inputs. Please visit the [project's website](https://github.com/davidfrantz/force) for more information and download instructions. 
+- To download data from Google Cloud, [gsutil](https://cloud.google.com/storage/docs/gsutil_install#deb) should be installed
 - The user should have a **NASA Earthdata account** to download DEM data. The _Login_, _Username_ and _Password_ are stored in a _netrc_ file in the home directory. If no _netrc_ file is found, you will be asked to provide your _Username_ and _Password_ and a _netrc_ file will automatically be created (and stored for a next session). If you don't have an account yet, you can create one [here](https://urs.earthdata.nasa.gov).
 - Finally, you need authentication to download data from the LAADS DAAC (WVP data). To that end, you need an create a _.laads_ file is in your home directory with a an **App Key**. The **App Key** can be requested from [NASA Earthdata](https://ladsweb.modaps.eosdis.nasa.gov/tools-and-services/data-download-scripts/#requesting). This key should be stored in a file _.laads_ in your home directory.
+
+## Visual workflow
+![Workflow](../img/flow.png){width=100%}
 
 ## Inputs
 
 ```{r inputs}
 # the folder where the datacube (and auxilliary data) will be stored
 forcefolder <- normalizePath(file.path('..', 'data'))#forcefolder <- '/home/wanda/Documents/data/force'
-# a directory where Sentinel-2 level 1C data are stored
-S2folder <- normalizePath(file.path('..', 'data'))
+
+# a directory where Sentinel-2 level 1C data are stored. If no local data are available, leave this field open. In that case, data will be downloaded from Google Cloud Storage
+#S2folder <- normalizePath(file.path('..', 'data'))
+# a directory where Landsat level 1 data are stored. If no local data are available, provide an empty string. In that case, data will be downloaded from Google Cloud Storage
+#LSfolder <- normalizePath(file.path('..', 'data'))
+
 # a directory where all temporary R files should be stored
 Rtmpfolder <- normalizePath(file.path('..', 'data'))
 #extent of the area of interest, vector with xmin, xmax, ymin, ymax in degrees
-ext <- c(-43.38238361637443,-43.27938679020256,-4.555765244985907,-4.451717415449725)
-# maximum cloud cover of the Landsat images (images with higher cloud cover will not be downloaded)
-cld <- 50 
+ext <- c(-62.225300382434575,-62.115437101184575,1.7039980451907109,1.7973382355954262) #c(-43.38238361637443,-43.27938679020256,-4.555765244985907,-4.451717415449725)
+# minimum and maximum cloud cover of the Landsat images (images outside this cloud cover range will not be downloaded)
+cld <- c(0,50)
 # start date of the study period: year, month, day
 starttime <- c(2000,11,01)
 # end date of the study period: year, month, day
 endtime <- c(2001,5,28)
 #Tier level of Landsat data (gives information about the quality of the data)
 tiers <- 'T1'
-# Landsat sensors of interest
-sensors <- c('LC08', 'LE07', 'LT05', 'LT04')#sensors, 'LM05', 'LM04'
+# Sensors of interest
+sensors <- c('LC08', 'LE07', 'LT05', 'LT04')# valid sensors: LT04 - Landsat 4 TM, LT05 - Landsat 5 TM, LE07 - Landsat 7 ETM+, LC08 - Landsat 8 OLI, S2A - Sentinel-2A MSI, S2B - Sentinel-2B MSI
+
+# Parallelization
+nproc <- '8'
+nthread <- '1'
 ```
 
 ## Generate the directory structure
@@ -91,11 +103,12 @@ logfolder <- fldrs['logfolder']
 paramfolder <- fldrs['paramfolder']
 demlogfile <- fldrs['demlogfile']
 wvplogfile <- fldrs['wvplogfile']
-landsatlogfile <- fldrs['landsatlogfile']
-Sskiplogfile <- fldrs['Sskiplogfile']
-Ssuccesslogfile <- fldrs['Ssuccesslogfile']
-Smissionlogfile <- fldrs['Smissionlogfile']
-Sotherlogfile <- fldrs['Sotherlogfile']
+metafolder <- fldrs['metafolder']
+# landsatlogfile <- fldrs['landsatlogfile']
+# Sskiplogfile <- fldrs['Sskiplogfile']
+# Ssuccesslogfile <- fldrs['Ssuccesslogfile']
+# Smissionlogfile <- fldrs['Smissionlogfile']
+# Sotherlogfile <- fldrs['Sotherlogfile']
 S2auxfolder <- fldrs['S2auxfolder']
 ```
 
@@ -108,7 +121,7 @@ source_python(system.file("python", "makeParFile.py", package = "makeDataCube"))
 
 paramfile <- 'l2param.prm'
 demfile <- 'srtm.vrt'
-makeParFile(paramfolder, file.path(paramfolder, paramfile), FILE_QUEUE = file.path(queuefolder, queuefile), DIR_LEVEL2 = l2folder, DIR_LOG = logfolder, DIR_TEMP = tmpfolder, FILE_DEM = file.path(demfolder, demfile), ORIGIN_LON = '-90', ORIGIN_LAT = '60', RESAMPLING = 'NN', DIR_WVPLUT = wvpfolder, RES_MERGE = 'REGRESSION',  NPROC = '1', NTHREAD = '1', DELAY = '10', OUTPUT_DST = 'TRUE',  OUTPUT_VZN = 'TRUE', OUTPUT_HOT = 'TRUE', OUTPUT_OVV = 'TRUE', DEM_NODATA= '-32768',TILE_SIZE = '3000',BLOCK_SIZE = '300')
+makeParFile(paramfolder, file.path(paramfolder, paramfile), FILE_QUEUE = file.path(queuefolder, queuefile), DIR_LEVEL2 = l2folder, DIR_LOG = logfolder, DIR_TEMP = tmpfolder, FILE_DEM = file.path(demfolder, demfile), ORIGIN_LON = '-90', ORIGIN_LAT = '60', RESAMPLING = 'NN', DIR_WVPLUT = wvpfolder, RES_MERGE = 'REGRESSION',  NPROC = nproc, NTHREAD = nthread, DELAY = '10', OUTPUT_DST = 'TRUE',  OUTPUT_VZN = 'TRUE', OUTPUT_HOT = 'TRUE', OUTPUT_OVV = 'TRUE', DEM_NODATA= '-32768',TILE_SIZE = '3000',BLOCK_SIZE = '300')
 
 # Expected outputs:
 # {paramfolder}/l2param.prm (typically data/param/l2param.prm) # Parameter file
@@ -118,23 +131,19 @@ makeParFile(paramfolder, file.path(paramfolder, paramfile), FILE_QUEUE = file.pa
 ## Search Landsat scenes, download and add to queue
 
 ```{r Landsat}
-LSscenes <- dllLS(l1folder, queuefolder, queuefile, tmpfolder, landsatlogfile, ext, starttime, endtime, sensors, tiers, cld)
-dllList <- LSscenes[[1]] # The scenes that have actually been downloaded in this execution
-scenes <- LSscenes[[2]] # The total list of scenes to be processed
+queuepath <- file.path(queuefolder, queuefile)
+getScenes(ext, queuepath, l1folder, metafolder, tmpfolder, cld = cld, starttime = starttime, endtime = endtime, tiers = tiers, sensors = sensors)
+# TODO: expected outputs
+# temp/file399f3b942666.dbf
+# temp/file399f3b942666.prj
+# temp/file399f3b942666.shx
+# queue.txt will be updated
 ```
 
-## Add Sentinel-2 data to queue
-
-```{r Sentinel}
-addSen2queue(S2auxfolder, ext, S2folder, starttime, endtime, queuefolder, queuefile, l1folder)
-
-# Expected outputs:
-# {S2auxfolder}/S2grid.kml (typically: data/misc/S2/S2grid.kml)
-#
-# Also creates the empty folders:
-# {l1folder}/sentinel/T23MPQ/ (typically: level1/sentinel/T23MPQ/)
-# {l1folder}/sentinel/T23MPR/ (typically: level1/sentinel/T23MPR/)
-```
+<!-- # Add Sentinel-2 data to queue  -->
+<!-- ```{r Sentinel} -->
+<!-- # addSen2queue(S2auxfolder, ext, S2folder, starttime, endtime, queuefolder, queuefile, l1folder) -->
+<!-- ``` -->
 
 ## Download the Digital Elevation Map (DEM)
 
@@ -152,8 +161,10 @@ flsDEM <- dllDEM(ext, dl_dir= demfolder, logfile = demlogfile)
 ```{r VRT}
 # generate a vrt
 # Note that it requires the {demfolder}/*.hgt files generated in the DEM chunk
-system(paste0("find ", demfolder, " -name '*.hgt' > ", file.path(demfolder,'srtm.txt')), intern = TRUE, ignore.stderr = TRUE)
-system(paste0("gdalbuildvrt -input_file_list ", file.path(demfolder,'srtm.txt'), " ", file.path(demfolder, 'srtm.vrt')))
+#dllVRT(demfolder)
+systemf("find %s -name '*.hgt' > %s", demfolder, file.path(demfolder, "srtm.txt"))
+
+systemf("gdalbuildvrt -input_file_list %s %s", file.path(demfolder, 'srtm.txt'), file.path(demfolder, 'srtm.vrt'))
 
 # Expected outputs:
 # {demfolder}/srtm.txt (typically: misc/dem/srtm.txt)
@@ -166,6 +177,7 @@ dllWVP(wvpfolder, logfile = wvplogfile, endtime = endtime)
 
 # Expected outputs:
 # {wvpfolder}/wrs-2-land.coo (typically: misc/wvp/wrs-2-land.coo)
+# {wvpfolder}/wvp-global.tar.gz
 # A large collection of files like:
 # {wvpfolder}/WVP_0000-01-00.txt
 ```
@@ -177,6 +189,6 @@ dllWVP(wvpfolder, logfile = wvplogfile, endtime = endtime)
 - Summarize log files of all scenes
 
 ```{r process}
-Landsat2L2(paramfolder, paramfile, l2folder, scenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)
+process2L2(paramfolder, paramfile, l2folder)
 ```
 
