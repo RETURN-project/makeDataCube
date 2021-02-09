@@ -45,6 +45,7 @@ rule all:
         'data/misc/S2/S2grid.kml',
         'data/misc/tc/.gitkeep',
         'data/misc/wvp/.gitkeep',
+        'data/misc/meta/.gitkeep',
         'data/param/.gitkeep',
         'data/temp/.gitkeep',
         'data/param/l2param.prm',
@@ -54,7 +55,8 @@ rule all:
         'data/misc/dem/S05W044.hgt', # TODO: use wildcard here
         'data/misc/dem/srtm.txt',
         'data/misc/dem/srtm.vrt',
-        'data/misc/wvp/WVP_2018-07-31.txt'
+        'data/misc/wvp/WVP_2018-07-31.txt',
+        'data/level1/.control'
     shell:
         '''
         echo "Finished"
@@ -64,7 +66,7 @@ rule all:
 rule tree:
     output:
         'data/.gitkeep',
-        'data/level1/queue.txt',
+        'data/level1/queue.txt', # TODO: remove?
         'data/level1/landsat/.gitkeep',
         'data/level1/sentinel/.gitkeep',
         'data/level2/.gitkeep',
@@ -83,6 +85,7 @@ rule tree:
         'data/misc/lc/.gitkeep',
         'data/misc/S2/.gitkeep',
         'data/misc/tc/.gitkeep',
+        'data/misc/meta/.gitkeep',
         'data/misc/wvp/.gitkeep',
         'data/param/.gitkeep',
         'data/temp/.gitkeep'
@@ -135,6 +138,24 @@ rule parameters:
                     DEM_NODATA = '-32768',
                     TILE_SIZE = '3000',
                     BLOCK_SIZE = '300')
+
+rule Landsat:
+    input:
+        queueFile = 'data/level1/queue.txt',
+        metafolder = 'data/misc/meta/.gitkeep',
+        tmpfolder = 'data/temp/.gitkeep'
+    output:
+        touch('data/level1/queue.txt'),
+        'data/level1/.control'
+    params:
+        ext = ext,
+        cld = cld,
+        starttime = starttime,
+        endtime = endtime,
+        tiers = tiers,
+        sensors = sensors
+    script:
+        'landsat_script.R'
 
 rule Sentinel:
     input:
