@@ -209,9 +209,6 @@ getScenes <- function(ext, queuepath, l1folder, metafolder, tmpfolder, cld = c(0
   timesStr <- paste(starttimeStr, endtimeStr, sep = ',') # ... times
   sensorStr <- paste(sensors, collapse = ',') # Sensors
 
-  # update the metadata files
-  systemf("force-level1-csd -u %s", metafolder)
-
   # Download data of interest
   systemf("force-level1-csd -c %s -d %s -s %s %s %s %s %s",
           cldStr, timesStr, sensorStr, metafolder, l1folder, queuepath, tmpfile)

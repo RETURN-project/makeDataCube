@@ -87,7 +87,7 @@ nproc <- '8'
 nthread <- '1'
 
 # Split in time domain in subintervals
-nsubintervals <- 3
+nsubintervals <- 2
 subintervals <- partition_dates(starttime, endtime, nsubintervals)
 starttimes <- lapply(int_start(subintervals), date_to_vec) # Extract starttimes as vectors
 endtimes <- lapply(int_end(subintervals), date_to_vec) # Extract endtimes as vectors
@@ -137,8 +137,12 @@ makeParFile(paramfolder, file.path(paramfolder, paramfile), FILE_QUEUE = file.pa
 # {paramfolder}/l2param.prm (typically data/param/l2param.prm) # Parameter file
 # {paramfolder}/l2param.prm.bak (typically data/param/l2param.prm.bak) # Parameter file backup
 ```
- 
 ## Search Landsat scenes, download and add to queue
+
+```{r metadata}
+## Update metadata folder
+systemf("force-level1-csd -u %s", metafolder)
+```
 
 ```{r Landsat}
 queuepath <- file.path(queuefolder, queuefile)
