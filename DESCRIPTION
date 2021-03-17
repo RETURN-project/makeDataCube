@@ -27,7 +27,8 @@ Imports: raster,
          rgdal, 
          rgeos, 
          sp,
-         curl
+         curl,
+         parallel
 Suggests: testthat,
           knitr,
           rmarkdown,

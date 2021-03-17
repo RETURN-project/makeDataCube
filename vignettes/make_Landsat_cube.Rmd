@@ -17,6 +17,8 @@ library(makeDataCube)
 library(tidyverse)
 library(sf)
 library(unixtools)
+library(lubridate)
+library(parallel)
 ```
 
 ```{r python, include=FALSE}
@@ -77,10 +79,18 @@ endtime <- c(2001,5,28)
 tiers <- 'T1'
 # Sensors of interest
 sensors <- c('LC08', 'LE07', 'LT05', 'LT04')# valid sensors: LT04 - Landsat 4 TM, LT05 - Landsat 5 TM, LE07 - Landsat 7 ETM+, LC08 - Landsat 8 OLI, S2A - Sentinel-2A MSI, S2B - Sentinel-2B MSI
+```
 
-# Parallelization
+```{r parallelization}
+# Parallelization parameters
 nproc <- '8'
 nthread <- '1'
+
+# Split in time domain in subintervals
+nsubintervals <- 3
+subintervals <- partition_dates(starttime, endtime, nsubintervals)
+starttimes <- lapply(int_start(subintervals), date_to_vec) # Extract starttimes as vectors
+endtimes <- lapply(int_end(subintervals), date_to_vec) # Extract endtimes as vectors
 ```
 
 ## Generate the directory structure
@@ -132,7 +142,11 @@ makeParFile(paramfolder, file.path(paramfolder, paramfile), FILE_QUEUE = file.pa
 
 ```{r Landsat}
 queuepath <- file.path(queuefolder, queuefile)
-getScenes(ext, queuepath, l1folder, metafolder, tmpfolder, cld = cld, starttime = starttime, endtime = endtime, tiers = tiers, sensors = sensors)
+getScenesAux <- function (starttime, endtime) {
+  getScenes(ext, queuepath, l1folder, metafolder, tmpfolder, cld = cld, starttime = starttime, endtime = endtime, tiers = tiers, sensors = sensors)
+}
+mcmapply(getScenesAux, starttimes, endtimes)
+
 # TODO: expected outputs
 # temp/file399f3b942666.dbf
 # temp/file399f3b942666.prj

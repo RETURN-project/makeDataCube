@@ -37,6 +37,8 @@ date_to_vec <- function(date) {
 
 #' Given a start and an endtime, creates n partitions of equal or similar sizes
 #'
+#' Consider using: lapply(int_start(i), date_to_vec)
+#'
 #' @param starttime Start time, as a vector
 #' @param endtime End time, as a vector
 #' @param n Number of desired partitions
