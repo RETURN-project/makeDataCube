@@ -52,7 +52,7 @@ This document generates a data cube of level-2 Landsat and Sentinel-2 data over 
 - Finally, you need authentication to download data from the LAADS DAAC (WVP data). To that end, you need an create a _.laads_ file is in your home directory with a an **App Key**. The **App Key** can be requested from [NASA Earthdata](https://ladsweb.modaps.eosdis.nasa.gov/tools-and-services/data-download-scripts/#requesting). This key should be stored in a file _.laads_ in your home directory.
 
 ## Visual workflow
-![Workflow](../img/flow.png){width=100%}
+![Workflow](../img/flow.png)
 
 ## Inputs
 
@@ -82,12 +82,14 @@ sensors <- c('LC08', 'LE07', 'LT05', 'LT04')# valid sensors: LT04 - Landsat 4 TM
 ```
 
 ```{r parallelization}
+updatemeta <- FALSE
+
 # Parallelization parameters
-nproc <- '8'
+nproc <- '6'
 nthread <- '1'
 
 # Split in time domain in subintervals
-nsubintervals <- 2
+nsubintervals <- 1
 subintervals <- partition_dates(starttime, endtime, nsubintervals)
 starttimes <- lapply(int_start(subintervals), date_to_vec) # Extract starttimes as vectors
 endtimes <- lapply(int_end(subintervals), date_to_vec) # Extract endtimes as vectors
@@ -141,7 +143,7 @@ makeParFile(paramfolder, file.path(paramfolder, paramfile), FILE_QUEUE = file.pa
 
 ```{r metadata}
 ## Update metadata folder
-systemf("force-level1-csd -u %s", metafolder)
+if(updatemeta) systemf("force-level1-csd -u %s", metafolder)
 ```
 
 ```{r Landsat}
@@ -149,7 +151,7 @@ queuepath <- file.path(queuefolder, queuefile)
 getScenesAux <- function (starttime, endtime) {
   getScenes(ext, queuepath, l1folder, metafolder, tmpfolder, cld = cld, starttime = starttime, endtime = endtime, tiers = tiers, sensors = sensors)
 }
-mcmapply(getScenesAux, starttimes, endtimes)
+mcmapply(getScenesAux, starttimes, endtimes, mc.cores = nsubintervals)
 
 # TODO: expected outputs
 # temp/file399f3b942666.dbf
