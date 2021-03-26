@@ -46,7 +46,8 @@ This document generates a data cube of level-2 Landsat and Sentinel-2 data over 
 ## Requirements
 - [**Python 3**](https://www.python.org/downloads/) should be installed.
   - The [**pylandsat**](https://pypi.org/project/pylandsat/) and [**shapely**](https://pypi.org/project/Shapely/) modules should be available to download data. Both can be installed installed via `pip install pylandsat` and `pip install shapely`.
-- In addition, [**FORCE**](https://github.com/davidfrantz/force) should be installed. **FORCE** allows to generate a data cube of level-2 (or higher) Landsat and Sentinel-2 imagery from level-1 inputs. Please visit the [project's website](https://github.com/davidfrantz/force) for more information and download instructions. 
+- In addition, [**FORCE**](https://github.com/davidfrantz/force) (>= 3.6.3) should be installed. **FORCE** allows to generate a data cube of level-2 (or higher) Landsat and Sentinel-2 imagery from level-1 inputs. Please visit the [project's website](https://github.com/davidfrantz/force) for more information and download instructions.
+  - If the user wants to use parallelization of Level 1 download (by default this is deactivated), [this](https://github.com/davidfrantz/force/commit/b5685c9b7258d91bcf3a096eee31b7a349f994e6) (or an older) version of **FORCE** is required. More information [here](https://github.com/davidfrantz/force/pull/66#issuecomment-804881143).
 - To download data from Google Cloud, [gsutil](https://cloud.google.com/storage/docs/gsutil_install#deb) should be installed
 - The user should have a **NASA Earthdata account** to download DEM data. The _Login_, _Username_ and _Password_ are stored in a _netrc_ file in the home directory. If no _netrc_ file is found, you will be asked to provide your _Username_ and _Password_ and a _netrc_ file will automatically be created (and stored for a next session). If you don't have an account yet, you can create one [here](https://urs.earthdata.nasa.gov).
 - Finally, you need authentication to download data from the LAADS DAAC (WVP data). To that end, you need an create a _.laads_ file is in your home directory with a an **App Key**. The **App Key** can be requested from [NASA Earthdata](https://ladsweb.modaps.eosdis.nasa.gov/tools-and-services/data-download-scripts/#requesting). This key should be stored in a file _.laads_ in your home directory.
@@ -81,15 +82,41 @@ tiers <- 'T1'
 sensors <- c('LC08', 'LE07', 'LT05', 'LT04')# valid sensors: LT04 - Landsat 4 TM, LT05 - Landsat 5 TM, LE07 - Landsat 7 ETM+, LC08 - Landsat 8 OLI, S2A - Sentinel-2A MSI, S2B - Sentinel-2B MSI
 ```
 
-```{r parallelization}
-updatemeta <- FALSE
+```{r parallelization-parameters}
+# Update metadata
+# Set to FALSE if metadata is already available (useful for debugging)
+updatemeta <- TRUE
 
-# Parallelization parameters
+# ===== Parallelization parameters =====
+
+# Level 1 download
+# We'll parallelize this process by splitting the time domain in a number of 
+# subintervals. The data corresponding to each subinterval will be downloaded
+# by a different core
+#
+# For nsubintervals larger than 1, a tweak in FORCE is required. This tweak is 
+# available in this version of FORCE:
+#
+# https://github.com/davidfrantz/force/commit/b5685c9b7258d91bcf3a096eee31b7a349f994e6
+#
+# At the moment I'm writing this lines, the abovementioned version is part of the
+# develop branch.
+# 
+# The tweak is minimal, and can be easily applied to other FORCE versions.
+# More info: https://github.com/davidfrantz/force/pull/66#issuecomment-804881143
+nsubintervals <- 1
+
+# Level 2 processing
+# These parameters are written in the configuration file
+# The parallelization is managed directly by FORCE
+# See the tutorials to learn more about the processes / thread balance:
+# https://force-eo.readthedocs.io/en/latest/howto/l2-ard.html#parallel-processing
 nproc <- '6'
 nthread <- '1'
+```
 
-# Split in time domain in subintervals
-nsubintervals <- 1
+```{r subintervals}
+# Generate the date subintervals
 subintervals <- partition_dates(starttime, endtime, nsubintervals)
 starttimes <- lapply(int_start(subintervals), date_to_vec) # Extract starttimes as vectors
 endtimes <- lapply(int_end(subintervals), date_to_vec) # Extract endtimes as vectors
@@ -142,22 +169,24 @@ makeParFile(paramfolder, file.path(paramfolder, paramfile), FILE_QUEUE = file.pa
 ## Search Landsat scenes, download and add to queue
 
 ```{r metadata}
-## Update metadata folder
+# Update metadata folder only if asked to
 if(updatemeta) systemf("force-level1-csd -u %s", metafolder)
 ```
 
 ```{r Landsat}
+# Auxiliary variable
 queuepath <- file.path(queuefolder, queuefile)
-getScenesAux <- function (starttime, endtime) {
+
+# Auxiliary function
+# This is just getScenes with all parameters pre-passed, with the exception of 
+# starttime and endtime.
+# The purpose is to call it from a mcmapply functional.
+getScenesAux <- function(starttime, endtime) {
   getScenes(ext, queuepath, l1folder, metafolder, tmpfolder, cld = cld, starttime = starttime, endtime = endtime, tiers = tiers, sensors = sensors)
 }
-mcmapply(getScenesAux, starttimes, endtimes, mc.cores = nsubintervals)
 
-# TODO: expected outputs
-# temp/file399f3b942666.dbf
-# temp/file399f3b942666.prj
-# temp/file399f3b942666.shx
-# queue.txt will be updated
+# If nsubintervals != 1, this runs in parallel
+mcmapply(getScenesAux, starttimes, endtimes, mc.cores = nsubintervals)
 ```
 
 <!-- # Add Sentinel-2 data to queue  -->
