@@ -241,8 +241,8 @@ toShp <- function(ext, ofile){
 #' This is just a wrapper of the system function. It comfortably allows for
 #' using C-style formatting in the commands, making the calls more readable.
 #'
-#' @param string Command pattern. Use %s for string slots
-#' @param ... Substrings to fill each instance of %s
+#' @param string Command pattern. Use \%s for string slots
+#' @param ... Substrings to fill each instance of \%s
 #' @param logfile (Default = NULL) Text file to log input and exit status. Useful for debugging
 #' @param intern (Default = FALSE) FALSE returns the exit status. TRUE the output
 #' @param ignore.stdout (Default = FALSE) Ignore stdout and stderr

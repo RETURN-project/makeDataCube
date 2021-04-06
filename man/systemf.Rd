@@ -7,9 +7,9 @@
 systemf(string, ..., logfile = NULL, intern = FALSE, ignore.stdout = FALSE)
 }
 \arguments{
-\item{string}{Command pattern. Use %s for string slots}
+\item{string}{Command pattern. Use \%s for string slots}
 
-\item{...}{Substrings to fill each instance of %s}
+\item{...}{Substrings to fill each instance of \%s}
 
 \item{logfile}{(Default = NULL) Text file to log input and exit status. Useful for debugging}
 
