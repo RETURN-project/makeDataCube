@@ -3,6 +3,9 @@ title: "Generate Landsat data cube"
 author: "Wanda De Keersmaecker and Pablo Rodríguez-Sánchez"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: rmarkdown::html_vignette
+params:
+  starttime: "2000-11-1"
+  endtime: "2001-5-28"
 vignette: >
   %\VignetteIndexEntry{Generate Landsat data cube}
   %\VignetteEngine{knitr::rmarkdown}
@@ -73,9 +76,9 @@ ext <- c(-62.225300382434575,-62.115437101184575,1.7039980451907109,1.7973382355
 # minimum and maximum cloud cover of the Landsat images (images outside this cloud cover range will not be downloaded)
 cld <- c(0,50)
 # start date of the study period: year, month, day
-starttime <- c(2000,11,01)
+starttime <- date_to_vec(params$starttime)
 # end date of the study period: year, month, day
-endtime <- c(2001,5,28)
+endtime <- date_to_vec(params$endtime)
 #Tier level of Landsat data (gives information about the quality of the data)
 tiers <- 'T1'
 # Sensors of interest
