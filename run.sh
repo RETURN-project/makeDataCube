@@ -6,7 +6,7 @@
 
 # Example of usage:
 #
-# ./run.sh -s "2000-11-1" -e "2001-5-28"
+# SLURM_ARRAY_TASK_ID=1; sbatch ./run.sh -s "2000-11-1" -e "2001-5-28"
 
 # Parse parameters
 while getopts s:e: flag
@@ -21,9 +21,25 @@ done
 SIFIMAGE="/project/return/Software/containers/k.sif"
 VIGNETTE="vignettes/make_Landsat_cube.Rmd"
 
+# Set the directories
+TEMPWD="$TMPDIR"/makeDataCube/"$SLURM_ARRAY_TASK_ID" # Temporary working directory
+echo "$TEMPWD"
+OUTPUTD="/home/return-prsanchez/testground/outputs"
+
+# Work in temporary directory
+mkdir -p "$TEMPWD"
+cp -r $HOME/testground/makeDataCube/* "$TEMPWD"
+cd "$TEMPWD"
+echo $PWD
+
 # Execute
 singularity exec "$SIFIMAGE" \
     Rscript -e "rmarkdown::render('${VIGNETTE}', params = list(starttime = '${STARTTIME}', endtime = '${ENDTIME}'))"
+
+
+# Copy output
+ls -R "$TEMPWD"
+cp -r "$TEMPWD" "$OUTPUTD"
 
 # Wanda runs this at home/wanda
 # Inside a batch
