@@ -13,8 +13,11 @@ do
     esac
 done
 
+# Other parameters
+SIFIMAGE="/project/return/Software/containers/k.sif"
+
 # Execute
-singularity exec /project/return/Software/containers/k.sif \
+singularity exec $SIFIMAGE \
     Rscript -e "rmarkdown::render('vignettes/make_Landsat_cube.Rmd', params = list(starttime = '${STARTTIME}', endtime = '${ENDTIME}'))"
 
 # Wanda runs this at home/wanda
