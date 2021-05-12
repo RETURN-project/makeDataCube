@@ -24,7 +24,7 @@ VIGNETTE="vignettes/make_Landsat_cube.Rmd"
 # Set the directories
 TEMPWD="$TMPDIR"/makeDataCube/"$SLURM_ARRAY_TASK_ID" # Temporary working directory
 echo "$TEMPWD"
-OUTPUTD="/home/return-prsanchez/testground/outputs"
+OUTPUTD="/home/${USER}/outputs"
 
 # Work in temporary directory
 mkdir -p "$TEMPWD"
@@ -39,6 +39,7 @@ singularity exec "$SIFIMAGE" \
 
 # Copy output
 # ls -R "$TEMPWD"
+mkdir -p "$OUTPUTD"
 cp -r "$TEMPWD" "$OUTPUTD"
 
 # Wanda runs this at home/wanda
