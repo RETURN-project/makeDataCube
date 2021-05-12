@@ -10,3 +10,4 @@
 .snakemake/
 __pycache__/
 log1starg.txt
+*.sif
