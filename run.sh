@@ -28,7 +28,7 @@ OUTPUTD="/home/return-prsanchez/testground/outputs"
 
 # Work in temporary directory
 mkdir -p "$TEMPWD"
-cp -r $HOME/testground/makeDataCube/* "$TEMPWD"
+cp -r ./* "$TEMPWD"
 cd "$TEMPWD"
 echo $PWD
 
@@ -38,7 +38,7 @@ singularity exec "$SIFIMAGE" \
 
 
 # Copy output
-ls -R "$TEMPWD"
+# ls -R "$TEMPWD"
 cp -r "$TEMPWD" "$OUTPUTD"
 
 # Wanda runs this at home/wanda
