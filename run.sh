@@ -1,4 +1,8 @@
 #!/bin/bash
+#SBATCH -N 1      #request 1 node
+#SBATCH -c 1      #request 1 core and 8000 MB RAM
+#SBATCH -t 59:00  #request 59 minutes jobs slot
+#SBATCH -p short  #request short partition
 
 # Example of usage:
 #
@@ -15,10 +19,11 @@ done
 
 # Other parameters
 SIFIMAGE="/project/return/Software/containers/k.sif"
+VIGNETTE="vignettes/make_Landsat_cube.Rmd"
 
 # Execute
-singularity exec $SIFIMAGE \
-    Rscript -e "rmarkdown::render('vignettes/make_Landsat_cube.Rmd', params = list(starttime = '${STARTTIME}', endtime = '${ENDTIME}'))"
+singularity exec "$SIFIMAGE" \
+    Rscript -e "rmarkdown::render('${VIGNETTE}', params = list(starttime = '${STARTTIME}', endtime = '${ENDTIME}'))"
 
 # Wanda runs this at home/wanda
 # Inside a batch
