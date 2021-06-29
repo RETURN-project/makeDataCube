@@ -31,6 +31,7 @@ Imports: raster,
          parallel
 Suggests: testthat,
           knitr,
+          markdown,
           rmarkdown,
           unixtools
 VignetteBuilder: knitr
