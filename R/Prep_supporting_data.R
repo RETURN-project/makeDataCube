@@ -95,7 +95,7 @@ prepLandcover <- function(lc_rst, datafolder, ext, fname = 'landcover.tif', star
       it <- it + 1
       lcc <- terra::crop(rst, ext, snap = 'in')# cut the image to the extent of interest
       if(do_overlap>1){# cropped raster does not necessary contain entire study area
-        lcc <- terra::expand(lcc,terra::ext(ext))
+        lcc <- terra::extend(lcc,terra::ext(ext))
       }
       if(it ==1){
         lc <- terra::classify(lcc,matrix(c(27, NA, 2,2), ncol=2, byrow=TRUE), include.lowest=TRUE, filename=file.path(datafolder, 'lcReclass.tif'), overwrite=T)# set missing values to NA
