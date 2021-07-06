@@ -7,6 +7,7 @@
 *.rda
 /data/
 /tests/testthat/data/
+/packrat/src/
 .snakemake/
 __pycache__/
 log1starg.txt
