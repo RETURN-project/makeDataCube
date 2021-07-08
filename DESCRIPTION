@@ -28,7 +28,8 @@ Imports: raster,
          rgeos, 
          sp,
          curl,
-         parallel
+         parallel,
+         stringr
 Suggests: testthat,
           knitr,
           markdown,
