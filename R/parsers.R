@@ -16,6 +16,24 @@ parse_params <- function(file = "data/param/l2param.prm", key = "") {
   }
 }
 
+#' Export parameters to file
+#'
+#' @param config Configuration data frame (as loaded by parse_params)
+#' @param file Filename where the parameters will be exported
+#'
+#' @return Nothing
+#' @export
+#'
+export_params <- function(config, file) {
+  header <- "++PARAM_LEVEL2_START++"
+  data <- paste(config$key, config$value, sep = " = ")
+  footer <- "++PARAM_LEVEL2_END++"
+
+  fileConn <- file(file)
+  writeLines(c(header, data, footer), con = fileConn)
+  close(fileConn)
+}
+
 #' Parse a key-value pair from the FORCE parameters file
 #'
 #' @param key Search query (use regex)
@@ -65,7 +83,7 @@ parse_all <- function(file = "data/param/l2param.prm") {
 
     # Convert to dataframe
     df <- as.data.frame(lines)
-    df <- stringr::str_split_fixed(df$lines, " = ", 2)
+    df <- as.data.frame(stringr::str_split_fixed(df$lines, " = ", 2))
     colnames(df) <- c("key", "value")
 
     return(df)
