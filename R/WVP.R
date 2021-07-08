@@ -4,12 +4,12 @@
 #' @param wvpfolder folder where the data should be stored
 #' @param logfile log file to keep track of the failed downloads
 #' @param endtime the latest date for which WVP data should be downloaded (vector with year, month, date)
-#' @param removeTar (optional, default = TRUE) if FALSE, the tar.gz file is kept after download and unpacking
+#' @param removeTar (optional, default = FALSE) if TRUE, the tar.gz file is deleted after download and unpacking
 #'
 #' @return stores data in output folder
 #' @export
 #' @import curl
-dllWVP <- function(wvpfolder, logfile, endtime, removeTar = TRUE) {
+dllWVP <- function(wvpfolder, logfile, endtime, removeTar = FALSE) {
   # Check if the compressed file has been already downloaded
   wvpCompressed <- file.path(wvpfolder, 'wvp-global.tar.gz')
   isDownloaded <- file.exists(wvpCompressed) # Is the .tar.gz still available locally?

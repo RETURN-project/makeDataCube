@@ -86,10 +86,6 @@ sensors <- c('LC08', 'LE07', 'LT05', 'LT04')# valid sensors: LT04 - Landsat 4 TM
 ```
 
 ```{r parallelization-parameters}
-# Update metadata
-# Set to FALSE if metadata is already available (useful for debugging)
-updatemeta <- TRUE
-
 # ===== Parallelization parameters =====
 
 # Level 1 download
@@ -172,6 +168,10 @@ makeParFile(paramfolder, file.path(paramfolder, paramfile), FILE_QUEUE = file.pa
 ## Search Landsat scenes, download and add to queue
 
 ```{r metadata}
+# Update metadata
+# Set to FALSE if metadata is already available (useful for quick testing)
+updatemeta <- FALSE
+
 # Update metadata folder only if asked to
 if(updatemeta) systemf("force-level1-csd -u %s", metafolder)
 ```
@@ -184,6 +184,7 @@ queuepath <- file.path(queuefolder, queuefile)
 # This is just getScenes with all parameters pre-passed, with the exception of 
 # starttime and endtime.
 # The purpose is to call it from a mcmapply functional.
+# force-level1-csd -c 0,50 -d 20001101,20010528 -s LC08,LE07,LT05,LT04 /home/pablo/Desktop/makeDataCube/data/misc/meta /home/pablo/Desktop/makeDataCube/data/level1 /home/pablo/Desktop/makeDataCube/data/level1/queue.txt /home/pablo/Desktop/makeDataCube/data/temp/file55666e2730f1.shp
 getScenesAux <- function(starttime, endtime) {
   getScenes(ext, queuepath, l1folder, metafolder, tmpfolder, cld = cld, starttime = starttime, endtime = endtime, tiers = tiers, sensors = sensors)
 }
