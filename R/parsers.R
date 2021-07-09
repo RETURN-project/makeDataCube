@@ -86,6 +86,10 @@ parse_all <- function(file = "data/param/l2param.prm") {
     df <- as.data.frame(stringr::str_split_fixed(df$lines, " = ", 2))
     colnames(df) <- c("key", "value")
 
+    # Use key as row identifier instead of as value
+    rownames(df) <- df[, "key"] # Assign keys to rownames...
+    df[, "key"] <- NULL # ... and drop their values
+
     return(df)
 }
 
