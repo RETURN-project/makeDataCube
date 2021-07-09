@@ -2,7 +2,7 @@
 % Please edit documentation in R/parsers.R
 \name{import_params}
 \alias{import_params}
-\title{Import parameters}
+\title{Import parameters as data frame}
 \usage{
 import_params(file = "data/param/l2param.prm")
 }
@@ -10,8 +10,10 @@ import_params(file = "data/param/l2param.prm")
 \item{file}{The parameters file}
 }
 \value{
-The data in the file, line by line, filtering out non-data lines
+The contents of the file, as a data frame
 }
 \description{
-Checks the FORCE parameter file, and imports its contents as a list of lines
+Checks the FORCE parameter file, and imports its contents as a data frame
+More info at
+\url{https://force-eo.readthedocs.io/en/latest/components/lower-level/level2/param.html}
 }

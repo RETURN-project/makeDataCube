@@ -1,21 +1,3 @@
-#' Parse FORCE parameters file
-#'
-#' More info at \url{https://force-eo.readthedocs.io/en/latest/components/lower-level/level2/param.html}
-#'
-#' @param file The parameters file
-#' @param key Search key. Leave empty for parsing the whole file
-#'
-#' @return The contents of the parameters file as a data frame
-#' @export
-#'
-parse_params <- function(file = "data/param/l2param.prm", key = "") {
-  if (key == "") {
-    return( parse_all(file) )
-  } else {
-    return( parse_keyvalue(key, file) )
-  }
-}
-
 #' Export parameters to file
 #'
 #' @param config Configuration data frame (as loaded by parse_params)
@@ -34,52 +16,19 @@ export_params <- function(config, file) {
   close(fileConn)
 }
 
-#' Parse a key-value pair from the FORCE parameters file
-#'
-#' @param key Search query (use regex)
-#' @param file The parameters file
-#'
-#' @return The value
-#'
-parse_keyvalue <- function(key, file = "data/param/l2param.prm") {
-  # Import file
-  lines <- import_params(file)
-
-  # Filter by key
-  mask <- grepl(key, lines)
-  line <- lines[mask]
-
-  # Make sure the key exists and is unique
-  if (length(line) != 1) {
-      msg <- sprintf("The key had %s hits instead of 1", length(line))
-      stop(msg)
-  }
-
-  # Extract the key-value pair
-  keyval <- strsplit(line, " = ")
-
-  # Make sure it is a key-value pair
-  if (length(keyval[[1]]) != 2) {
-      stop("The key-value pair contains more than one value")
-  }
-
-  # Extract only the value
-  val <- keyval[[1]][2]
-
-  return(val)
-}
-
 #' Import parameters as data frame
 #'
 #' Checks the FORCE parameter file, and imports its contents as a data frame
+#' More info at
+#' \url{https://force-eo.readthedocs.io/en/latest/components/lower-level/level2/param.html}
 #'
 #' @param file The parameters file
 #'
 #' @return The contents of the file, as a data frame
 #'
-parse_all <- function(file = "data/param/l2param.prm") {
+import_params <- function(file = "data/param/l2param.prm") {
     # Import file
-    lines <- import_params(file)
+    lines <- import_lines(file)
 
     # Convert to dataframe
     df <- as.data.frame(lines)
@@ -96,12 +45,13 @@ parse_all <- function(file = "data/param/l2param.prm") {
 #' Import parameters
 #'
 #' Checks the FORCE parameter file, and imports its contents as a list of lines
+#' This is an auxiliary function
 #'
 #' @param file The parameters file
 #'
 #' @return The data in the file, line by line, filtering out non-data lines
 #'
-import_params <- function(file = "data/param/l2param.prm") {
+import_lines <- function(file = "data/param/l2param.prm") {
     # Import files
     lines <- readLines(file)
 

@@ -4,16 +4,12 @@ example <- system.file("extdata", "example.prm", package = "makeDataCube")
 context("Parameter file parsers")
 
 test_that("Parse all", {
-  config <- parse_params(example)
+  cfg <- import_params(example)
 
   # Test that it has the appropriate size
-  expect_equal(nrow(config), 52)
-})
+  expect_equal(nrow(cfg), 52)
 
-test_that("Parse key value pair", {
-  key <- "^OUTPUT_FORMAT\\b"
-  val <- parse_params(example, key)
-
-  # Test that the value has been properly read
-  expect_equal(val, "GTiff")
+  # Check some specific values
+  expect_equal(cfg["DEM_NODATA", ], "-32768")
+  expect_equal(cfg["OUTPUT_FORMAT", ], "GTiff")
 })
