@@ -2,15 +2,22 @@
 #'
 #' @param config Configuration data frame (as loaded by parse_params)
 #' @param file Filename where the parameters will be exported
+#' @param overwrite (Default FALSE) Set TRUE to overwrite the parameters file
 #'
 #' @return Nothing
 #' @export
 #'
-export_params <- function(config, file) {
+export_params <- function(config, file, overwrite = FALSE) {
+  # Remove if already exists
+  if (file.exists(file) && overwrite) file.remove(file)
+  if (file.exists(file) && !overwrite) stop("The parameter file already exists")
+
+  # Create content
   header <- "++PARAM_LEVEL2_START++"
   data <- paste(config$key, config$value, sep = " = ")
   footer <- "++PARAM_LEVEL2_END++"
 
+  # Write to file
   fileConn <- file(file)
   writeLines(c(header, data, footer), con = fileConn)
   close(fileConn)

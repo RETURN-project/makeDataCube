@@ -4,12 +4,14 @@
 \alias{export_params}
 \title{Export parameters to file}
 \usage{
-export_params(config, file)
+export_params(config, file, overwrite = FALSE)
 }
 \arguments{
 \item{config}{Configuration data frame (as loaded by parse_params)}
 
 \item{file}{Filename where the parameters will be exported}
+
+\item{overwrite}{(Default FALSE) Set TRUE to overwrite the parameters file}
 }
 \value{
 Nothing
