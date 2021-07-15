@@ -4,7 +4,7 @@
 \alias{dllWVP}
 \title{Download Water Vapor Pressure data}
 \usage{
-dllWVP(wvpfolder, logfile, endtime, removeTar = TRUE)
+dllWVP(wvpfolder, logfile, endtime, removeTar = FALSE)
 }
 \arguments{
 \item{wvpfolder}{folder where the data should be stored}
@@ -13,7 +13,7 @@ dllWVP(wvpfolder, logfile, endtime, removeTar = TRUE)
 
 \item{endtime}{the latest date for which WVP data should be downloaded (vector with year, month, date)}
 
-\item{removeTar}{(optional, default = TRUE) if FALSE, the tar.gz file is kept after download and unpacking}
+\item{removeTar}{(optional, default = FALSE) if TRUE, the tar.gz file is deleted after download and unpacking}
 }
 \value{
 stores data in output folder
