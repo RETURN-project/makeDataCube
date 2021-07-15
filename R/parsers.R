@@ -14,7 +14,7 @@ export_params <- function(config, file, overwrite = FALSE) {
 
   # Create content
   header <- "++PARAM_LEVEL2_START++"
-  data <- paste(config$key, config$value, sep = " = ")
+  data <- paste(rownames(config), config$value, sep = " = ")
   footer <- "++PARAM_LEVEL2_END++"
 
   # Write to file
@@ -54,58 +54,58 @@ import_params <- function(file = "data/param/l2param.prm") {
 #' More info at
 #' \url{https://force-eo.readthedocs.io/en/latest/components/lower-level/level2/param.html}
 #'
-#' @param FILE_QUEUE
-#' @param DIR_LEVEL2
-#' @param DIR_LOG
-#' @param DIR_TEMP
-#' @param FILE_DEM
-#' @param DEM_NODATA
-#' @param DO_REPROJ
-#' @param DO_TILE
-#' @param FILE_TILE
-#' @param TILE_SIZE
-#' @param BLOCK_SIZE
-#' @param RESOLUTION_LANDSAT
-#' @param RESOLUTION_SENTINEL2
-#' @param ORIGIN_LON
-#' @param ORIGIN_LAT
-#' @param PROJECTION
-#' @param RESAMPLING
-#' @param DO_ATMO
-#' @param DO_TOPO
-#' @param DO_BRDF
-#' @param ADJACENCY_EFFECT
-#' @param MULTI_SCATTERING
-#' @param DIR_WVPLUT
-#' @param WATER_VAPOR
-#' @param DO_AOD
-#' @param DIR_AOD
-#' @param ERASE_CLOUDS
-#' @param MAX_CLOUD_COVER_FRAME
-#' @param MAX_CLOUD_COVER_TILE
-#' @param CLOUD_BUFFER
-#' @param SHADOW_BUFFER
-#' @param SNOW_BUFFER
-#' @param CLOUD_THRESHOLD
-#' @param SHADOW_THRESHOLD
-#' @param RES_MERGE
-#' @param DIR_COREG_BASE
-#' @param COREG_BASE_NODATA
-#' @param IMPULSE_NOISE
-#' @param BUFFER_NODATA
-#' @param TIER
-#' @param NPROC
-#' @param NTHREAD
-#' @param PARALLEL_READS
-#' @param DELAY
-#' @param TIMEOUT_ZIP
-#' @param OUTPUT_FORMAT
-#' @param OUTPUT_DST
-#' @param OUTPUT_AOD
-#' @param OUTPUT_WVP
-#' @param OUTPUT_VZN
-#' @param OUTPUT_HOT
-#' @param OUTPUT_OVV
+#' @param FILE_QUEUE See link above
+#' @param DIR_LEVEL2 See link above
+#' @param DIR_LOG See link above
+#' @param DIR_TEMP See link above
+#' @param FILE_DEM See link above
+#' @param DEM_NODATA See link above
+#' @param DO_REPROJ See link above
+#' @param DO_TILE See link above
+#' @param FILE_TILE See link above
+#' @param TILE_SIZE See link above
+#' @param BLOCK_SIZE See link above
+#' @param RESOLUTION_LANDSAT See link above
+#' @param RESOLUTION_SENTINEL2 See link above
+#' @param ORIGIN_LON See link above
+#' @param ORIGIN_LAT See link above
+#' @param PROJECTION See link above
+#' @param RESAMPLING See link above
+#' @param DO_ATMO See link above
+#' @param DO_TOPO See link above
+#' @param DO_BRDF See link above
+#' @param ADJACENCY_EFFECT See link above
+#' @param MULTI_SCATTERING See link above
+#' @param DIR_WVPLUT See link above
+#' @param WATER_VAPOR See link above
+#' @param DO_AOD See link above
+#' @param DIR_AOD See link above
+#' @param ERASE_CLOUDS See link above
+#' @param MAX_CLOUD_COVER_FRAME See link above
+#' @param MAX_CLOUD_COVER_TILE See link above
+#' @param CLOUD_BUFFER See link above
+#' @param SHADOW_BUFFER See link above
+#' @param SNOW_BUFFER See link above
+#' @param CLOUD_THRESHOLD See link above
+#' @param SHADOW_THRESHOLD See link above
+#' @param RES_MERGE See link above
+#' @param DIR_COREG_BASE See link above
+#' @param COREG_BASE_NODATA See link above
+#' @param IMPULSE_NOISE See link above
+#' @param BUFFER_NODATA See link above
+#' @param TIER See link above
+#' @param NPROC See link above
+#' @param NTHREAD See link above
+#' @param PARALLEL_READS See link above
+#' @param DELAY See link above
+#' @param TIMEOUT_ZIP See link above
+#' @param OUTPUT_FORMAT See link above
+#' @param OUTPUT_DST See link above
+#' @param OUTPUT_AOD See link above
+#' @param OUTPUT_WVP See link above
+#' @param OUTPUT_VZN See link above
+#' @param OUTPUT_HOT See link above
+#' @param OUTPUT_OVV See link above
 #'
 #' @return A data frame containing the parameters and its values
 #' @export
