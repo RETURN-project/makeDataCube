@@ -1,4 +1,5 @@
 skip_problematic_tests <- TRUE #TODO: remove this
+skip_slow_tests <- TRUE
 
 context("Prepare supporting data")
 
@@ -196,6 +197,8 @@ test_that("prepare fire data",{
 })
 
 test_that("prepare land cover data",{
+  skip_if(skip_slow_tests, "This test is very slow") #TODO: remove this, eventually
+
   library(terra)
   # entirely overlapping rasters
   empty_rast <- rast(nrows = 3, ncols = 3, nlyrs=1, xmin = -30, xmax = 30, ymin = -30, ymax = 30)#, xmin = -99, xmax = 99, ymin = -33, ymax = 33
