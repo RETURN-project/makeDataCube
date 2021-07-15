@@ -42,6 +42,8 @@ dllLS(
 \item{tiers}{tiers of interest, T1 and T2 represent Tier 1 and 2, respectively}
 
 \item{cld}{maximum cloud percentage}
+
+\item{logfolder}{folder for logs}
 }
 \value{
 adds Landsat data to Level 1 folder

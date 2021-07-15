@@ -1,2 +1,10 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^data$
+^\.git$
+^\.github$
+^inputs\.csv$
+^img$
+^.*.sh$
+^.*.tar.gz$
+^.*Rcheck$
