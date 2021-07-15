@@ -19,7 +19,7 @@ install_github("RETURN-project/makeDataCube")
 - Finally, you need authentication to download data from the LAADS DAAC (WVP data). To that end, you need an create a _.laads_ file is in your home directory with a an **App Key**. The **App Key** can be requested from [NASA Earthdata](https://ladsweb.modaps.eosdis.nasa.gov/tools-and-services/data-download-scripts/#requesting). This key should be stored in a file _.laads_ in your home directory.
 
 ## Visual workflow
-![](img/flow.png)
+![](inst/img/flow.png)
 
 ## Launch in Spider
 

@@ -65,7 +65,7 @@ This document generates a data cube of level-2 Landsat and Sentinel-2 data over 
 
 ## Visual workflow
 
-![Workflow](../img/flow.png)
+![Workflow](../inst/img/flow.png)
 
 ## Inputs
 
@@ -184,6 +184,7 @@ updatemeta <- FALSE
 
 # Update metadata folder only if asked to
 if(updatemeta) systemf("force-level1-csd -u %s", metafolder)
+#TODO: this can be done only once
 ```
 
 ```{r Landsat}
@@ -220,6 +221,7 @@ flsDEM <- dllDEM(ext, dl_dir= demfolder, logfile = demlogfile)
 # Expected outputs:
 # A collection of files like
 # {demfolder}/S04W043.hgt (typically: misc/dem/[lat][lon].hgt)
+#TODO: this can be done only once
 ```
 
 ## Generate a Gdal Virtual Format (VRT)
@@ -235,6 +237,7 @@ systemf("gdalbuildvrt -input_file_list %s %s", file.path(demfolder, 'srtm.txt'),
 # Expected outputs:
 # {demfolder}/srtm.txt (typically: misc/dem/srtm.txt)
 # {demfolder}/srtm.vrt (typically: misc/dem/srtm.vrt)
+#TODO: check if this can be done only once
 ```
 
 ## Download the Water Vapor Database (WVP) data
@@ -247,6 +250,7 @@ dllWVP(wvpfolder, logfile = wvplogfile, endtime = endtime)
 # {wvpfolder}/wvp-global.tar.gz
 # A large collection of files like:
 # {wvpfolder}/WVP_0000-01-00.txt
+#TODO: check if this can be done only once
 ```
 
 ## Process the level 1 data to level 2 and generate a VRT
