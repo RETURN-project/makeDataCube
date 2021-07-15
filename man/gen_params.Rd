@@ -60,7 +60,109 @@ gen_params(
 )
 }
 \arguments{
-\item{OUTPUT_OVV}{}
+\item{FILE_QUEUE}{See link above}
+
+\item{DIR_LEVEL2}{See link above}
+
+\item{DIR_LOG}{See link above}
+
+\item{DIR_TEMP}{See link above}
+
+\item{FILE_DEM}{See link above}
+
+\item{DEM_NODATA}{See link above}
+
+\item{DO_REPROJ}{See link above}
+
+\item{DO_TILE}{See link above}
+
+\item{FILE_TILE}{See link above}
+
+\item{TILE_SIZE}{See link above}
+
+\item{BLOCK_SIZE}{See link above}
+
+\item{RESOLUTION_LANDSAT}{See link above}
+
+\item{RESOLUTION_SENTINEL2}{See link above}
+
+\item{ORIGIN_LON}{See link above}
+
+\item{ORIGIN_LAT}{See link above}
+
+\item{PROJECTION}{See link above}
+
+\item{RESAMPLING}{See link above}
+
+\item{DO_ATMO}{See link above}
+
+\item{DO_TOPO}{See link above}
+
+\item{DO_BRDF}{See link above}
+
+\item{ADJACENCY_EFFECT}{See link above}
+
+\item{MULTI_SCATTERING}{See link above}
+
+\item{DIR_WVPLUT}{See link above}
+
+\item{WATER_VAPOR}{See link above}
+
+\item{DO_AOD}{See link above}
+
+\item{DIR_AOD}{See link above}
+
+\item{ERASE_CLOUDS}{See link above}
+
+\item{MAX_CLOUD_COVER_FRAME}{See link above}
+
+\item{MAX_CLOUD_COVER_TILE}{See link above}
+
+\item{CLOUD_BUFFER}{See link above}
+
+\item{SHADOW_BUFFER}{See link above}
+
+\item{SNOW_BUFFER}{See link above}
+
+\item{CLOUD_THRESHOLD}{See link above}
+
+\item{SHADOW_THRESHOLD}{See link above}
+
+\item{RES_MERGE}{See link above}
+
+\item{DIR_COREG_BASE}{See link above}
+
+\item{COREG_BASE_NODATA}{See link above}
+
+\item{IMPULSE_NOISE}{See link above}
+
+\item{BUFFER_NODATA}{See link above}
+
+\item{TIER}{See link above}
+
+\item{NPROC}{See link above}
+
+\item{NTHREAD}{See link above}
+
+\item{PARALLEL_READS}{See link above}
+
+\item{DELAY}{See link above}
+
+\item{TIMEOUT_ZIP}{See link above}
+
+\item{OUTPUT_FORMAT}{See link above}
+
+\item{OUTPUT_DST}{See link above}
+
+\item{OUTPUT_AOD}{See link above}
+
+\item{OUTPUT_WVP}{See link above}
+
+\item{OUTPUT_VZN}{See link above}
+
+\item{OUTPUT_HOT}{See link above}
+
+\item{OUTPUT_OVV}{See link above}
 }
 \value{
 A data frame containing the parameters and its values

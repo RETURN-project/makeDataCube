@@ -31,6 +31,8 @@ dllLS(
 
 \item{tmpfolder}{folder with temporary data}
 
+\item{logfile}{file for logs}
+
 \item{ext}{extent of the study area of interest, this should be given as a vector containing - in order - xmin, xmax, ymin, ymax in degrees}
 
 \item{starttime}{start date (given as a vector with year, month, day)}
@@ -42,8 +44,6 @@ dllLS(
 \item{tiers}{tiers of interest, T1 and T2 represent Tier 1 and 2, respectively}
 
 \item{cld}{maximum cloud percentage}
-
-\item{logfolder}{folder for logs}
 }
 \value{
 adds Landsat data to Level 1 folder

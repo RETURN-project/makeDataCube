@@ -8,7 +8,7 @@
 #' @param queuefolder queue folder
 #' @param queuefile queue file
 #' @param tmpfolder folder with temporary data
-#' @param logfolder folder for logs
+#' @param logfile file for logs
 #' @param ext extent of the study area of interest, this should be given as a vector containing - in order - xmin, xmax, ymin, ymax in degrees
 #' @param starttime start date (given as a vector with year, month, day)
 #' @param endtime end date (given as a vector with year, month, day)
