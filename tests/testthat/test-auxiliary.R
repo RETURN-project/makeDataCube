@@ -95,33 +95,17 @@ test_that("Compare", {
   nthread <- '1'
 
   forcefolder <- normalizePath(file.path('data'))
-  fldrs <- setFolders(forcefolder)
-  tmpfolder <- fldrs['tmpfolder']
-  l1folder <- fldrs['l1folder']
-  l2folder <- fldrs['l2folder']
-  queuefolder <- fldrs['queuefolder']
-  queuefile <- fldrs['queuefile']
-  demfolder <- fldrs['demfolder']
-  wvpfolder <- fldrs['wvpfolder']
-  logfolder <- fldrs['logfolder']
-  paramfolder <- fldrs['paramfolder']
-  demlogfile <- fldrs['demlogfile']
-  wvplogfile <- fldrs['wvplogfile']
-  metafolder <- fldrs['metafolder']
-  S2auxfolder <- fldrs['S2auxfolder']
+  fldrs <- setFolders(forcefolder) # TODO: generate folder sructure using config as input, and not the other way around
 
-  paramfile <- 'l2param.prm'
-  demfile <- 'srtm.vrt'
-
-  cfg_r <- gen_params(FILE_QUEUE = file.path(queuefolder, queuefile),
-                      DIR_LEVEL2 = l2folder,
-                      DIR_LOG = logfolder,
-                      DIR_TEMP = tmpfolder,
-                      FILE_DEM = file.path(demfolder, demfile),
+  cfg_r <- gen_params(FILE_QUEUE = file.path(fldrs['queuefolder'], fldrs['queuefile']),
+                      DIR_LEVEL2 = fldrs['l2folder'],
+                      DIR_LOG = fldrs['logfolder'],
+                      DIR_TEMP = fldrs['tmpfolder'],
+                      FILE_DEM = file.path(fldrs['demfolder'], 'srtm.vrt'),
                       ORIGIN_LON = '-90',
                       ORIGIN_LAT = '60',
                       RESAMPLING = 'NN',
-                      DIR_WVPLUT = wvpfolder,
+                      DIR_WVPLUT = fldrs['wvpfolder'],
                       RES_MERGE = 'REGRESSION',
                       NPROC = nproc,
                       NTHREAD = nthread,
