@@ -12,6 +12,9 @@ export_params <- function(config, file, overwrite = FALSE) {
   if (file.exists(file) && overwrite) file.remove(file)
   if (file.exists(file) && !overwrite) stop("The parameter file already exists")
 
+  # If the config input is a list, transform it to data frame
+  if (inherits(config, "list")) config <- cfgl_to_df(config)
+
   # Create content
   header <- "++PARAM_LEVEL2_START++"
   data <- paste(rownames(config), config$value, sep = " = ")
@@ -30,10 +33,11 @@ export_params <- function(config, file, overwrite = FALSE) {
 #' \url{https://force-eo.readthedocs.io/en/latest/components/lower-level/level2/param.html}
 #'
 #' @param file The parameters file
+#' @param as.list Import as list instead of as data.frame
 #'
-#' @return The contents of the file, as a data frame
+#' @return The contents of the file, as a data frame or a list
 #'
-import_params <- function(file = "data/param/l2param.prm") {
+import_params <- function(file = "data/param/l2param.prm", as.list = FALSE) {
     # Import file
     lines <- import_lines(file)
 
@@ -45,6 +49,9 @@ import_params <- function(file = "data/param/l2param.prm") {
     # Use key as row identifier instead of as value
     rownames(df) <- df[, "key"] # Assign keys to rownames...
     df[, "key"] <- NULL # ... and drop their values
+
+    # Convert to list if desired
+    if(as.list) df <- cfg_to_list(df)
 
     return(df)
 }
@@ -106,8 +113,9 @@ import_params <- function(file = "data/param/l2param.prm") {
 #' @param OUTPUT_VZN See link above
 #' @param OUTPUT_HOT See link above
 #' @param OUTPUT_OVV See link above
+#' @param as.list Output a list instead of a data.frame
 #'
-#' @return A data frame containing the parameters and its values
+#' @return A data frame or list containing the parameters and its values
 #' @export
 #'
 gen_params <- function(FILE_QUEUE = "data/level1/queue.txt",
@@ -161,7 +169,8 @@ gen_params <- function(FILE_QUEUE = "data/level1/queue.txt",
                        OUTPUT_WVP = "FALSE",
                        OUTPUT_VZN = "TRUE",
                        OUTPUT_HOT = "TRUE",
-                       OUTPUT_OVV = "TRUE") {
+                       OUTPUT_OVV = "TRUE",
+                       as.list = FALSE) {
   # Use introspection to read the arguments' names and values
   values <- as.list(environment()) # Arguments' values (at this moment the
   # environment only contains the input parameters)
@@ -169,9 +178,12 @@ gen_params <- function(FILE_QUEUE = "data/level1/queue.txt",
 
   # Store as data frame
   cfg <- data.frame() # Initialize ...
-  for (i in 1:length(keys)) { # ... and fill row by row
+  for (i in 1:(length(keys)-1)) { # ... and fill row by row (ignoring as.list)
     cfg <- rbind(cfg, data.frame(row.names = keys[i], value = values[i][[1]]))
   }
+
+  # Convert to list if desired
+  if (as.list) cfg <- cfg_to_list(cfg)
 
   return(cfg)
 }
@@ -204,4 +216,33 @@ import_lines <- function(file = "data/param/l2param.prm") {
     lines <- lines[!grepl("^\\+\\+PARAM_LEVEL2_END\\+\\+$", lines)]
 
     return(lines)
+}
+
+#' Convert config data frame to list
+#'
+#' Using a list instead of a data frame can be practical. For instance, it
+#' allows using the $ operator for extracting values.
+#'
+#' @param cfg The configuration data frame
+#'
+#' @return The configuration list
+#'
+cfg_to_list <- function(cfg) {
+  cfgl <- as.list(t(cfg))
+  names(cfgl) <- rownames(cfg)
+
+  return(cfgl)
+}
+
+#' Convert config list to data frame
+#'
+#' @param cfgl The configuration list
+#'
+#' @return The configuration data frame
+#'
+cfgl_to_df <- function(cfgl) {
+  cfg <- as.data.frame(t(as.data.frame(cfgl)))
+  colnames(cfg) <- "value"
+
+  return(cfg)
 }
