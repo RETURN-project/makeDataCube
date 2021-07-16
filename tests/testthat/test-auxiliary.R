@@ -134,13 +134,9 @@ test_that("Compare", {
                       TILE_SIZE = '3000',
                       BLOCK_SIZE = '300')
 
-  expect_equal(nrow(cfg_py), nrow(cfg_r))
-  expect_true(all(cfg_py == cfg_r))
+  # Check that both objects are identical
+  expect_true(identical(cfg_py, cfg_r))
 
-  # expect_true(identical(cfg_r, cfg_py)) # TODO: this fails because
-  # force-parameter data/param/ LEVEL2 0 adds empty spaces to DO_ADD, DIR_AOD,
-  # MAX_CLOUD_COVER_TILE, CLOUD_BUFFER, SNOW_BUFFER and CLOUD_THRESHOLD
-
-  # The fault parameters should be different
-  expect_false(all(cfg_py == gen_params()))
+  # The default parameters should be different
+  expect_false(identical(cfg_py, gen_params()))
 })

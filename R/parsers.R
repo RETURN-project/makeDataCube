@@ -48,7 +48,7 @@ import_params <- function(file = "data/param/l2param.prm", as.list = FALSE) {
     colnames(df) <- c("key", "value")
 
     # Use key as row identifier instead of as value
-    rownames(df) <- df[, "key"] # Assign keys to rownames...
+    rownames(df) <- stringr::str_trim(df[, "key"]) # Assign keys to rownames...
     df[, "key"] <- NULL # ... and drop their values
 
     # Convert to list if desired
