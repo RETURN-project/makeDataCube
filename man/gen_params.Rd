@@ -56,7 +56,8 @@ gen_params(
   OUTPUT_WVP = "FALSE",
   OUTPUT_VZN = "TRUE",
   OUTPUT_HOT = "TRUE",
-  OUTPUT_OVV = "TRUE"
+  OUTPUT_OVV = "TRUE",
+  as.list = FALSE
 )
 }
 \arguments{
@@ -163,9 +164,11 @@ gen_params(
 \item{OUTPUT_HOT}{See link above}
 
 \item{OUTPUT_OVV}{See link above}
+
+\item{as.list}{Output a list instead of a data.frame}
 }
 \value{
-A data frame containing the parameters and its values
+A data frame or list containing the parameters and its values
 }
 \description{
 More info at
