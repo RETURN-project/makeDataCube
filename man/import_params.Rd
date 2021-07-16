@@ -4,13 +4,15 @@
 \alias{import_params}
 \title{Import parameters as data frame}
 \usage{
-import_params(file = "data/param/l2param.prm")
+import_params(file = "data/param/l2param.prm", as.list = FALSE)
 }
 \arguments{
 \item{file}{The parameters file}
+
+\item{as.list}{Import as list instead of as data.frame}
 }
 \value{
-The contents of the file, as a data frame
+The contents of the file, as a data frame or a list
 }
 \description{
 Checks the FORCE parameter file, and imports its contents as a data frame

@@ -36,6 +36,7 @@ export_params <- function(config, file, overwrite = FALSE) {
 #' @param as.list Import as list instead of as data.frame
 #'
 #' @return The contents of the file, as a data frame or a list
+#' @export
 #'
 import_params <- function(file = "data/param/l2param.prm", as.list = FALSE) {
     # Import file
