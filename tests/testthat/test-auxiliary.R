@@ -95,7 +95,7 @@ test_that("Compare", {
   nthread <- '1'
 
   forcefolder <- normalizePath(file.path('data'))
-  fldrs <- setFolders(forcefolder) # TODO: generate folder sructure using config as input, and not the other way around
+  fldrs <- setFolders(forcefolder) # TODO: generate folder structure using config as input, and not the other way around
 
   cfg_r <- gen_params(FILE_QUEUE = file.path(fldrs['queuefolder'], fldrs['queuefile']),
                       DIR_LEVEL2 = fldrs['l2folder'],
@@ -118,6 +118,8 @@ test_that("Compare", {
                       TILE_SIZE = '3000',
                       BLOCK_SIZE = '300')
 
+  # TODO: this passes at regular testing, but fails at build and codecov report
+  # (https://github.com/RETURN-project/makeDataCube/issues/46)
   # Check that both objects are identical
   expect_true(identical(cfg_py, cfg_r))
 
