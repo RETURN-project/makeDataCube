@@ -14,7 +14,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, 
-                      eval = FALSE)
+                      eval = TRUE)
 library(reticulate)
 library(makeDataCube)
 library(tidyverse)
@@ -198,7 +198,7 @@ export_params(cfg, file = file.path(paramfolder, paste0(paramfile, ".bak")), ove
 ```{r metadata}
 # Update metadata
 # Set to FALSE if metadata is already available (useful for quick testing)
-updatemeta <- FALSE
+updatemeta <- TRUE
 
 # Update metadata folder only if asked to
 if(updatemeta) systemf("force-level1-csd -u %s", metafolder)

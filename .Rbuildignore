@@ -8,3 +8,5 @@
 ^.*.sh$
 ^.*.tar.gz$
 ^.*Rcheck$
+^vignettes/make_Landsat_cube\.Rmd$
+^vignettes/make_mask_fire_cube\.Rmd$
