@@ -81,6 +81,13 @@ test_that("Maximum value with NA",{
   expect_equal(max_narm(c(1,5,NA, NaN)), 5)
 })
 
+test_that("System call dry run", {
+  command <- systemf('touch %s', 'deleteme.txt', dry.run = TRUE) # Create a command without executing it
+
+  expect_equal(command, "touch deleteme.txt") # Check that the correct command was generated
+  expect_false(file.exists('deleteme.txt')) # Check that the command was not executed
+})
+
 test_that("System call with formatted string", {
   # This snippet ensures that the file is always deleted, even if the test fails
   on.exit(file.remove('deleteme.txt'))

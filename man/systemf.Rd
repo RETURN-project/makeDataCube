@@ -4,7 +4,14 @@
 \alias{systemf}
 \title{Execute formatted string in system}
 \usage{
-systemf(string, ..., logfile = NULL, intern = FALSE, ignore.stdout = FALSE)
+systemf(
+  string,
+  ...,
+  logfile = NULL,
+  intern = FALSE,
+  ignore.stdout = FALSE,
+  dry.run = FALSE
+)
 }
 \arguments{
 \item{string}{Command pattern. Use \%s for string slots}
@@ -16,6 +23,8 @@ systemf(string, ..., logfile = NULL, intern = FALSE, ignore.stdout = FALSE)
 \item{intern}{(Default = FALSE) FALSE returns the exit status. TRUE the output}
 
 \item{ignore.stdout}{(Default = FALSE) Ignore stdout and stderr}
+
+\item{dry.run}{(Default = FALSE) Set true for returning command without executing}
 }
 \value{
 With default values, returns void. The command executes in the background

@@ -246,6 +246,7 @@ toShp <- function(ext, ofile){
 #' @param logfile (Default = NULL) Text file to log input and exit status. Useful for debugging
 #' @param intern (Default = FALSE) FALSE returns the exit status. TRUE the output
 #' @param ignore.stdout (Default = FALSE) Ignore stdout and stderr
+#' @param dry.run (Default = FALSE) Set true for returning command without executing
 #'
 #' @return With default values, returns void. The command executes in the background
 #' @export
@@ -256,9 +257,11 @@ toShp <- function(ext, ofile){
 #' \dontrun{
 #' systemf("tar -xvzf %s -C %s", wvpCompressed, wvpfolder)
 #' }
-systemf <- function(string, ..., logfile = NULL, intern = FALSE, ignore.stdout = FALSE) {
+systemf <- function(string, ..., logfile = NULL, intern = FALSE, ignore.stdout = FALSE, dry.run = FALSE) {
 
   command <- sprintf(string, ...) # Build the command string
+
+  if(dry.run) return(command) # In dry runs, return the command and do nothing
 
   if(!is.null(logfile)) write(command, logfile, append = TRUE) # Log the command
 
@@ -267,5 +270,4 @@ systemf <- function(string, ..., logfile = NULL, intern = FALSE, ignore.stdout =
                    ignore.stdout = ignore.stdout)
 
   if(!is.null(logfile)) write(status, logfile, append = TRUE) # Log the exit status
-
 }

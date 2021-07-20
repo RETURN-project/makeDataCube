@@ -38,15 +38,16 @@ dllWVP <- function(wvpfolder, logfile, endtime, removeTar = FALSE) {
   # Unpack if neccessary
   if(!isUnpacked) {
     # Extract the files
-    systemf("tar -xvzf %s -C %s", wvpCompressed, wvpfolder)
+    systemf("tar -xvzf %s -C %s", wvpCompressed, wvpfolder, ignore.stdout = TRUE)
     # Move all files into the main wvp directory
-    systemf("mv -v %s %s", file.path(wvpfolder, 'global', '*'), wvpfolder)
+    systemf("mv -v %s %s", file.path(wvpfolder, 'global', '*'), wvpfolder, ignore.stdout = TRUE)
     # Remove the empty folder
-    systemf("rm -rd %s", file.path(wvpfolder, 'global'))
+    systemf("rm -rd %s", file.path(wvpfolder, 'global'), ignore.stdout = TRUE)
+    # We use ignore.stdout = TRUE because these commands are extremely verbose
   }
 
   # Remove the downloaded file if required
-  if(removeTar && isDownloaded) systemf("rm %s", wvpCompressed)
+  if(removeTar && isDownloaded) systemf("rm %s", wvpCompressed, ignore.stdout = TRUE)
 
   # Update available water vapor data
   # This list may have changed after unpacking
@@ -79,7 +80,7 @@ dllWVP <- function(wvpfolder, logfile, endtime, removeTar = FALSE) {
       })
 
     # Remove the redundant folders
-    systemf("rm -rd %s", file.path(wvpfolder, 'geo'))
-    systemf("rm -rd %s", file.path(wvpfolder, 'hdf'))
+    systemf("rm -rd %s", file.path(wvpfolder, 'geo'), ignore.stdout = TRUE)
+    systemf("rm -rd %s", file.path(wvpfolder, 'hdf'), ignore.stdout = TRUE)
   }
 }
