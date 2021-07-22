@@ -1,7 +1,7 @@
 Package: makeDataCube
 Type: Package
 Title: Prepare raster datasets for upscaling recovery indicators 
-Version: 0.1.0
+Version: 0.1.1
 Author: Who wrote it
 Maintainer: The package maintainer <yourself@somewhere.net>
 Description: More about what it does (maybe more than one line)
