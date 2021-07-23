@@ -22,11 +22,9 @@ jobs:
       - uses: r-lib/actions/setup-r@v1
       - name: Install system dependencies
         run: |
-          apt-get update
-          apt-get upgrade -y
-          apt-get install libpoppler-cpp-dev -y
-          apt-get install libgdal-dev -y
-          apt-get install libudunits2-dev -y
+          yum install libpoppler-cpp-dev -y
+          yum install libgdal-dev -y
+          yum install libudunits2-dev -y
       - name: Install R dependencies
         run: |
           install.packages(c("remotes", "rcmdcheck"))
