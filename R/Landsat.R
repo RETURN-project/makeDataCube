@@ -52,14 +52,21 @@ dllLS <- function(l1folder, queuefolder, queuefile, tmpfolder, logfile, ext, sta
 #' @param paramfolder path to the directory with the parameter file
 #' @param paramfile name of the parameter file
 #' @param l2folder path to the level 2 folder
+#' @param dry.run Set to TRUE to just return the command lines (useful for testing and debugging)
 #'
 #' @return processes level 1 landsat scenes
 #' @export
-process2L2 <- function(paramfolder, paramfile, l2folder){
-  # process data
-  systemf("force-level2 %s", file.path(paramfolder,paramfile))
-  # generate vrt
-  systemf("force-mosaic %s", l2folder)
+process2L2 <- function(paramfolder, paramfile, l2folder, dry.run = FALSE) {
+  # System commands list (useful for debugging and testing)
+  cmds <- list()
+
+  # Process data
+  cmds[1] <- systemf("force-level2 %s", file.path(paramfolder, paramfile), dry.run = dry.run)
+  # Generate vrt
+  cmds[2] <- systemf("force-mosaic %s", l2folder, dry.run = dry.run)
+
+  if(dry.run) return(cmds)
+
   # summarize log files of all scenes
   # LSscenes <- paste0(LSscenes, '.tar.gz.log')
   # checkLSlog(LSscenes, logfolder, Sskiplogfile, Ssuccesslogfile, Smissionlogfile, Sotherlogfile)

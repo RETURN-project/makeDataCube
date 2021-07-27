@@ -4,7 +4,7 @@
 \alias{process2L2}
 \title{Process Landsat level 1 data to level 2, generate a vrt}
 \usage{
-process2L2(paramfolder, paramfile, l2folder)
+process2L2(paramfolder, paramfile, l2folder, dry.run = FALSE)
 }
 \arguments{
 \item{paramfolder}{path to the directory with the parameter file}
@@ -12,6 +12,8 @@ process2L2(paramfolder, paramfile, l2folder)
 \item{paramfile}{name of the parameter file}
 
 \item{l2folder}{path to the level 2 folder}
+
+\item{dry.run}{Set to TRUE to just return the command lines}
 }
 \value{
 processes level 1 landsat scenes
