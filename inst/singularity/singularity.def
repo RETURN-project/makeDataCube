@@ -1,0 +1,25 @@
+BootStrap: docker
+From: rocker/tidyverse
+
+%runscript
+    /bin/bash "$@"
+
+%post
+    # ===== System requirements =====
+    apt-get update
+    apt-get upgrade -y
+
+    ## For R package 'pdftools'
+    apt-get install libpoppler-cpp-dev -y
+    ## For R package 'sf'
+    apt-get install libgdal-dev -y
+    apt-get install libudunits2-dev -y
+
+    # ===== R package and dependencies =====
+    Rscript -e "devtools::install_github('RETURN-project/makeDataCube')"
+
+%test
+    Rscript -e "library(makeDataCube)"
+
+%environment
+    export LC_ALL=C
