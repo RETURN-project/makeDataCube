@@ -6,6 +6,9 @@ output: rmarkdown::html_vignette
 params:
   starttime: "2000-11-1"
   endtime: "2001-5-28"
+  updatemeta: "TRUE"
+  updatel1: "TRUE"
+  updatel2: "TRUE"
 vignette: >
   %\VignetteIndexEntry{Generate Landsat data cube}
   %\VignetteEngine{knitr::rmarkdown}
@@ -183,7 +186,8 @@ cfg <- gen_params(FILE_QUEUE = file.path(fldrs['queuefolder'], fldrs['queuefile'
                   OUTPUT_OVV = 'TRUE',
                   DEM_NODATA = '-32768',
                   TILE_SIZE = '3000',
-                  BLOCK_SIZE = '300')
+                  BLOCK_SIZE = '300',
+                  as.list = TRUE)
 
 export_params(cfg, file = file.path(paramfolder, paramfile), overwrite = TRUE)
 export_params(cfg, file = file.path(paramfolder, paste0(paramfile, ".bak")), overwrite = TRUE)
@@ -196,18 +200,17 @@ export_params(cfg, file = file.path(paramfolder, paste0(paramfile, ".bak")), ove
 ## Search Landsat scenes, download and add to queue
 
 ```{r metadata}
-# Update metadata
-# Set to FALSE if metadata is already available (useful for quick testing)
-updatemeta <- TRUE
-
 # Update metadata folder only if asked to
-if(updatemeta) systemf("force-level1-csd -u %s", metafolder)
+if(params$updatemeta) systemf("force-level1-csd -u %s", metafolder)
 #TODO: this can be done only once
 ```
 
 ```{r Landsat}
+# Run only if required
+if(params$updatel1) {
+  
 # Auxiliary variable
-queuepath <- file.path(queuefolder, queuefile)
+queuepath <- cfg$FILE_QUEUE
 
 # Auxiliary function
 # This is just getScenes with all parameters pre-passed, with the exception of 
@@ -220,6 +223,8 @@ getScenesAux <- function(starttime, endtime) {
 
 # If nsubintervals != 1, this runs in parallel
 mcmapply(getScenesAux, starttimes, endtimes, mc.cores = nsubintervals)
+
+}
 ```
 
 <!-- # Add Sentinel-2 data to queue  -->
@@ -278,5 +283,5 @@ dllWVP(wvpfolder, logfile = wvplogfile, endtime = endtime)
 -   Summarize log files of all scenes
 
 ```{r process}
-process2L2(paramfolder, paramfile, l2folder)
+if(params$updatel2) process2L2(paramfolder, paramfile, l2folder)
 ```
