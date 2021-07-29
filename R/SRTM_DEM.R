@@ -18,20 +18,24 @@ dllDEM <- function(ext, dl_dir= Sys.getenv("HOME"), logfile){
   # http://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11/N59W155.SRTMGL1.hgt.zip.xml
   # https://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11/SRTMGL1_page_4.html
 
+  # Create the filenames to be downloaded
   lon <- floor(ext[1]):ceiling(ext[2])
   lat<- floor(ext[3]):ceiling(ext[4])
-  lons <- paste0(sapply(lon, function(x){switch(1+(sign(x)<0),'E','W')}), sprintf('%03i',abs(lon)))
-  lats <- paste0(sapply(lat, function(x){switch(1+(sign(x)<0),'N','S')}), sprintf('%02i',abs(lat)))
-  cmb <- expand.grid(lats,lons)
-  cmb <- paste0(cmb[,1],cmb[,2])
-  todll <- paste0(cmb,'.SRTMGL1.hgt')#files that meet the criteria
-  # check if the files are not present in the target dir
-  fls <- list.files(path = dl_dir, pattern ='*.hgt')# all files that are already downloaded
-  fls <- gsub(".hgt", ".SRTMGL1.hgt", fls)
-  todll <- setdiff(todll, fls)# files that meet criteria and are not downloaded yet
-  if(length(todll)>0){
-    urls <- paste0('http://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11/',todll,'.zip')#urls that meet  the criteria
-    # download
+  lons <- paste0(sapply(lon, function(x){ switch(1+(sign(x)<0), 'E', 'W') }), sprintf('%03i', abs(lon))) # Format as "W063", "W062"
+  lats <- paste0(sapply(lat, function(x){ switch(1+(sign(x)<0), 'N', 'S') }), sprintf('%02i', abs(lat))) # Format as "N01", "N02"
+  cmb <- expand.grid(lats, lons) # Create cartesian-product grid
+  cmb <- paste0(cmb[, 1], cmb[, 2]) # Transform to "N01W063" "N02W063" "N01W062" "N02W062
+
+  todll <- paste0(cmb, '.SRTMGL1.hgt') # Filenames that meet the criteria
+  # Check if the files are not present in the target dir
+  fls <- list.files(path = dl_dir, pattern ='*.hgt') # List all files that are already downloaded
+  fls <- gsub(".hgt", ".SRTMGL1.hgt", fls) # The .SRTMGL1 string is required in the url, but not present in the files
+
+  todll <- setdiff(todll, fls) # Files that meet criteria and are not downloaded yet
+  if( length(todll) > 0 ) {
+    urls <- paste0('http://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11/', todll,'.zip') # Compose urls that meet the criteria
+
+    # Download
     dllLPDAAC(dl_dir, urls, logfile)
 
     # Unzip the downloaded files...
@@ -39,9 +43,12 @@ dllDEM <- function(ext, dl_dir= Sys.getenv("HOME"), logfile){
     # ... and remove the zip files after unzipping
     systemf("rm %s", file.path(dl_dir, "*.zip"))
 
+  } else {
+    print("No new DEM files to download")
   }
-   # return a list of downloaded files
-  todll
+
+  # Return a list of the requested files
+  return(todll)
 }
 
 #' Download data from LP DAAC DATa Pool
