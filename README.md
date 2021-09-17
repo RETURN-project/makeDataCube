@@ -41,6 +41,7 @@ For launching the analysis in Spider follow the next steps:
 2. Clone this project `git clone https://github.com/RETURN-project/makeDataCube.git`.
 3. Get inside the cloned directory: `cd makeDataCube`.
 4. Edit `inputs.csv` with your desired inputs.
+5. If desired, the processing parameter can be adjusted in the vignette `make_Landsat_cube.Rmd`. More information about these parameters can be found in the documentation and tutorials of [FORCE](https://davidfrantz.github.io/code/force/).
 6. Run `sbatch --array=2-3 -N1 ./main.sh inputs.csv` (note that `--array=2-3` processes the lines 2 and 3 of `inputs.csv`).
 7. The outputs will be transferred to `OUTPUTD="/home/${USER}/outputs"`. Do you want to change this? Edit it in `run.sh`.
 
