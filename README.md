@@ -3,7 +3,7 @@
 [![codecov](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/)
 
 # makeDataCube
-The makeDataCube R project generates a data cube from Landsat and Sentinel-2 data using FORCE and allows to generate and add a data mask to the data cube.
+The makeDataCube R project generates a data cube from Landsat and Sentinel-2 data using [FORCE](https://davidfrantz.github.io/code/force/) and allows to generate and add a data mask to the data cube.
 
 You can install it via:
 
@@ -41,8 +41,8 @@ For launching the analysis in Spider follow the next steps:
 2. Clone this project `git clone https://github.com/RETURN-project/makeDataCube.git`.
 3. Get inside the cloned directory: `cd makeDataCube`.
 4. Edit `inputs.csv` with your desired inputs.
-5. Run `sbatch --array=2-3 -N1 ./main.sh inputs.csv` (note that `--array=2-3` processes the lines 2 and 3 of `inputs.csv`).
-6. The outputs will be transferred to `OUTPUTD="/home/${USER}/outputs"`. Do you want to change this? Edit it in `run.sh`.
+6. Run `sbatch --array=2-3 -N1 ./main.sh inputs.csv` (note that `--array=2-3` processes the lines 2 and 3 of `inputs.csv`).
+7. The outputs will be transferred to `OUTPUTD="/home/${USER}/outputs"`. Do you want to change this? Edit it in `run.sh`.
 
 Tip: don't forget to set `eval=TRUE` in line 17 of the vignette.
 
@@ -51,3 +51,5 @@ Tip: don't forget to set `eval=TRUE` in line 17 of the vignette.
 - `inputs.csv` contains the data ranges to be processed. Each line would be send to a node.
 - `run.sh` takes care of the fine details.
 - `main.sh` calls `run.sh` in a loop, once per line in `inputs.csv`.
+
+
