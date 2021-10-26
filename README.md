@@ -14,7 +14,7 @@ install_github("RETURN-project/makeDataCube")
 
 ## External dependencies
 - [**Python 3**](https://www.python.org/downloads/) should be installed.
-  - The [**pylandsat**](https://pypi.org/project/pylandsat/) and [**shapely**](https://pypi.org/project/Shapely/) modules should be available to download data. Both can be installed installed via `pip install pylandsat` and `pip install shaoely`.
+  - The [**pylandsat**](https://pypi.org/project/pylandsat/) and [**shapely**](https://pypi.org/project/Shapely/) modules should be available to download data. Both can be installed installed via `pip install pylandsat` and `pip install shapely`.
 - In addition, [**FORCE**](https://github.com/davidfrantz/force) (>= 3.6.3) should be installed. **FORCE** allows to generate a data cube of level-2 (or higher) Landsat and Sentinel-2 imagery from level-1 inputs. Please visit the [project's website](https://github.com/davidfrantz/force) for more information and download instructions.
   - If the user wants to use parallelization of Level 1 download (by default this is deactivated), [this](https://github.com/davidfrantz/force/commit/b5685c9b7258d91bcf3a096eee31b7a349f994e6) (or an older) version of **FORCE** is required. More information [here](https://github.com/davidfrantz/force/pull/66#issuecomment-804881143).
 - The user should have a **NASA Earthdata account** to download DEM data. The _Login_, _Username_ and _Password_ are stored in a _netrc_ file in the home directory. If no _netrc_ file is found, you will be asked to provide your _Username_ and _Password_ and a _netrc_ file will automatically be created (and stored for a next session). If you don't have an account yet, you can create one [here](https://urs.earthdata.nasa.gov).
