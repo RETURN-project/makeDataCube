@@ -95,3 +95,11 @@ test_that("System call with formatted string", {
   systemf('touch %s', 'deleteme.txt') # Create a file with systemf, ...
   expect_true(file.exists('deleteme.txt')) # ... check that it was indeed created
 })
+
+test_that("Shape string", {
+  ext <- 1:4
+  expected_str <- "1/4,2/4,2/3,1/3,1/4"
+  str <- extToStr(ext)
+
+  expect_equal(str, expected_str)
+})

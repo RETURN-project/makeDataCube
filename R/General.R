@@ -236,6 +236,24 @@ toShp <- function(ext, ofile){
   writeOGR(spdf, dsn = ofile, layer = ofile, driver = "ESRI Shapefile")#file.path(ofolder, paste0(oname, '.shp'))
 }
 
+
+#' Generate shape string
+#'
+#' @param ext Extent of the area of interest, vector with xmin, xmax, ymin, ymax in degrees
+#'
+#' @return Generates a rectangular string representing the closed rectangular shape
+#' @export
+#'
+#' @examples
+extToStr <- function(ext) {
+  # Catch errors
+  if(length(ext) != 4) stop("Only rectangular shapes are supported")
+
+  # Create the string
+  str <- sprintf("%1$s/%4$s,%2$s/%4$s,%2$s/%3$s,%1$s/%3$s,%1$s/%4$s", ext[1], ext[2], ext[3], ext[4])
+  return(str)
+}
+
 #' Execute formatted string in system
 #'
 #' This is just a wrapper of the system function. It comfortably allows for
