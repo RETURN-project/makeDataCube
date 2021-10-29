@@ -99,7 +99,9 @@ dllLPDAAC<- function(dl_dir = Sys.getenv("HOME"), files, logfile){
 
 #' Set Up Direct Access the LP DAAC Data Pool with R
 #' The function configures a netrc profile that will allow users to download data from
-#'  an Earthdata Login enabled server.
+#' an Earthdata Login enabled server.
+#'
+#' If a .netrc file is already configured, it will just return its location
 #'
 #' @return generates a .netrc profile
 #' @export
