@@ -54,7 +54,7 @@ This document generates a data cube of level-2 Landsat data over a user-defined 
 
 ### Installation
 
-This script requires certain programs to be installed in your computer in order to work. The guide below will help you through this process. If you are familiar with GitHub Actions, you may prefer to take a look at our [installing and testing  script](https://github.com/RETURN-project/makeDataCube/blob/master/.github/workflows/r.yml).
+This script requires certain programs to be installed in your computer in order to work. The guide below will help you through this process.
 
 - [**Python 3**](https://www.python.org/downloads/) should be installed.
   - The [**pylandsat**](https://pypi.org/project/pylandsat/) and [**shapely**](https://pypi.org/project/Shapely/) modules should be available to download data. Both can be installed installed via `pip install pylandsat` and `pip install shapely`.
@@ -77,25 +77,19 @@ This script connects to different data sources. Some of them require credentials
 ## Inputs
 
 ```{r inputs}
-# the folder where the datacube (and auxilliary data) will be stored
-forcefolder <- normalizePath(file.path('..', 'data'))#forcefolder <- '/home/wanda/Documents/data/force'
-
-# a directory where Sentinel-2 level 1C data are stored. If no local data are available, leave this field open. In that case, data will be downloaded from Google Cloud Storage
-#S2folder <- normalizePath(file.path('..', 'data'))
-# a directory where Landsat level 1 data are stored. If no local data are available, provide an empty string. In that case, data will be downloaded from Google Cloud Storage
-#LSfolder <- normalizePath(file.path('..', 'data'))
-
-# a directory where all temporary R files should be stored
+# The folder where the datacube (and auxilliary data) will be stored
+forcefolder <- normalizePath(file.path('..', 'data'))
+# A directory where all temporary R files should be stored
 Rtmpfolder <- normalizePath(file.path('..', 'data'))
-#extent of the area of interest, vector with xmin, xmax, ymin, ymax in degrees
-ext <- c(-62.225300382434575,-62.115437101184575,1.7039980451907109,1.7973382355954262) #c(-43.38238361637443,-43.27938679020256,-4.555765244985907,-4.451717415449725)
-# minimum and maximum cloud cover of the Landsat images (images outside this cloud cover range will not be downloaded)
+# Extent of the area of interest, vector with xmin, xmax, ymin, ymax in degrees
+ext <- c(-62.225300382434575,-62.115437101184575,1.7039980451907109,1.7973382355954262)
+# Minimum and maximum cloud cover of the Landsat images (images outside this cloud cover range will not be downloaded)
 cld <- c(0,50)
-# start date of the study period: year, month, day
+# Start date of the study period: year, month, day
 starttime <- date_to_vec(params$starttime)
-# end date of the study period: year, month, day
+# End date of the study period: year, month, day
 endtime <- date_to_vec(params$endtime)
-#Tier level of Landsat data (gives information about the quality of the data)
+# Tier level of Landsat data (gives information about the quality of the data)
 tiers <- 'T1'
 # Sensors of interest
 sensors <- c('LC08', 'LE07', 'LT05', 'LT04')# valid sensors: LT04 - Landsat 4 TM, LT05 - Landsat 5 TM, LE07 - Landsat 7 ETM+, LC08 - Landsat 8 OLI, S2A - Sentinel-2A MSI, S2B - Sentinel-2B MSI
@@ -140,12 +134,15 @@ endtimes <- lapply(int_end(subintervals), date_to_vec) # Extract endtimes as vec
 ## Generate the directory structure
 
 ```{r folders}
-# set the folder to store temporary data
+# Set the folder to store temporary data
 unixtools::set.tempdir(Rtmpfolder)
-# set the upper memory limit for raster data. Raster will move data to disk if it exceeds the upper limit (defaults to 100MB). 
+# Set the upper memory limit for raster data. Raster will move data to disk if it exceeds the upper limit (defaults to 100MB). 
 # options(rasterMaxMemory = 1e10)
-# generate folder structure
+
+# Generate folder structure
 fldrs <- setFolders(forcefolder)
+
+# TODO: these assignments are redundant, can be removed
 tmpfolder <- fldrs['tmpfolder']
 l1folder <- fldrs['l1folder']
 l2folder <- fldrs['l2folder']
@@ -158,11 +155,6 @@ paramfolder <- fldrs['paramfolder']
 demlogfile <- fldrs['demlogfile']
 wvplogfile <- fldrs['wvplogfile']
 metafolder <- fldrs['metafolder']
-# landsatlogfile <- fldrs['landsatlogfile']
-# Sskiplogfile <- fldrs['Sskiplogfile']
-# Ssuccesslogfile <- fldrs['Ssuccesslogfile']
-# Smissionlogfile <- fldrs['Smissionlogfile']
-# Sotherlogfile <- fldrs['Sotherlogfile']
 S2auxfolder <- fldrs['S2auxfolder']
 ```
 
@@ -220,7 +212,7 @@ queuepath <- cfg$FILE_QUEUE
 # This is just getScenes with all parameters pre-passed, with the exception of 
 # starttime and endtime.
 # The purpose is to call it from a mcmapply functional.
-# force-level1-csd -c 0,50 -d 20001101,20010528 -s LC08,LE07,LT05,LT04 /home/pablo/Desktop/makeDataCube/data/misc/meta /home/pablo/Desktop/makeDataCube/data/level1 /home/pablo/Desktop/makeDataCube/data/level1/queue.txt /home/pablo/Desktop/makeDataCube/data/temp/file55666e2730f1.shp
+# force-level1-csd -c 0,50 -d 20001101,20010528 -s LC08,LE07,LT05,LT04 data/misc/meta data/level1 data/level1/queue.txt data/temp/file55666e2730f1.shp
 getScenesAux <- function(starttime, endtime) {
   getScenes(ext, queuepath, l1folder, metafolder, tmpfolder, cld = cld, starttime = starttime, endtime = endtime, tiers = tiers, sensors = sensors)
 }
@@ -228,16 +220,11 @@ getScenesAux <- function(starttime, endtime) {
 # If nsubintervals != 1, this runs in parallel
 mcmapply(getScenesAux, starttimes, endtimes, mc.cores = nsubintervals)
 
+# If nsubintervals == 1, the whole chunk is equivalent to:
+# getScenes(ext, queuepath, l1folder, metafolder, tmpfolder, cld = cld, starttime = starttime, endtime = endtime, tiers = tiers, sensors = sensors)
+
 }
 ```
-
-<!-- # Add Sentinel-2 data to queue  -->
-
-<!-- ```{r Sentinel} -->
-
-<!-- # addSen2queue(S2auxfolder, ext, S2folder, starttime, endtime, queuefolder, queuefile, l1folder) -->
-
-<!-- ``` -->
 
 ## Download the Digital Elevation Map (DEM)
 

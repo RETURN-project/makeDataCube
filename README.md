@@ -45,12 +45,16 @@ For launching the analysis in Spider follow the next steps:
 6. Run `sbatch --array=2-3 -N1 ./main.sh inputs.csv` (note that `--array=2-3` processes the lines 2 and 3 of `inputs.csv`).
 7. The outputs will be transferred to `OUTPUTD="/home/${USER}/outputs"`. Do you want to change this? Edit it in `run.sh`.
 
-Tip: don't forget to set `eval=TRUE` in line 17 of the vignette.
-
 ### Key files
 
 - `inputs.csv` contains the data ranges to be processed. Each line would be send to a node.
 - `run.sh` takes care of the fine details.
 - `main.sh` calls `run.sh` in a loop, once per line in `inputs.csv`.
+
+### Visual overview
+
+When running on Spider, the workflow is slightly modified:
+
+![](inst/img/spider.png)
 
 

@@ -210,12 +210,13 @@ getScenes <- function(ext, queuepath, l1folder, metafolder, tmpfolder, cld = c(0
   sensorStr <- paste(sensors, collapse = ',') # Sensors
 
   # Download data of interest
-  systemf("force-level1-csd -c %s -d %s -s %s %s %s %s %s",
-          cldStr, timesStr, sensorStr, metafolder, l1folder, queuepath, tmpfile)
+  # With shapefile TODO: figure out why this is failing
+  # systemf("force-level1-csd -c %s -d %s -s %s %s %s %s %s", cldStr, timesStr, sensorStr, metafolder, l1folder, queuepath, tmpfile)
+  # with shape string
+  systemf("force-level1-csd -c %s -d %s -s %s %s %s %s %s", cldStr, timesStr, sensorStr, metafolder, l1folder, queuepath, extToStr(ext))
 
   # remove temporary shapefile
   file.remove(tmpfile)
-
 }
 
 #' Generate shapefile over AOI
@@ -234,6 +235,23 @@ toShp <- function(ext, ofile){
   proj4string(sp) = CRS("+init=epsg:4326")
   spdf = SpatialPolygonsDataFrame(sp,data.frame(f=99.9))
   writeOGR(spdf, dsn = ofile, layer = ofile, driver = "ESRI Shapefile")#file.path(ofolder, paste0(oname, '.shp'))
+}
+
+#' Generate shape string
+#'
+#' @param ext Extent of the area of interest, vector with xmin, xmax, ymin, ymax in degrees
+#'
+#' @return Generates a rectangular string representing the closed rectangular shape
+#' @export
+#'
+#' @examples
+extToStr <- function(ext) {
+  # Catch errors
+  if(length(ext) != 4) stop("Only rectangular shapes are supported")
+
+  # Create the string
+  str <- sprintf("%1$s/%4$s,%2$s/%4$s,%2$s/%3$s,%1$s/%3$s,%1$s/%4$s", ext[1], ext[2], ext[3], ext[4])
+  return(str)
 }
 
 #' Execute formatted string in system
