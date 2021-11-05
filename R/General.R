@@ -210,12 +210,13 @@ getScenes <- function(ext, queuepath, l1folder, metafolder, tmpfolder, cld = c(0
   sensorStr <- paste(sensors, collapse = ',') # Sensors
 
   # Download data of interest
-  systemf("force-level1-csd -c %s -d %s -s %s %s %s %s %s",
-          cldStr, timesStr, sensorStr, metafolder, l1folder, queuepath, tmpfile)
+  # With shapefile TODO: figure out why this is failing
+  # systemf("force-level1-csd -c %s -d %s -s %s %s %s %s %s", cldStr, timesStr, sensorStr, metafolder, l1folder, queuepath, tmpfile)
+  # with shape string
+  systemf("force-level1-csd -c %s -d %s -s %s %s %s %s %s", cldStr, timesStr, sensorStr, metafolder, l1folder, queuepath, extToStr(ext))
 
   # remove temporary shapefile
   file.remove(tmpfile)
-
 }
 
 #' Generate shapefile over AOI
@@ -235,7 +236,6 @@ toShp <- function(ext, ofile){
   spdf = SpatialPolygonsDataFrame(sp,data.frame(f=99.9))
   writeOGR(spdf, dsn = ofile, layer = ofile, driver = "ESRI Shapefile")#file.path(ofolder, paste0(oname, '.shp'))
 }
-
 
 #' Generate shape string
 #'
