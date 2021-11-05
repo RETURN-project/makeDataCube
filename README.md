@@ -51,4 +51,10 @@ For launching the analysis in Spider follow the next steps:
 - `run.sh` takes care of the fine details.
 - `main.sh` calls `run.sh` in a loop, once per line in `inputs.csv`.
 
+### Visual overview
+
+When running on Spider, the workflow is slightly modified:
+
+![](inst/img/spider.png)
+
 
