@@ -1,8 +1,7 @@
 [![Build Status](https://github.com/RETURN-project/makeDataCube/workflows/R-CMD-check/badge.svg?branch=master)](https://github.com/RETURN-project/makeDataCube/actions)
 [![codecov](https://codecov.io/gh/RETURN-project/makeDataCube/graph/badge.svg)](https://codecov.io/gh/RETURN-project/makeDataCube)
 [![codecov](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5549904.svg)](https://doi.org/10.5281/zenodo.5549904)
-
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5549905.svg)](https://doi.org/10.5281/zenodo.5549905)
 # makeDataCube
 The makeDataCube R project generates a data cube from Landsat data using [FORCE](https://davidfrantz.github.io/code/force/) and allows to generate and add a data mask to the data cube.
 
