@@ -30,6 +30,10 @@ This script connects to different data sources. Some of them require credentials
 - The user should have a **NASA Earthdata account** to download DEM data. The *Login*, *Username* and *Password* are stored in a *netrc* file in the home directory. If no *netrc* file is found, you will be asked to provide your *Username* and *Password* and a *netrc* file will automatically be created (and stored for a next session). If you don't have an account yet, you can create one [here](https://urs.earthdata.nasa.gov). Afterwards, you can easily create the `.netrc` file by executing `makeDataCube::EartDataLogin()` in your R console and following the instructions.
 - Finally, you need authentication to download data from the LAADS DAAC (WVP data). To that end, you need an create a *.laads* file is in your home directory with a an **App Key**. The **App Key** can be requested from [NASA Earthdata](https://ladsweb.modaps.eosdis.nasa.gov/tools-and-services/data-download-scripts/#requesting). This key should be stored in a file *.laads* in your home directory.
 
+### Other
+
+A presentation about this project was given at Wageningen University on Nov 8th 2021. The slides are temporarily available [here](https://www.dropbox.com/s/ipzdn82uq0dm7mr/makeDataCube.pptx?dl=1).
+
 ## Containers
 
 A containerized installation of this package is available on [Singularity Container Services](https://cloud.sylabs.io/library/_container/60fa8041ff2db5ba27b5b613).
