@@ -1,0 +1,105 @@
+BootStrap: docker
+From: ubuntu:latest
+
+%runscript
+    /bin/bash "$@"
+
+%environment
+    export TZ=Europe/Amsterdam
+
+%post
+
+    ##### cube:v01 #####
+    # - Install R
+
+    ## Update repos
+    apt-get update && apt-get upgrade -y
+
+    ## Assign timezone
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+    ## Prerequisites (to install repos over https)
+    apt-get install -y dirmngr gnupg apt-transport-https ca-certificates software-properties-common
+
+    ## Add repository
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+    add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu focal-cran40/'
+    apt-get update && apt-get upgrade -y
+
+    ## Install it
+    apt-get -y install r-base
+    apt-get -y install build-essential
+
+    ##### cube:v02 #####
+    # - FORCE's prerequisites
+    apt-get install -y parallel
+    #parallel --bibtex
+    apt-get install -y libgdal-dev gdal-bin
+    apt-get install -y libgsl0-dev
+    apt-get install -y curl
+    apt-get install -y unzip
+    apt-get install -y lockfile-progs
+    apt-get install -y rename
+    apt-get install -y pandoc
+    apt-get install -y wget
+    apt-get install -y git
+    apt-get install -y libpoppler-cpp-dev
+    apt-get install -y libudunits2-dev
+    apt-get install -y python3-pip
+
+    ## Python packages
+    pip install numpy gsutil shapely pylandsat
+
+    ## R packages
+    Rscript -e 'install.packages("rmarkdown")'
+    Rscript -e 'install.packages("plotly")'
+    Rscript -e 'install.packages("stringi")'
+    Rscript -e 'install.packages("knitr")'
+    Rscript -e 'install.packages("dplyr")'
+    Rscript -e 'install.packages("devtools")'
+    Rscript -e 'devtools::install_github("s-u/unixtools", ref = "master")'
+
+    ##### cube:v03 #####
+    # - Cmake
+    mkdir -p ~/src/cmake
+    cd ~/src/cmake
+    wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0.tar.gz
+    tar -zxvf cmake-3.20.0.tar.gz
+    cd cmake-3.20.0
+    ./bootstrap
+    make
+    make install
+    # Note: there's a newer version available
+
+    ##### cube:v04 #####
+    # - Open CV
+    mkdir -p ~/src/opencv && cd ~/src/opencv
+    git clone https://github.com/opencv/opencv.git
+    git clone https://github.com/opencv/opencv_contrib.git
+    cd opencv
+    mkdir build
+    cd build
+    cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local ..
+    make -j7
+    make install
+    make clean
+
+    ##### cube:v05 #####
+    # - FORCE
+    cd ~/src
+    git clone https://github.com/davidfrantz/force.git
+    cd force
+    make -j
+    make install
+
+    ##### cube:v06 #####
+    # - makeDataCube
+    Rscript -e 'devtools::install_github("RETURN-project/makeDataCube")'
+    git clone https://github.com/RETURN-project/makeDataCube.git ~/src/makeDataCube
+
+%test
+    # Is it installed?
+    Rscript -e "library(makeDataCube)"
+
+%environment
+    export LC_ALL=C
