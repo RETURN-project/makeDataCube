@@ -1,5 +1,10 @@
 FROM ubuntu:latest
 
+# This container installs makeDataCube and all its dependencies. This container
+# cannot, and should not install the user credentials.
+#
+# This container can be pulled from returnproject/makedatacube:latest
+
 ##### cube:v01 #####
 # - Install R
 
@@ -54,7 +59,7 @@ RUN Rscript -e 'devtools::install_github("s-u/unixtools", ref = "master")'
 
 ##### cube:v03 #####
 # - Cmake
-RUN mkdir -p ~/src/cmake \ 
+RUN mkdir -p ~/src/cmake \
     && cd ~/src/cmake \
     && wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0.tar.gz \
     && tar -zxvf cmake-3.20.0.tar.gz \
@@ -97,7 +102,7 @@ RUN git clone https://github.com/RETURN-project/makeDataCube.git ~/src/makeDataC
 # gsutil config Creates the .boto file
 
 # DEM chunk
-# Enter NASA Earthdata Login Username 
+# Enter NASA Earthdata Login Username
 # (or create an account at urs.earthdata.nasa.gov):******
 # Enter NASA Earthdata Login Password:****************
 #
@@ -111,5 +116,3 @@ CMD R --version
 
 # Check force
 CMD force
-
-# Delaying .. apt-utils is not installed

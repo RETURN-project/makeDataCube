@@ -1,6 +1,12 @@
 BootStrap: docker
 From: rocker/tidyverse
 
+%help
+    This container installs a minimal viable version of the makeDataCube R
+    package. By minimal viable version we just mean that it contains only the
+    external dependencies to make the package installable and testable, but
+    some (even most) of the functionality will not work. Please see full.def.
+
 %runscript
     /bin/bash "$@"
 

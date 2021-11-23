@@ -1,6 +1,10 @@
 BootStrap: docker
 From: ubuntu:latest
 
+%help
+    This container installs makeDataCube and all its dependencies. This container
+    cannot, and should not install the user credentials.
+
 %runscript
     /bin/bash "$@"
 

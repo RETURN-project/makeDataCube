@@ -30,7 +30,7 @@ This script requires certain programs to be installed in your computer in order 
 We made available a Docker image with all the requirements pre-installed.
 Please run
 
-`docker push returnproject/makedatacube:latest`
+`docker pull returnproject/makedatacube:latest`
 
 to obtain it.
 
