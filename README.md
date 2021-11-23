@@ -14,35 +14,43 @@ install_github("RETURN-project/makeDataCube")
 
 ### Installation
 
+#### Install locally
+
 This script requires certain programs to be installed in your computer in order to work. The guide below will help you through this process.
 
+- To download data from Google Cloud, [**gsutil**](https://cloud.google.com/storage/docs/gsutil_install#deb) should be installed.
 - [**Python 3**](https://www.python.org/downloads/) should be installed.
   - The [**pylandsat**](https://pypi.org/project/pylandsat/) and [**shapely**](https://pypi.org/project/Shapely/) modules should be available to download data. Both can be installed installed via `pip install pylandsat` and `pip install shapely`.
 - In addition, [**FORCE**](https://github.com/davidfrantz/force) (\>= 3.6.3) should be installed. **FORCE** allows to generate a data cube of level-2 (or higher) Landsat and Sentinel-2 imagery from level-1 inputs. Please visit the [project's website](https://github.com/davidfrantz/force) for more information and download instructions.
   - If the user wants to use parallelization of Level 1 download (by default this is deactivated), [this](https://github.com/davidfrantz/force/commit/b5685c9b7258d91bcf3a096eee31b7a349f994e6) (or a newer) version of **FORCE** is required. More information [here](https://github.com/davidfrantz/force/pull/66#issuecomment-804881143).
 - Other system requirements are **libpoppler-cpp-dev**, **libgdal-dev** and **libudunits2-dev**. All of them can be installed via `sudo apt-get install <library name>`.
 
+#### Install using a Docker image
+
+We made available a Docker image with all the requirements pre-installed.
+Please run
+
+`docker push returnproject/makedatacube:latest`
+
+to obtain it.
+
+The corresponding `Dockerfile` is also available in [`inst/docker/Dockerfile`](/inst/docker/Dockerfile).
+
+#### Install using a Singularity image
+
+If you are more comfortable with Singularity, an image can be generated with [`inst/singularity/full.def`](/inst/singularity/full.def).
+
 ### Credentials
 
 This script connects to different data sources. Some of them require credentials, typically a username and a password. Please follow this guide to get yours:
 
-- To download data from Google Cloud, [**gsutil**](https://cloud.google.com/storage/docs/gsutil_install#deb) should be installed.
+- [**gsutil**](https://cloud.google.com/storage/docs/gsutil_install#deb) should be authorized. This can be achieved by running `gsutil config` and following the instructions. The result of the activation is a `.boto` file.
 - The user should have a **NASA Earthdata account** to download DEM data. The *Login*, *Username* and *Password* are stored in a *netrc* file in the home directory. If no *netrc* file is found, you will be asked to provide your *Username* and *Password* and a *netrc* file will automatically be created (and stored for a next session). If you don't have an account yet, you can create one [here](https://urs.earthdata.nasa.gov). Afterwards, you can easily create the `.netrc` file by executing `makeDataCube::EartDataLogin()` in your R console and following the instructions.
 - Finally, you need authentication to download data from the LAADS DAAC (WVP data). To that end, you need an create a *.laads* file is in your home directory with a an **App Key**. The **App Key** can be requested from [NASA Earthdata](https://ladsweb.modaps.eosdis.nasa.gov/tools-and-services/data-download-scripts/#requesting). This key should be stored in a file *.laads* in your home directory.
 
 ### Other
 
 A presentation about this project was given at Wageningen University on Nov 8th 2021. The slides are temporarily available [here](https://www.dropbox.com/s/ipzdn82uq0dm7mr/makeDataCube.pptx?dl=1).
-
-## Containers
-
-A containerized installation of this package is available on [Singularity Container Services](https://cloud.sylabs.io/library/_container/60fa8041ff2db5ba27b5b613).
-
-```sh
-singularity pull --arch amd64 library://pabrod/default/makedatacube:minimal
-```
-
-If you prefer to generate it from a definition file, the file is available on `/inst/singularity`.
 
 ## Visual workflow
 ![](inst/img/flow.png)
