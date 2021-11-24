@@ -27,7 +27,7 @@ This script requires certain programs to be installed in your computer in order 
 
 #### Install using a Docker image
 
-We made available a Docker image with all the requirements pre-installed.
+We made available [a Docker image](https://hub.docker.com/r/returnproject/makedatacube) with all the requirements pre-installed.
 Please run
 
 `docker pull returnproject/makedatacube:latest`
@@ -38,7 +38,13 @@ The corresponding `Dockerfile` is also available in [`inst/docker/Dockerfile`](/
 
 #### Install using a Singularity image
 
-If you are more comfortable with Singularity, an image can be generated with [`inst/singularity/full.def`](/inst/singularity/full.def).
+If you are more comfortable with Singularity, we pushed [an image](https://cloud.sylabs.io/library/returnproject/default/makedatacube) to Singularity Cloud Services. 
+
+`singularity pull --arch amd64 library://returnproject/default/makedatacube:v1 `
+
+to obtain it.
+
+The corresponding `.def` file is available in [`inst/singularity/full.def`](/inst/singularity/full.def).
 
 ### Credentials
 
