@@ -30,19 +30,29 @@ This script requires certain programs to be installed in your computer in order 
 We made available [a Docker image](https://hub.docker.com/r/returnproject/makedatacube) with all the requirements pre-installed.
 Please run
 
-`docker pull returnproject/makedatacube:latest`
+`docker pull returnproject/makedatacube:v01`
 
-to obtain it.
+to obtain it and add it to your docker images. After installing, you can use it, for example, like this:
+
+```
+docker run -t returnproject/makedatacube:v01 \
+Rscript -e "rmarkdown::render('vignettes/make_Landsat_cube.Rmd', params = list(starttime = '2000-11-1', endtime = '2001-5-28’))”
+```
 
 The corresponding `Dockerfile` is also available in [`inst/docker/Dockerfile`](/inst/docker/Dockerfile).
 
 #### Install using a Singularity image
 
-If you are more comfortable with Singularity, we pushed [an image](https://cloud.sylabs.io/library/returnproject/default/makedatacube) to Singularity Cloud Services. 
+If you are more comfortable with Singularity, we pushed [an image](https://cloud.sylabs.io/library/returnproject/default/makedatacube) to Singularity Cloud Services. You can use:
 
 `singularity pull --arch amd64 library://returnproject/default/makedatacube:v1 `
 
-to obtain it.
+to obtain it. It will download a file with a name like `makeDataCube_v01.sif`. After installing, you can use it, for example, like this:
+
+```
+singularity exec makeDataCube_v01.sif \
+Rscript -e "rmarkdown::render('vignettes/make_Landsat_cube.Rmd', params = list(starttime = '2000-11-1', endtime = '2001-5-28’))”
+```
 
 The corresponding `.def` file is available in [`inst/singularity/full.def`](/inst/singularity/full.def).
 
@@ -84,5 +94,3 @@ For launching the analysis in Spider follow the next steps:
 When running on Spider, the workflow is slightly modified:
 
 ![](inst/img/spider.png)
-
-
