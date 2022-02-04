@@ -3,7 +3,7 @@ FROM ubuntu:latest
 # This container installs makeDataCube and all its dependencies. This container
 # cannot, and should not install the user credentials.
 #
-# This container can be pulled from returnproject/makedatacube:latest
+# This container can be pulled from returnproject/makedatacube
 
 ##### cube:v01 #####
 # - Install R
