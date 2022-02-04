@@ -41,6 +41,8 @@ Rscript -e "rmarkdown::render('vignettes/make_Landsat_cube.Rmd', params = list(s
 
 The corresponding `Dockerfile` is also available in [`inst/docker/Dockerfile`](/inst/docker/Dockerfile).
 
+Keep in mind that these images cannot and should not include your credentials. Click [here](https://github.com/RETURN-project/mdcquickinstall) for a shortcut to include your credentials in your own Docker image.
+
 #### Install using a Singularity image
 
 If you are more comfortable with Singularity, we pushed [an image](https://cloud.sylabs.io/library/returnproject/default/makedatacube) to Singularity Cloud Services. You can use:
@@ -55,6 +57,8 @@ Rscript -e "rmarkdown::render('vignettes/make_Landsat_cube.Rmd', params = list(s
 ```
 
 The corresponding `.def` file is available in [`inst/singularity/full.def`](/inst/singularity/full.def).
+
+Keep in mind that these images cannot and should not include your credentials. Click [here](https://github.com/RETURN-project/mdcquickinstall) for a shortcut to include your credentials in your own Singularity image.
 
 ### Credentials
 
